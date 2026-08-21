@@ -63,6 +63,19 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 
 .admin-history-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .history-edit-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel2)}
+
+.market-comparison{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 18px}
+.market-comparison h2{margin:0 0 6px;font-size:20px}
+.market-comparison .compare-sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.market-best{background:#292a20;border:1px solid #65531e;border-radius:11px;padding:13px;margin-bottom:13px}
+.market-best strong{font-size:18px}
+.market-best .gold{color:var(--gold)}
+.market-table{width:100%;border-collapse:collapse}
+.market-table th,.market-table td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:14px}
+.market-table th{color:var(--muted);font-weight:600}
+.market-table tr:last-child td{border-bottom:0}
+.market-badge{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:20px;background:var(--gold);color:#111;font-size:11px;font-weight:800}
+@media(max-width:720px){.market-table{font-size:13px}.market-table th:nth-child(2),.market-table td:nth-child(2){display:none}}
 </style>
 </head>
 <body>
@@ -122,6 +135,8 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 
 <section id="historico" class="page">
 <div class="title"><h1>Histórico</h1><div class="sub">Compras finalizadas neste navegador.</div></div>
+<div id="marketComparison" class="market-comparison"></div>
+
 <div id="historyList"></div>
 </section>
 
@@ -408,7 +423,80 @@ carrinho.forEach(async x=>{if(x.id){let p=produtos.find(p=>Number(p['id'])===Num
 carrinho=[];salvarLocal();atualizarTudo();renderCarrinho();renderLista();renderEstoque();renderHistorico();mostrar('Compra finalizada ✓');abrirPagina('historico');
 }
 
+
+function renderComparativoMercados(){
+  const el=$('marketComparison');
+  if(!el)return;
+
+  if(!historico.length){
+    el.innerHTML=`
+      <h2>🏆 Comparativo de mercados</h2>
+      <div class="compare-sub">Ainda não há compras suficientes para comparar.</div>`;
+    return;
+  }
+
+  const grupos={};
+
+  historico.forEach(h=>{
+    const mercado=String(h.mercado||'Compra').trim()||'Compra';
+    const valor=Number(h.total||0);
+    if(!grupos[mercado])grupos[mercado]={mercado,compras:0,total:0,ultima:0};
+    grupos[mercado].compras++;
+    grupos[mercado].total+=valor;
+    const data=new Date(h.data).getTime();
+    if(data>grupos[mercado].ultima)grupos[mercado].ultima=data;
+  });
+
+  const ranking=Object.values(grupos)
+    .map(x=>({...x,media:x.total/x.compras}))
+    .sort((a,b)=>a.media-b.media);
+
+  const melhor=ranking[0];
+
+  let ultimaPorMercado={};
+  historico.forEach(h=>{
+    const mercado=String(h.mercado||'Compra').trim()||'Compra';
+    const data=new Date(h.data).getTime();
+    if(!ultimaPorMercado[mercado]||data>ultimaPorMercado[mercado].data){
+      ultimaPorMercado[mercado]={data,total:Number(h.total||0)};
+    }
+  });
+
+  const ultimas=Object.entries(ultimaPorMercado)
+    .map(([mercado,x])=>({mercado,...x}))
+    .sort((a,b)=>a.total-b.total);
+
+  let comparacao='';
+  if(ultimas.length>=2){
+    const a=ultimas[0], b=ultimas[1];
+    comparacao=`<div class="compare-sub">Na última compra registrada de cada mercado, <strong>${esc(a.mercado)}</strong> ficou ${dinheiro(b.total-a.total)} mais barato que ${esc(b.mercado)}.</div>`;
+  }
+
+  el.innerHTML=`
+    <h2>🏆 Comparativo de mercados</h2>
+    <div class="compare-sub">Estimativa baseada no valor total das compras registradas.</div>
+    <div class="market-best">
+      <div class="gold">MELHOR MÉDIA ATÉ AGORA</div>
+      <strong>${esc(melhor.mercado)}</strong>
+      <div class="compare-sub" style="margin:5px 0 0">Média de ${dinheiro(melhor.media)} por compra • ${melhor.compras} compra(s)</div>
+    </div>
+    ${comparacao}
+    <table class="market-table">
+      <thead><tr><th>Mercado</th><th>Compras</th><th>Média</th><th>Total registrado</th></tr></thead>
+      <tbody>
+        ${ranking.map((x,i)=>`
+          <tr>
+            <td>${esc(x.mercado)} ${i===0?'<span class="market-badge">MELHOR</span>':''}</td>
+            <td>${x.compras}</td>
+            <td>${dinheiro(x.media)}</td>
+            <td>${dinheiro(x.total)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
 function renderHistorico(){
+  renderComparativoMercados();
 if(!historico.length){$('historyList').innerHTML='<div class="empty">🧾 Nenhuma compra finalizada ainda.</div>';return}
 $('historyList').innerHTML=historico.map(h=>`<div class="history"><b>${dinheiro(h.total)}</b><div class="meta">${esc(h.mercado)} • ${new Date(h.data).toLocaleString('pt-BR')}</div><div class="meta" style="margin-top:8px">${h.itens.map(x=>esc(x.nome)+' × '+x.qtd+' ('+dinheiro(x.preco)+')').join(' • ')}</div></div>`).join('');
 }
@@ -510,6 +598,7 @@ function adminLimparHistorico(){
 
   atualizarTudo();
   renderHistorico();
+  renderComparativoMercados();
   renderAdminHistorico();
 
   mostrar('Histórico apagado ✓');
@@ -613,6 +702,7 @@ function adminExcluirHistorico(i){
   salvarLocal();
   atualizarTudo();
   renderHistorico();
+  renderComparativoMercados();
   renderAdminHistorico();
 
   mostrar('Registro excluído ✓');
@@ -667,6 +757,7 @@ carregarLocal();
 atualizarTudo();
 renderLista();
 renderCarrinho();
+renderComparativoMercados();
 renderHistorico();
 carregarProdutos();
 atualizarAdminTela();
