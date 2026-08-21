@@ -2,153 +2,253 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apê Compras</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#111;color:#f5f5f5;font-family:Arial,Helvetica,sans-serif}
-:root{--bg:#111;--card:#1d1d1d;--card2:#252525;--border:#303030;--gold:#d88916;--muted:#999}
-header{position:sticky;top:0;z-index:20;background:#191919;border-bottom:1px solid #2d2d2d;padding:16px 20px}
-.top{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:15px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px}.brand span{background:var(--gold);padding:9px;border-radius:10px}
-nav{display:flex;gap:4px;overflow:auto}nav button{background:none;border:0;color:#aaa;padding:9px 10px;border-radius:8px;white-space:nowrap}nav button.active,nav button:hover{color:#fff;background:#2a2a2a}
-main{max-width:900px;margin:auto;padding:32px 18px 80px}.page{display:none}.page.active{display:block}
-h1{font-size:30px;margin:0 0 7px}.sub{color:var(--muted);margin-bottom:24px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:20px}.card.accent{border-left:4px solid var(--gold)}
-.label{font-size:12px;color:#aaa;font-weight:700;letter-spacing:.4px}.big{font-size:30px;font-weight:800;margin:10px 0 4px}.muted{color:var(--muted);font-size:13px}
-button.primary{border:0;background:var(--gold);color:#111;font-weight:800;border-radius:9px;padding:11px 14px;margin-top:14px}
-.search,input{width:100%;background:#202020;border:1px solid var(--border);border-radius:10px;color:#fff;padding:13px;font-size:15px;outline:0}.search{margin-bottom:15px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}.stat b{display:block;font-size:22px;margin-top:5px}
-.item{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:15px;margin:10px 0}.row{display:flex;justify-content:space-between;gap:15px;align-items:center}.cat{color:var(--gold);font-size:11px;text-transform:uppercase;font-weight:800;margin-bottom:5px}
-.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.small{border:1px solid var(--border);background:#292929;color:#fff;border-radius:8px;padding:8px 10px}.danger{background:#4a2020;border-color:#5a2929}.need{color:var(--gold);font-weight:800}
-.total{margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:18px;display:flex;justify-content:space-between;align-items:center}.total strong{color:var(--gold);font-size:24px}
-.empty{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:35px 20px;text-align:center;color:var(--muted)}
-.modal{display:none;position:fixed;inset:0;background:#000b;z-index:50;align-items:flex-end}.modal.show{display:flex}.sheet{width:min(520px,100%);margin:auto;background:#191919;border-radius:20px 20px 0 0;padding:20px;max-height:90vh;overflow:auto}.field{margin:12px 0}.field label{display:block;color:#aaa;font-size:12px;margin-bottom:6px}.sheet .primary{width:100%}
-#toast{position:fixed;right:15px;bottom:15px;background:#292929;border:1px solid #444;padding:12px 15px;border-radius:10px;display:none;z-index:80}
-@media(max-width:650px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.top{flex-direction:column;align-items:stretch}.brand{justify-content:center}nav{justify-content:space-between}main{padding-top:24px}.row{align-items:flex-start}.total{flex-direction:column;align-items:flex-start;gap:8px}}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0f10;--panel:#17191b;--panel2:#1e2022;--line:#303336;--text:#f5f5f5;--muted:#9da1a6;--yellow:#f4b400;--yellow2:#ffca28;--green:#35c878;--red:#ff6868}
+body{font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+header{height:76px;background:#111315;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 6%;position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:12px;font-size:21px;font-weight:800}
+.logo-icon{width:42px;height:42px;border-radius:11px;background:var(--yellow);color:#111;display:grid;place-items:center;font-size:22px}
+nav{display:flex;gap:7px}
+nav button{background:none;border:0;color:#aeb2b6;padding:12px 14px;border-radius:10px}
+nav button:hover,nav button.active{color:#111;background:var(--yellow)}
+main{max-width:1180px;margin:0 auto;padding:42px 25px 70px}
+.page{display:none}.page.active{display:block}
+.welcome{margin-bottom:30px}
+.welcome h1{font-size:36px;margin-bottom:8px}
+.welcome p{color:var(--muted);font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:25px;min-height:170px}
+.card.main-card{border-left:4px solid var(--yellow)}
+.card h2{font-size:16px;color:#c3c6ca;margin-bottom:16px}
+.number{font-size:35px;font-weight:800;margin-bottom:8px}
+.description{color:var(--muted)}
+.button{display:inline-block;margin-top:18px;background:var(--yellow);color:#111;border:0;border-radius:9px;padding:12px 18px;font-weight:800}
+.button:hover{background:var(--yellow2)}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:15px}
+.section-head h1{font-size:30px}.section-head p{color:var(--muted);margin-top:5px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.search{flex:1;min-width:230px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px 14px;outline:none}
+.search:focus{border-color:var(--yellow)}
+.filters button{background:var(--panel);border:1px solid var(--line);color:#bbb;padding:10px 14px;border-radius:9px}
+.filters button.active{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.product-list{display:grid;gap:10px}
+.product{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 17px;display:grid;grid-template-columns:54px 1fr auto;align-items:center;gap:14px}
+.product-icon{width:50px;height:50px;border-radius:11px;background:#26292c;display:grid;place-items:center;font-size:24px}
+.product-name{font-weight:700}.product-meta{color:var(--muted);font-size:13px;margin-top:5px}
+.product-right{text-align:right}.buy{color:var(--yellow);font-weight:800}.ok{color:var(--green);font-weight:700}
+.qty{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:8px}
+.qty button{width:31px;height:31px;border-radius:8px;border:1px solid #555;background:#24272a;color:white}
+.qty strong{min-width:22px;text-align:center}
+.empty{background:var(--panel);border:1px dashed #3a3d40;border-radius:14px;padding:35px;text-align:center;color:var(--muted)}
+.total-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.toast{position:fixed;right:20px;bottom:20px;background:#202428;border:1px solid #444;padding:14px 18px;border-radius:10px;display:none;z-index:30}
+.toast.show{display:block}
+.status{font-size:13px;color:var(--muted);margin-bottom:15px}.status.ok{color:var(--green)}
+@media(max-width:760px){header{height:auto;padding:14px 18px;align-items:flex-start;gap:10px}nav{overflow:auto}nav button{padding:9px 10px;font-size:12px}main{padding:28px 16px}.cards{grid-template-columns:1fr}.welcome h1{font-size:28px}.product{grid-template-columns:45px 1fr}.product-right{grid-column:2;text-align:left}.qty{justify-content:flex-start}}
 </style>
 </head>
 <body>
-<header><div class="top"><div class="brand"><span>🛒</span> Apê Compras</div><nav>
-<button data-page="home" class="active">Início</button><button data-page="estoque">Estoque</button><button data-page="lista">Lista</button><button data-page="carrinho">Carrinho</button><button data-page="historico">Histórico</button>
-</nav></div></header>
+<header>
+  <div class="logo"><div class="logo-icon">🛒</div><span>Apê Compras</span></div>
+  <nav>
+    <button data-page="inicio" class="active">Início</button>
+    <button data-page="estoque">Estoque</button>
+    <button data-page="lista">Lista</button>
+    <button data-page="carrinho">Carrinho</button>
+    <button data-page="historico">Histórico</button>
+  </nav>
+</header>
+
 <main>
-<section id="home" class="page active"><h1>Olá, Juan e Mariana 👋</h1><div class="sub">O que vamos fazer hoje?</div><div class="grid">
-<div class="card accent"><div class="label">📦 ESTOQUE</div><div class="big" id="homeProdutos">—</div><div class="muted">produtos cadastrados</div><button class="primary" onclick="go('estoque')">Conferir estoque →</button></div>
-<div class="card"><div class="label">🛒 LISTA DE COMPRAS</div><div class="big" id="homeLista">—</div><div class="muted">produtos para comprar</div><button class="primary" onclick="go('lista')">Ver lista →</button></div>
-<div class="card"><div class="label">💰 GASTO DO MÊS</div><div class="big" id="homeGasto">R$ 0,00</div><div class="muted">compras registradas</div></div>
-<div class="card"><div class="label">🧾 ÚLTIMA COMPRA</div><div class="big" id="homeUltima">—</div><div class="muted" id="homeUltimaDesc">Nenhuma compra registrada</div></div>
-</div></section>
+<section id="inicio" class="page active">
+  <div class="welcome"><h1>Olá, Juan e Mariana 👋</h1><p>O que vamos fazer hoje?</p></div>
+  <div class="cards">
+    <div class="card main-card">
+      <h2>📦 ESTOQUE</h2><div id="homeEstoque" class="number">—</div>
+      <div class="description">produtos cadastrados</div>
+      <button class="button" data-page="estoque">Conferir estoque →</button>
+    </div>
+    <div class="card">
+      <h2>🛒 LISTA DE COMPRAS</h2><div id="homeLista" class="number">—</div>
+      <div class="description">produtos para comprar</div>
+      <button class="button" data-page="lista">Ver lista →</button>
+    </div>
+    <div class="card"><h2>💰 GASTO DO MÊS</h2><div class="number">R$ 0,00</div><div class="description">compras registradas</div></div>
+    <div class="card"><h2>🧾 ÚLTIMA COMPRA</h2><div class="number">—</div><div class="description">Nenhuma compra registrada</div></div>
+  </div>
+</section>
 
-<section id="estoque" class="page"><h1>Estoque</h1><div class="sub">Confira o que temos em casa e o que precisa comprar.</div>
-<div class="stats"><div class="stat"><span class="muted">Produtos</span><b id="sProdutos">0</b></div><div class="stat"><span class="muted">Comprar</span><b id="sComprar">0</b></div><div class="stat"><span class="muted">Em casa</span><b id="sCasa">0</b></div></div>
-<input id="busca" class="search" placeholder="🔎 Buscar produto..."><div id="estoqueLista"><div class="empty">Carregando...</div></div></section>
+<section id="estoque" class="page">
+  <div class="section-head"><div><h1>Estoque</h1><p>Confira e atualize o que vocês têm em casa.</p></div></div>
+  <div id="dbStatus" class="status">Conectando ao banco...</div>
+  <div class="toolbar">
+    <input id="searchEstoque" class="search" placeholder="🔎 Buscar produto...">
+    <div id="filters" class="filters"></div>
+  </div>
+  <div id="estoqueList" class="product-list"></div>
+</section>
 
-<section id="lista" class="page"><h1>Lista de compras</h1><div class="sub" id="listaSub">Calculada pelo estoque atual.</div><div id="listaCompra"></div></section>
+<section id="lista" class="page">
+  <div class="section-head"><div><h1>Lista de compras</h1><p>Itens abaixo da quantidade ideal.</p></div></div>
+  <div id="listaList" class="product-list"></div>
+</section>
 
-<section id="carrinho" class="page"><h1>Carrinho</h1><div class="sub">Coloque a quantidade e o preço que você viu na prateleira.</div><div id="cart"></div><div id="cartTotal"></div></section>
+<section id="carrinho" class="page">
+  <div class="section-head"><div><h1>Carrinho</h1><p>Prepare sua compra.</p></div></div>
+  <div id="cartList"></div>
+</section>
 
-<section id="historico" class="page"><h1>Histórico</h1><div class="sub">Compras finalizadas.</div><div id="historicoLista"></div></section>
-</main><div id="modal" class="modal"><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+<section id="historico" class="page">
+  <div class="section-head"><div><h1>Histórico</h1><p>As compras finalizadas aparecerão aqui.</p></div></div>
+  <div class="empty">Ainda não há compras finalizadas.</div>
+</section>
+</main>
+
+<div id="toast" class="toast"></div>
 
 <script>
-const SUPABASE_URL='https://ahqsbokljoeczfzunpipz.supabase.co';
-const SUPABASE_KEY='sb_publishable_EfmOAQC3hK5oZEDZAfZBOA_v5kKjb7c';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let produtos=[],cart=[],compras=[];
+const SUPABASE_URL = 'https://ahqsbokljoeczfzunpiz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_EfmOAQC3hK5oZEDZAfZBOA_v5kKjb7c';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const qAtual=p=>Number(p.atual||0);
-const qIdeal=p=>Number(p.ideal||0);
-const qComprar=p=>Math.max(qIdeal(p)-qAtual(p),0);
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function toast(t){let e=document.getElementById('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2500)}
-function saveCart(){localStorage.setItem('ape_cart',JSON.stringify(cart))}
-function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(page).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));if(page==='estoque')renderEstoque();if(page==='lista')renderLista();if(page==='carrinho')renderCart();if(page==='historico')renderHistorico();scrollTo(0,0)}
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+let produtos = [];
+let filtroCategoria = 'Todos';
+let carrinho = [];
 
-async function load(){
-  cart=JSON.parse(localStorage.getItem('ape_cart')||'[]');
-  try{
-    const r=await db.from('produtos').select('*').order('id');
-    if(r.error) throw r.error;
-    produtos=r.data||[];
-    document.getElementById('homeProdutos').textContent=produtos.length;
-    renderEstoque();renderLista();renderCart();renderHistorico();home();
-  }catch(e){
-    console.error(e);
-    document.getElementById('estoqueLista').innerHTML='<div class="empty">Não consegui acessar os produtos. Verifique a chave pública e as permissões da tabela produtos no Supabase.</div>';
-    toast('Erro ao conectar ao banco');
+const $ = id => document.getElementById(id);
+const money = n => Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+  if(id==='estoque') renderEstoque();
+  if(id==='lista') renderLista();
+  if(id==='carrinho') renderCarrinho();
+}
+
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-page]');
+  if(btn) showPage(btn.dataset.page);
+});
+
+async function carregarProdutos(){
+  $('dbStatus').textContent='Conectando ao banco...';
+  const {data,error}=await db.from('produtos').select('*').order('produto',{ascending:true});
+  if(error){
+    console.error(error);
+    $('dbStatus').textContent='Erro ao carregar o banco: '+error.message;
+    $('dbStatus').className='status';
+    return;
   }
+  produtos=data||[];
+  $('dbStatus').textContent=`Conectado • ${produtos.length} produtos encontrados`;
+  $('dbStatus').className='status ok';
+  atualizarInicio();
+  montarFiltros();
+  renderEstoque();
+  renderLista();
 }
-function home(){
- const n=produtos.filter(p=>qComprar(p)>0).length;
- document.getElementById('homeLista').textContent=n;
- document.getElementById('sProdutos').textContent=produtos.length;
- document.getElementById('sComprar').textContent=n;
- document.getElementById('sCasa').textContent=produtos.reduce((a,p)=>a+qAtual(p),0);
+
+function atualizarInicio(){
+  $('homeEstoque').textContent=produtos.length;
+  $('homeLista').textContent=produtos.filter(p=>Number(p.atual||0)<Number(p.ideal||0) && String(p.status||'Ativo').toLowerCase()==='ativo').length;
 }
+
+function montarFiltros(){
+  const cats=['Todos',...new Set(produtos.map(p=>p['tímpano']).filter(Boolean))];
+  $('filters').innerHTML=cats.map(c=>`<button class="${c===filtroCategoria?'active':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  $('filters').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{
+    filtroCategoria=b.dataset.cat; montarFiltros(); renderEstoque();
+  });
+}
+
+function esc(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
 function renderEstoque(){
- const term=(document.getElementById('busca').value||'').toLowerCase();
- const arr=produtos.filter(p=>(`${p.produto} ${p.categoria} ${p.codigo}`).toLowerCase().includes(term));
- document.getElementById('estoqueLista').innerHTML=arr.length?arr.map(p=>`
- <div class="item"><div class="row"><div><div class="cat">${esc(p.categoria)}</div><b>${esc(p.produto)}</b><div class="muted">Ideal: ${qIdeal(p)} · Atual: ${qAtual(p)}</div></div><div class="need">${qComprar(p)>0?'Comprar '+qComprar(p):'OK ✓'}</div></div>
- <div class="actions"><button class="small" onclick="editarEstoque(${p.id})">Atualizar estoque</button>${qComprar(p)>0?`<button class="small" onclick="add(${p.id})">🛒 Adicionar</button>`:''}</div></div>`).join(''):'<div class="empty">Nenhum produto encontrado.</div>';
+  const q=($('searchEstoque')?.value||'').toLowerCase();
+  const list=produtos.filter(p=>{
+    const cat=filtroCategoria==='Todos'||String(p['tímpano']||'')===filtroCategoria;
+    const text=String(p.produto||'').toLowerCase().includes(q)||String(p['código']||'').toLowerCase().includes(q);
+    return cat&&text;
+  });
+  $('estoqueList').innerHTML=list.length?list.map(productHtml).join(''):`<div class="empty">Nenhum produto encontrado.</div>`;
 }
-document.getElementById('busca').oninput=renderEstoque;
+
+function productHtml(p){
+  const atual=Number(p.atual||0), ideal=Number(p.ideal||0), falta=Math.max(ideal-atual,0);
+  const precisa=falta>0 && String(p.status||'Ativo').toLowerCase()==='ativo';
+  return `<div class="product">
+    <div class="product-icon">📦</div>
+    <div>
+      <div class="product-name">${esc(p.produto)}</div>
+      <div class="product-meta">${esc(p['tímpano']||'Sem categoria')} • ${esc(p['código']||'')}</div>
+      <div class="product-meta">Ideal: ${ideal} • Atual: ${atual}</div>
+    </div>
+    <div class="product-right">
+      ${precisa?`<div class="buy">Comprar ${falta}</div>`:`<div class="ok">✓ Estoque OK</div>`}
+      <div class="qty">
+        <button onclick="alterarAtual(${p['eu ia']},-1)">−</button>
+        <strong>${atual}</strong>
+        <button onclick="alterarAtual(${p['eu ia']},1)">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function alterarAtual(id,delta){
+  const p=produtos.find(x=>Number(x['eu ia'])===Number(id));
+  if(!p)return;
+  const novo=Math.max(0,Number(p.atual||0)+delta);
+  const {error}=await db.from('produtos').update({atual:novo}).eq('eu ia',id);
+  if(error){toast('Não foi possível atualizar: '+error.message);return;}
+  p.atual=novo;
+  atualizarInicio(); renderEstoque(); renderLista();
+  toast('Estoque atualizado ✓');
+}
 
 function renderLista(){
- const arr=produtos.filter(p=>qComprar(p)>0);
- document.getElementById('listaSub').textContent=`${arr.length} produto(s) precisam de reposição.`;
- document.getElementById('listaCompra').innerHTML=arr.length?arr.map(p=>`<div class="item"><div class="row"><div><div class="cat">${esc(p.categoria)}</div><b>${esc(p.produto)}</b><div class="muted">Atual: ${qAtual(p)} · Ideal: ${qIdeal(p)}</div></div><div class="need">Comprar ${qComprar(p)}</div></div><div class="actions"><button class="small" onclick="add(${p.id})">Adicionar ao carrinho</button></div></div>`).join(''):'<div class="empty">🎉 Estoque completo. Nada para comprar.</div>';
+  const list=produtos.filter(p=>Number(p.atual||0)<Number(p.ideal||0) && String(p.status||'Ativo').toLowerCase()==='ativo');
+  if(!list.length){$('listaList').innerHTML='<div class="empty">🎉 O estoque está completo. Nada para comprar.</div>';return;}
+  $('listaList').innerHTML=list.map(p=>{
+    const falta=Math.max(Number(p.ideal||0)-Number(p.atual||0),0);
+    return `<div class="product">
+      <div class="product-icon">🛒</div>
+      <div><div class="product-name">${esc(p.produto)}</div><div class="product-meta">${esc(p['tímpano']||'')} • Atual: ${p.atual} • Ideal: ${p.ideal}</div></div>
+      <div class="product-right"><div class="buy">Comprar ${falta}</div><button class="button" style="margin-top:8px;padding:8px 12px" onclick="addCart(${p['eu ia']})">Adicionar</button></div>
+    </div>`;
+  }).join('');
 }
-function add(id){
- const p=produtos.find(x=>Number(x.id)===Number(id));if(!p)return;
- const ex=cart.find(x=>Number(x.produto_id)===Number(id));
- if(ex)ex.quantidade++;else cart.push({produto_id:p.id,nome:p.produto,categoria:p.categoria,quantidade:Math.max(qComprar(p),1),preco:0});
- saveCart();renderCart();toast(`${p.produto} adicionado ao carrinho`);go('carrinho');
+
+function addCart(id){
+  const p=produtos.find(x=>Number(x['eu ia'])===Number(id)); if(!p)return;
+  const falta=Math.max(Number(p.ideal||0)-Number(p.atual||0),0);
+  const exists=carrinho.find(x=>Number(x.id)===Number(id));
+  if(exists)exists.qtd=falta; else carrinho.push({id:p['eu ia'],nome:p.produto,qtd:falta});
+  toast('Adicionado ao carrinho ✓'); renderCarrinho();
 }
-function renderCart(){
- const e=document.getElementById('cart'),t=document.getElementById('cartTotal');
- if(!cart.length){e.innerHTML='<div class="empty">🛒<br><br>Seu carrinho está vazio.</div>';t.innerHTML='';return}
- e.innerHTML=cart.map((i,k)=>`<div class="item"><div class="row"><div><b>${esc(i.nome)}</b><div class="muted">${i.quantidade} × ${money(i.preco)}</div></div><b>${money(i.quantidade*i.preco)}</b></div><div class="actions"><button class="small" onclick="changeQty(${k},-1)">−</button><button class="small" onclick="changeQty(${k},1)">+</button><button class="small" onclick="editPrice(${k})">Preço</button><button class="small danger" onclick="removeCart(${k})">Remover</button></div></div>`).join('');
- const total=cart.reduce((a,i)=>a+i.quantidade*i.preco,0);
- t.innerHTML=`<div class="total"><span>Total da compra</span><strong>${money(total)}</strong></div><button class="primary" style="width:100%" onclick="finalize()">Finalizar compra</button>`;
+
+function renderCarrinho(){
+  if(!carrinho.length){$('cartList').innerHTML='<div class="empty">Seu carrinho está vazio.<br><button class="button" data-page="lista">Ir para a lista →</button></div>';return;}
+  const total=carrinho.reduce((s,x)=>s+Number(x.qtd||0),0);
+  $('cartList').innerHTML=`<div class="total-box"><strong>${total} itens</strong><button class="button" style="margin:0" onclick="carrinho=[];renderCarrinho()">Limpar carrinho</button></div>`+
+    carrinho.map((x,i)=>`<div class="product" style="margin-bottom:10px"><div class="product-icon">🛒</div><div><div class="product-name">${esc(x.nome)}</div><div class="product-meta">Quantidade a comprar</div></div><div class="product-right"><div class="qty"><button onclick="carrinho[${i}].qtd=Math.max(1,carrinho[${i}].qtd-1);renderCarrinho()">−</button><strong>${x.qtd}</strong><button onclick="carrinho[${i}].qtd++;renderCarrinho()">+</button></div></div></div>`).join('');
 }
-function changeQty(k,d){cart[k].quantidade+=d;if(cart[k].quantidade<=0)cart.splice(k,1);saveCart();renderCart()}
-function removeCart(k){cart.splice(k,1);saveCart();renderCart()}
-function editPrice(k){show(`<h2>Preço de ${esc(cart[k].nome)}</h2><div class="field"><label>Preço por unidade</label><input id="price" type="number" step="0.01" min="0" value="${cart[k].preco||''}"></div><button class="primary" onclick="setPrice(${k})">Salvar preço</button><button class="small" style="width:100%;margin-top:8px" onclick="closeModal()">Cancelar</button>`)}
-function setPrice(k){cart[k].preco=Number(document.getElementById('price').value||0);saveCart();closeModal();renderCart()}
-function editarEstoque(id){const p=produtos.find(x=>Number(x.id)===Number(id));show(`<h2>${esc(p.produto)}</h2><div class="field"><label>Quantidade atual em casa</label><input id="stock" type="number" min="0" step="1" value="${qAtual(p)}"></div><button class="primary" onclick="saveStock(${id})">Salvar estoque</button>`)}
-async function saveStock(id){const v=Number(document.getElementById('stock').value||0);const r=await db.from('produtos').update({atual:v}).eq('id',id);if(r.error){toast('Não foi possível salvar');console.error(r.error);return}const p=produtos.find(x=>Number(x.id)===Number(id));if(p)p.atual=v;closeModal();home();renderEstoque();renderLista();toast('Estoque atualizado')}
-function finalize(){if(!cart.length)return toast('Carrinho vazio');if(cart.some(i=>Number(i.preco)<=0))return toast('Informe o preço de cada item');show(`<h2>Finalizar compra</h2><div class="field"><label>Mercado</label><input id="market" placeholder="Ex.: VN Supermercado"></div><div class="field"><label>Data</label><input id="date" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div class="total"><span>Total</span><strong>${money(cart.reduce((a,i)=>a+i.quantidade*i.preco,0))}</strong></div><button class="primary" style="width:100%" onclick="confirmPurchase()">Confirmar compra</button>`)}
-async function confirmPurchase(){
- const market=document.getElementById('market').value.trim()||'Mercado não informado',date=document.getElementById('date').value;
- try{
-   const r=await db.rpc('finalizar_compra',{p_mercado:market,p_data:date});
-   if(r.error) throw r.error;
-   cart=[];saveCart();closeModal();await load();go('historico');toast('Compra finalizada com sucesso!');
- }catch(e){
-   console.error(e);
-   toast('O banco recusou a finalização. Veja o console.');
- }
-}
-function renderHistorico(){const e=document.getElementById('historicoLista');if(!compras.length){e.innerHTML='<div class="empty">🧾<br><br>Nenhuma compra encontrada.</div>';return}e.innerHTML=compras.map(c=>`<div class="item"><div class="row"><div><div class="cat">${new Date(c.data_compra).toLocaleDateString('pt-BR')}</div><b>${esc(c.mercado)}</b></div><strong class="need">${money(c.total)}</strong></div></div>`).join('')}
-async function loadHistory(){
- const r=await db.from('compras').select('*').order('data_compra',{ascending:false});
- if(!r.error)compras=r.data||[];renderHistorico();
-}
-async function homeHistory(){
- await loadHistory();
- const total=compras.filter(c=>{const d=new Date(c.data_compra+'T12:00:00'),n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear()}).reduce((a,c)=>a+Number(c.total||0),0);
- document.getElementById('homeGasto').textContent=money(total);
- if(compras.length){document.getElementById('homeUltima').textContent=money(compras[0].total);document.getElementById('homeUltimaDesc').textContent=`${esc(compras[0].mercado)} · ${new Date(compras[0].data_compra+'T12:00:00').toLocaleDateString('pt-BR')}`}
-}
-async function home(){const n=produtos.filter(p=>qComprar(p)>0).length;document.getElementById('homeLista').textContent=n;document.getElementById('sProdutos').textContent=produtos.length;document.getElementById('sComprar').textContent=n;document.getElementById('sCasa').textContent=produtos.reduce((a,p)=>a+qAtual(p),0);await homeHistory()}
-function show(x){document.getElementById('sheet').innerHTML=x;document.getElementById('modal').classList.add('show')}
-function closeModal(){document.getElementById('modal').classList.remove('show')}
-document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()}
-load();
+
+$('searchEstoque').addEventListener('input',renderEstoque);
+carregarProdutos();
 </script>
 </body>
 </html>
