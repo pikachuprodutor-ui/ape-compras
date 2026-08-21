@@ -62,7 +62,12 @@ main{max-width:1150px;margin:auto;padding:38px 20px 70px}
 .detail-primary{width:100%;border:0;background:var(--gold);color:#111;font-weight:800;border-radius:9px;padding:14px;margin-top:14px;font-size:16px}
 .detail-secondary{width:100%;border:1px solid var(--line);background:#292c2f;color:#fff;font-weight:700;border-radius:9px;padding:13px;margin-top:10px;font-size:16px}
 .clickable-item{cursor:pointer}.clickable-item:hover{border-color:#666;transform:translateY(-1px)}
+
+/* Lista de compras */
+.shopping-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}.shopping-header .title{margin-bottom:0}.shopping-header .title h1{font-size:30px}.shopping-cart-action{border:0;background:var(--gold);color:#111;border-radius:12px;padding:11px 13px;font-weight:800;white-space:nowrap}.shopping-cart-action span{display:block}.shopping-actions{margin:0 0 18px}.shopping-actions .secondary{font-size:13px}.shopping-list{gap:22px}.shopping-category-title{font-size:16px;font-weight:800;margin:0 0 9px;padding-left:2px}.shopping-category-list{display:grid;gap:9px}.shopping-item{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:14px;padding:10px 11px;display:grid;grid-template-columns:58px minmax(0,1fr) auto 18px;gap:11px;align-items:center;text-align:left}.shopping-item:hover{border-color:#5a5f63}.shopping-photo{width:58px;height:58px;border-radius:11px;background:#292c2f;display:grid;place-items:center;overflow:hidden}.shopping-photo img{width:100%;height:100%;object-fit:cover;display:block}.shopping-photo svg{width:28px;height:28px;fill:none;stroke:#aaa;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.shopping-info{min-width:0;display:flex;flex-direction:column;gap:4px}.shopping-name{font-size:15px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shopping-source{font-size:11px;color:var(--muted)}.shopping-qty{background:var(--gold);color:#111;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;white-space:nowrap}.shopping-chevron svg{width:18px;height:18px;fill:none;stroke:#888;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.list-empty{display:flex;flex-direction:column;align-items:center;gap:8px}.list-empty svg{width:42px;height:42px;fill:none;stroke:#888;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.list-empty strong{color:#fff;font-size:16px}.list-empty span{font-size:13px}
 @media(max-width:720px){
+.shopping-header{align-items:center}.shopping-header .title h1{font-size:27px}.shopping-cart-action{padding:10px}.shopping-cart-action span{display:none}.shopping-actions{margin-bottom:14px}.shopping-item{grid-template-columns:52px minmax(0,1fr) auto 16px;padding:9px}.shopping-photo{width:52px;height:52px}.shopping-name{font-size:14px}.shopping-source{font-size:10px}.shopping-qty{font-size:11px;padding:5px 8px}
+
 .detail-stats{grid-template-columns:1fr}.detail-head h1{font-size:27px}
 header{padding:12px 14px}.header-inner{flex-direction:column;align-items:stretch}.logo{justify-content:center}nav{width:100%}nav button{font-size:12px;padding:8px 9px}
 main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27px}
@@ -337,20 +342,42 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 .adm-photo-preview{margin-top:8px;width:100%;height:150px;border:1px dashed #444;border-radius:12px;background:#191a1c;display:grid;place-items:center;overflow:hidden;color:#777}
 .adm-photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
 
+
+/* ===== NAVEGAÇÃO MOBILE / ÍCONES SVG ===== */
+.logo-icon svg, nav button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.logo-icon svg{width:23px;height:23px;color:#111;stroke-width:1.7}
+nav button{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.home-count strong{font-size:46px}
+@media(max-width:720px){
+body{padding-bottom:82px}
+header{position:sticky;top:0;padding:10px 14px;background:#151718}
+.header-inner{display:block}
+.logo{justify-content:flex-start;padding-left:2px}
+nav{position:fixed;left:10px;right:10px;bottom:10px;z-index:100;background:rgba(29,31,33,.97);border:1px solid #3a3d40;border-radius:24px;padding:7px;display:grid;grid-template-columns:repeat(6,1fr);gap:3px;box-shadow:0 8px 30px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+nav button{min-width:0;flex-direction:column;gap:3px;padding:7px 2px;border-radius:17px;font-size:10px;color:#aaa}
+nav button svg{width:20px;height:20px}
+nav button.active{background:rgba(227,161,26,.18);color:var(--gold)}
+nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+main{padding:24px 14px 35px}
+.home-head h1{font-size:32px}
+.home-shopping-card{padding:20px}
+.home-count strong{font-size:52px}
+.home-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
 <header>
 <div class="header-inner">
-<div class="logo"><div class="logo-icon">🛒</div><span>Apê Compras</span></div>
+<div class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg></div><span>Apê Compras</span></div>
 <nav>
-<button class="active" data-page="inicio">Início</button>
-<button data-page="estoque">Estoque</button>
-<button data-page="lista">Lista <span id="badgeLista"></span></button>
-<button data-page="carrinho">Carrinho <span id="badgeCart"></span></button>
-<button data-page="historico">Histórico</button>
-<button data-page="admin">⚙ Admin</button>
+<button class="active" data-page="inicio"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg><span>Início</span></button>
+<button data-page="estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><span>Estoque</span></button>
+<button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg><span>Lista <span id="badgeLista"></span></span></button>
+<button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg><span>Carrinho <span id="badgeCart"></span></span></button>
+<button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6M12 7v5l3 2"/></svg><span>Histórico</span></button>
+<button data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3 14 5.2l3-.1.8 2.9 2.5 1.7-1.2 2.7 1.2 2.7-2.5 1.7-.8 2.9-3-.1L12 21l-2-2.2-3 .1-.8-2.9-2.5-1.7 1.2-2.7-1.2-2.7 2.5-1.7.8-2.9 3 .1L12 3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Admin</span></button>
 </nav>
 </div>
 </header>
@@ -462,12 +489,9 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 </section>
 
 <section id="lista" class="page">
-<div class="title"><h1>Lista de compras</h1><div class="sub">O que estiver abaixo do ideal aparece automaticamente.</div></div>
-<div class="actions" style="justify-content:flex-start;margin-bottom:16px">
-<button class="primary" style="margin:0" onclick="adicionarManual()">＋ Adicionar item</button>
-<button class="secondary" onclick="mandarTudoCarrinho()">🛒 Mandar tudo para o carrinho</button>
-</div>
-<div id="listaList" class="list"></div>
+<div class="shopping-header"><div class="title"><h1>Lista de compras</h1><div class="sub"><strong id="listaTotalLabel">0 produtos para comprar</strong></div></div><button class="shopping-cart-action" type="button" onclick="mandarTudoCarrinho()"><span>Enviar tudo</span></button></div>
+<div class="shopping-actions"><button class="secondary" onclick="adicionarManual()">Adicionar item manual</button></div>
+<div id="listaList" class="list shopping-list"></div>
 </section>
 
 <section id="carrinho" class="page">
@@ -483,7 +507,7 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 
 <section id="admin" class="page">
 <div id="adminLocked" class="admin-login admin-box">
-<h1 style="margin:0 0 8px">⚙ Área administrativa</h1>
+<h1 style="margin:0 0 8px">Área administrativa</h1>
 <p class="sub">Cadastre, edite e apague produtos e gerencie o histórico deste navegador.</p>
 <label style="display:block;color:#bbb;font-size:13px;margin-top:15px">Senha administrativa</label>
 <input id="adminPin" type="password" placeholder="Digite a senha">
@@ -603,6 +627,7 @@ $('homeEstoqueOk').textContent=estoqueOk;
 
 $('badgeLista').textContent=totalLista?' ('+totalLista+')':'';
 $('badgeCart').textContent=carrinho.length?' ('+carrinho.length+')':'';
+if($('listaTotalLabel')) $('listaTotalLabel').textContent=totalLista+' '+(totalLista===1?'produto':'produtos')+' para comprar';
 
 if(historico.length){
   $('homeUltima').textContent=dinheiro(historico[0].total);
@@ -813,16 +838,13 @@ return [...auto,...listaManual];
 }
 
 function renderLista(){
-let arr=itensLista();
-if(!arr.length){$('listaList').innerHTML='<div class="empty">🎉 Seu estoque está completo.<br>Nada para comprar.</div>';return}
-$('listaList').innerHTML=arr.map(x=>`<div class="item clickable-item" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')">
-<div class="item-grid">
-<div class="icon">🛒</div>
-<div><div class="name">${esc(x.nome)}</div><div class="meta">${x.auto?'Calculado pelo estoque':'Item adicionado manualmente'} • Comprar: ${x.qtd}</div></div>
-<div class="right"><div class="need">Comprar ${x.qtd}</div><div class="meta">Toque para informar preço e adicionar ao carrinho →</div></div>
-</div></div>`).join('');
+  const arr=itensLista();
+  if(!arr.length){$('listaList').innerHTML='<div class="empty list-empty"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"></path><path d="m4 7.5 8 4.5 8-4.5M12 12v9"></path></svg><strong>Estoque completo</strong><span>Nada para comprar no momento.</span></div>';return}
+  const grupos={};
+  arr.forEach(x=>{const p=x.id?produtos.find(p=>Number(p.id)===Number(x.id)):null;const categoria=(p?.categoria||'Outros').trim()||'Outros';(grupos[categoria] ||= []).push({...x,produto:p});});
+  const categorias=Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  $('listaList').innerHTML=categorias.map(categoria=>`<section class="shopping-category"><div class="shopping-category-title">${esc(categoria)}</div><div class="shopping-category-list">${grupos[categoria].map(x=>{const foto=x.produto?.imagem||'';const img=foto?`<img src="${esc(foto)}" alt="${esc(x.nome)}" loading="lazy">`:`<svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"></path><path d="m4 7.5 8 4.5 8-4.5M12 12v9"></path></svg>`;const key=String(x.key).replace(/'/g,"\\'");return `<button class="shopping-item" type="button" onclick="abrirDetalheCompra('${key}')"><span class="shopping-photo">${img}</span><span class="shopping-info"><span class="shopping-name">${esc(x.nome)}</span><span class="shopping-source">${x.auto?'Reposição pelo estoque':'Adicionado manualmente'}</span></span><span class="shopping-qty">${Number(x.qtd)} un</span><span class="shopping-chevron"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg></span></button>`;}).join('')}</div></section>`).join('');
 }
-
 function abrirDetalheCompra(key){
 let x=itensLista().find(y=>String(y.key)===String(key));
 if(!x){mostrar('Item não encontrado na lista');return}
