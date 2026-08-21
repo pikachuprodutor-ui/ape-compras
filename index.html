@@ -332,6 +332,11 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 .stock-filters::-webkit-scrollbar{display:none}
 .stock-filters button{white-space:nowrap;flex:0 0 auto}
 
+
+.adm-photo-field{display:block}
+.adm-photo-preview{margin-top:8px;width:100%;height:150px;border:1px dashed #444;border-radius:12px;background:#191a1c;display:grid;place-items:center;overflow:hidden;color:#777}
+.adm-photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
+
 </style>
 </head>
 <body>
@@ -983,6 +988,27 @@ function adminNovoProduto(){
  $('modalBody').innerHTML=`<div class="admin-form"><label>Código<input id="admCodigo" placeholder="Ex.: P102"></label><label>Produto<input id="admProduto" placeholder="Nome do produto"></label><label>Categoria<input id="admCategoria" placeholder="Ex.: Alimentos"></label><label>Status<select id="admStatus"><option>Ativo</option><option>Inativo</option></select></label><label>Quantidade ideal<input id="admIdeal" type="number" min="0" value="1"></label><label>Quantidade atual<input id="admAtual" type="number" min="0" value="0"></label></div>`;
  $('modal').classList.add('show');
 }
+
+function prepararFotoAdmin(){
+  const input=$('admFotoFile'), preview=$('admFotoPreview');
+  const url=$('admFotoUrl'), remover=$('admFotoRemover');
+
+  if(input) input.onchange=function(){
+    const file=this.files?.[0];
+    if(!file||!preview)return;
+    const reader=new FileReader();
+    reader.onload=()=>preview.innerHTML=`<img src="${reader.result}" alt="">`;
+    reader.readAsDataURL(file);
+  };
+
+  if(remover) remover.onclick=function(){
+    if(url)url.value='';
+    if(input)input.value='';
+    if(preview)preview.innerHTML='<span>Sem foto</span>';
+  };
+}
+
+
 function adminEditarProduto(id){
  let p=produtos.find(x=>Number(x['id'])===Number(id));
  if(!p){mostrar('Produto não encontrado');return}
@@ -997,6 +1023,15 @@ function adminEditarProduto(id){
    <label>Código<input id="admCodigo" value="${esc(p['código']||'')}" readonly></label>
    <label>Produto<input id="admProduto" value="${esc(p.produto||'')}"></label>
    <label>Categoria<input id="admCategoria" value="${esc(p['categoria']||'')}"></label>
+<label class="adm-photo-field">
+  Foto do produto
+  <input id="admFotoFile" type="file" accept="image/*">
+  <input id="admFotoUrl" type="hidden" value="${esc(p['imagem']||'')}">
+  <div id="admFotoPreview" class="adm-photo-preview">
+    ${p['imagem'] ? `<img src="${esc(p['imagem'])}" alt="">` : `<span>Sem foto</span>`}
+  </div>
+  <button type="button" class="btn" id="admFotoRemover">Remover foto</button>
+</label>
    <label>Status<select id="admStatus">
      <option ${String(p.status||'Ativo')==='Ativo'?'selected':''}>Ativo</option>
      <option ${String(p.status||'Ativo')==='Inativo'?'selected':''}>Inativo</option>
@@ -1008,22 +1043,75 @@ function adminEditarProduto(id){
  $('modal').classList.add('show');
  setTimeout(()=>document.getElementById('admProduto')?.focus(),50);
 }
-async function adminSalvarProduto(editando){
- let codigo=$('admCodigo').value.trim(),nome=$('admProduto').value.trim(),categoria=$('admCategoria').value.trim(),status=$('admStatus').value,idealV=Math.max(0,Number($('admIdeal').value||0)),atualV=Math.max(0,Number($('admAtual').value||0));
- if(!nome){mostrar('Digite o nome do produto');return}
- if(!codigo){let nums=produtos.map(p=>Number(String(p['código']||'').replace(/\D/g,''))||0);let next=(nums.length?Math.max(...nums):0)+1;codigo='P'+String(next).padStart(3,'0')}
- let payload={produto:nome,categoria:categoria,ideal:idealV,atual:atualV,status};
- let result;
- if(editando){
-   // Na edição, não enviamos "código" porque o PostgREST está recusando essa
-   // coluna no UPDATE apesar dela existir na tabela. O código existente é preservado.
-   result=await supabaseClient.from('produtos').update(payload).eq('id',modalIndex).select().single();
- }else{
-   result=await supabaseClient.from('produtos').insert({'código':codigo,...payload}).select().single();
- }
- if(result.error){console.error(result.error);mostrar('Erro ao salvar: '+result.error.message);return}
- closeModal();await carregarProdutos();renderAdminProdutos();mostrar(editando?'Produto atualizado ✓':'Produto cadastrado ✓');
+async function adminSalvarProduto(){
+  let codigo=$('admCodigo').value.trim();
+  let nome=$('admProduto').value.trim();
+  let categoria=$('admCategoria').value.trim();
+  let status=$('admStatus').value;
+  let idealV=Math.max(0,Number($('admIdeal').value||0));
+  let atualV=Math.max(0,Number($('admAtual').value||0));
+
+  if(!nome){mostrar('Informe o nome');return}
+
+  if(!codigo){
+    let nums=produtos.map(p=>Number(String(p['código']||'').replace(/\D/g,''))||0);
+    let next=(nums.length?Math.max(...nums):0)+1;
+    codigo='P'+String(next).padStart(3,'0');
+  }
+
+  const arquivo=$('admFotoFile')?.files?.[0]||null;
+  let fotoAtual=$('admFotoUrl')?.value?.trim()||'';
+
+  if(arquivo){
+    if(!arquivo.type.startsWith('image/')){
+      mostrar('Escolha uma imagem válida.');
+      return;
+    }
+
+    const extensao=(arquivo.name.split('.').pop()||'jpg').toLowerCase();
+    const caminho=`produtos/${crypto.randomUUID()}.${extensao}`;
+
+    const upload=await supabaseClient.storage
+      .from('produtos')
+      .upload(caminho,arquivo,{upsert:true,contentType:arquivo.type});
+
+    if(upload.error){
+      console.error(upload.error);
+      mostrar('Não foi possível enviar a foto. Verifique o Storage.');
+      return;
+    }
+
+    fotoAtual=supabaseClient.storage.from('produtos').getPublicUrl(caminho).data.publicUrl;
+  }
+
+  const payload={
+    produto:nome,
+    categoria,
+    ideal:idealV,
+    atual:atualV,
+    status,
+    imagem:fotoAtual||null
+  };
+
+  let result;
+  if(editando){
+    result=await supabaseClient.from('produtos').update(payload).eq('id',modalIndex).select().single();
+  }else{
+    result=await supabaseClient.from('produtos').insert({'código':codigo,...payload}).select().single();
+  }
+
+  if(result.error){
+    console.error(result.error);
+    mostrar('Erro ao salvar: '+result.error.message);
+    return;
+  }
+
+  fecharModal();
+  await carregarProdutos();
+  mostrar(editando?'Produto atualizado!':'Produto cadastrado!');
 }
+
+
 async function adminExcluirProduto(id){
  let p=produtos.find(x=>Number(x['id'])===Number(id));
  if(!p){mostrar('Produto não encontrado');return}
@@ -1221,3 +1309,24 @@ atualizarAdminTela();
 </script>
 </body>
 </html>
+
+<script>
+(function(){
+  const originalEditar=window.adminEditarProduto;
+  if(typeof originalEditar==='function'){
+    window.adminEditarProduto=function(id){
+      const r=originalEditar(id);
+      setTimeout(prepararFotoAdmin,0);
+      return r;
+    };
+  }
+  const originalNovo=window.adminNovoProduto;
+  if(typeof originalNovo==='function'){
+    window.adminNovoProduto=function(){
+      const r=originalNovo();
+      setTimeout(prepararFotoAdmin,0);
+      return r;
+    };
+  }
+})();
+</script>
