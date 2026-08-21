@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apê Compras</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -12,21 +14,49 @@
       padding: 0;
     }
 
+    :root {
+      --bg: #111111;
+      --header: #202020;
+      --card: #242424;
+      --card2: #2b2b2b;
+      --border: #363636;
+      --text: #f5f5f5;
+      --muted: #aaa;
+      --gold: #d88916;
+      --gold2: #c27b13;
+      --green: #32a852;
+      --red: #d9534f;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #f5f5f5;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
     }
 
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    /* HEADER */
+
     header {
       height: 70px;
-      background: #202020;
+      background: var(--header);
       border-bottom: 1px solid #333;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 8%;
+      position: sticky;
+      top: 0;
+      z-index: 20;
     }
 
     .logo {
@@ -35,22 +65,23 @@
       gap: 12px;
       font-size: 20px;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .logo-icon {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 10px;
-      background: #b87513;
+      background: var(--gold2);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 21px;
+      font-size: 22px;
     }
 
     nav {
       display: flex;
-      gap: 28px;
+      gap: 12px;
     }
 
     nav button {
@@ -59,18 +90,30 @@
       color: #aaa;
       font-size: 15px;
       cursor: pointer;
-      padding: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
     }
 
     nav button:hover,
     nav button.active {
-      color: #d88916;
+      color: var(--gold);
+      background: rgba(216, 137, 22, 0.08);
     }
+
+    /* CONTAINER */
 
     main {
       max-width: 1100px;
-      margin: 45px auto;
-      padding: 0 25px;
+      margin: 0 auto;
+      padding: 42px 25px 70px;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
     }
 
     .welcome {
@@ -83,9 +126,11 @@
     }
 
     .welcome p {
-      color: #aaa;
+      color: var(--muted);
       font-size: 17px;
     }
+
+    /* CARDS HOME */
 
     .cards {
       display: grid;
@@ -94,16 +139,20 @@
     }
 
     .card {
-      background: #242424;
-      border: 1px solid #303030;
+      background: var(--card);
+      border: 1px solid var(--border);
       border-radius: 14px;
       padding: 25px;
-      min-height: 150px;
+      min-height: 160px;
+    }
+
+    .main-card {
+      border-left: 4px solid var(--gold);
     }
 
     .card h2 {
       font-size: 17px;
-      color: #aaa;
+      color: #bbb;
       margin-bottom: 15px;
     }
 
@@ -114,48 +163,301 @@
     }
 
     .description {
-      color: #aaa;
-    }
-
-    .main-card {
-      border-left: 4px solid #d88916;
+      color: var(--muted);
     }
 
     .button {
       display: inline-block;
       margin-top: 18px;
-      background: #c27b13;
+      background: var(--gold2);
       color: white;
       border: none;
       border-radius: 8px;
       padding: 11px 18px;
-      cursor: pointer;
       font-weight: bold;
     }
 
+    .button:hover {
+      background: var(--gold);
+    }
+
+    /* TITULOS */
+
+    .page-title {
+      margin-bottom: 25px;
+    }
+
+    .page-title h1 {
+      font-size: 30px;
+      margin-bottom: 6px;
+    }
+
+    .page-title p {
+      color: var(--muted);
+    }
+
+    /* BUSCA */
+
+    .search {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: white;
+      padding: 14px 16px;
+      font-size: 15px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--gold);
+    }
+
+    /* ESTATISTICAS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 25px;
+      margin-top: 6px;
+    }
+
+    /* PRODUTOS */
+
+    .product-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .product {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .product h3 {
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .category {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .product-info {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .product-right {
+      text-align: right;
+    }
+
+    .buy-amount {
+      color: var(--gold);
+      font-weight: bold;
+      margin-bottom: 7px;
+    }
+
+    .small-button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #ddd;
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .small-button:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* LISTA */
+
+    .list-item,
+    .cart-item,
+    .history-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+
+    .list-row,
+    .cart-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .quantity {
+      background: var(--gold2);
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    /* CARRINHO */
+
+    .cart-price {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .total-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 20px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-box strong {
+      font-size: 25px;
+      color: var(--gold);
+    }
+
+    .finish {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px;
+      border: none;
+      border-radius: 9px;
+      background: var(--gold2);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .finish:hover {
+      background: var(--gold);
+    }
+
+    /* HISTORICO */
+
+    .history-date {
+      color: var(--gold);
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .empty {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    /* TOAST */
+
+    #toast {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      background: #292929;
+      border: 1px solid var(--border);
+      color: white;
+      padding: 14px 18px;
+      border-radius: 9px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.4);
+      display: none;
+      z-index: 100;
+    }
+
+    /* MOBILE */
+
     @media (max-width: 700px) {
+
       header {
-        padding: 0 20px;
+        height: auto;
+        min-height: 70px;
+        padding: 12px 15px;
+        flex-direction: column;
+        gap: 8px;
       }
 
       nav {
-        gap: 5px;
+        width: 100%;
+        justify-content: space-between;
+        overflow-x: auto;
       }
 
       nav button {
         font-size: 12px;
+        padding: 8px 7px;
       }
 
       main {
-        margin-top: 30px;
+        padding: 30px 15px 60px;
+      }
+
+      .welcome h1 {
+        font-size: 27px;
       }
 
       .cards {
         grid-template-columns: 1fr;
       }
 
-      .welcome h1 {
-        font-size: 27px;
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .product {
+        grid-template-columns: 1fr;
+      }
+
+      .product-right {
+        text-align: left;
+      }
+
+      .list-row,
+      .cart-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .total-box {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
       }
     }
   </style>
@@ -163,59 +465,1202 @@
 
 <body>
 
-  <header>
-    <div class="logo">
-      <div class="logo-icon">🛒</div>
-      <span>Apê Compras</span>
-    </div>
+<header>
 
-    <nav>
-      <button class="active">Início</button>
-      <button>Estoque</button>
-      <button>Lista</button>
-      <button>Carrinho</button>
-      <button>Histórico</button>
-    </nav>
-  </header>
+  <div class="logo">
+    <div class="logo-icon">🛒</div>
+    <span>Apê Compras</span>
+  </div>
 
-  <main>
+  <nav>
+    <button class="nav-btn active" data-page="inicio">Início</button>
+    <button class="nav-btn" data-page="estoque">Estoque</button>
+    <button class="nav-btn" data-page="lista">Lista</button>
+    <button class="nav-btn" data-page="carrinho">Carrinho</button>
+    <button class="nav-btn" data-page="historico">Histórico</button>
+  </nav>
 
-    <section class="welcome">
+</header>
+
+<main>
+
+  <!-- INÍCIO -->
+
+  <section id="inicio" class="page active">
+
+    <div class="welcome">
       <h1>Olá, Juan e Mariana 👋</h1>
       <p>O que vamos fazer hoje?</p>
-    </section>
+    </div>
 
     <section class="cards">
 
       <div class="card main-card">
+
         <h2>📦 ESTOQUE</h2>
-        <div class="number">101</div>
-        <div class="description">produtos cadastrados</div>
-        <button class="button">Conferir estoque →</button>
+
+        <div class="number" id="homeProdutos">0</div>
+
+        <div class="description">
+          produtos cadastrados
+        </div>
+
+        <button class="button" onclick="abrirPagina('estoque')">
+          Conferir estoque →
+        </button>
+
       </div>
 
       <div class="card">
+
         <h2>🛒 LISTA DE COMPRAS</h2>
-        <div class="number">0</div>
-        <div class="description">produtos para comprar</div>
-        <button class="button">Ver lista →</button>
+
+        <div class="number" id="homeLista">0</div>
+
+        <div class="description">
+          produtos para comprar
+        </div>
+
+        <button class="button" onclick="abrirPagina('lista')">
+          Ver lista →
+        </button>
+
       </div>
 
       <div class="card">
+
         <h2>💰 GASTO DO MÊS</h2>
-        <div class="number">R$ 0,00</div>
-        <div class="description">compras realizadas este mês</div>
+
+        <div class="number" id="homeGasto">
+          R$ 0,00
+        </div>
+
+        <div class="description">
+          compras realizadas este mês
+        </div>
+
       </div>
 
       <div class="card">
+
         <h2>🧾 ÚLTIMA COMPRA</h2>
-        <div class="number">—</div>
-        <div class="description">Nenhuma compra registrada ainda</div>
+
+        <div class="number" id="homeUltima">
+          —
+        </div>
+
+        <div class="description" id="homeUltimaDesc">
+          Nenhuma compra registrada ainda
+        </div>
+
       </div>
 
     </section>
 
-  </main>
+  </section>
+
+
+  <!-- ESTOQUE -->
+
+  <section id="estoque" class="page">
+
+    <div class="page-title">
+
+      <h1>Estoque</h1>
+
+      <p>
+        Confira o que temos em casa e veja o que precisa comprar.
+      </p>
+
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <span>Produtos cadastrados</span>
+        <strong id="totalProdutos">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>Itens para comprar</span>
+        <strong id="totalComprar">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>Itens em casa</span>
+        <strong id="totalCasa">0</strong>
+      </div>
+
+    </div>
+
+    <input
+      id="buscaEstoque"
+      class="search"
+      type="text"
+      placeholder="Buscar produto..."
+    >
+
+    <div id="listaEstoque" class="product-list">
+      <div class="empty">Carregando estoque...</div>
+    </div>
+
+  </section>
+
+
+  <!-- LISTA -->
+
+  <section id="lista" class="page">
+
+    <div class="page-title">
+
+      <h1>Lista de compras</h1>
+
+      <p id="descricaoLista">
+        Produtos que precisam ser comprados.
+      </p>
+
+    </div>
+
+    <div id="listaCompras"></div>
+
+  </section>
+
+
+  <!-- CARRINHO -->
+
+  <section id="carrinho" class="page">
+
+    <div class="page-title">
+
+      <h1>Carrinho</h1>
+
+      <p>
+        Confira os produtos antes de finalizar a compra.
+      </p>
+
+    </div>
+
+    <div id="listaCarrinho"></div>
+
+    <div id="totalCarrinho"></div>
+
+  </section>
+
+
+  <!-- HISTÓRICO -->
+
+  <section id="historico" class="page">
+
+    <div class="page-title">
+
+      <h1>Histórico</h1>
+
+      <p>
+        Suas compras finalizadas.
+      </p>
+
+    </div>
+
+    <div id="listaHistorico"></div>
+
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+
+<script>
+
+  /* =========================================================
+     SUPABASE
+  ========================================================= */
+
+  const SUPABASE_URL =
+    'https://ahqsbokljoeczfzunpipz.supabase.co';
+
+  const SUPABASE_ANON_KEY =
+    'sb_publishable_EfmOAQC3hK5oZEDZAfZBOA_v5kKjb7c';
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* =========================================================
+     ESTADO DO APLICATIVO
+  ========================================================= */
+
+  let produtos = [];
+
+  let carrinho =
+    JSON.parse(localStorage.getItem('ape_carrinho') || '[]');
+
+  let historico =
+    JSON.parse(localStorage.getItem('ape_historico') || '[]');
+
+
+  /* =========================================================
+     NAVEGAÇÃO
+  ========================================================= */
+
+  function abrirPagina(pagina) {
+
+    document.querySelectorAll('.page').forEach(p => {
+      p.classList.remove('active');
+    });
+
+    document.getElementById(pagina).classList.add('active');
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    const botao =
+      document.querySelector(
+        `.nav-btn[data-page="${pagina}"]`
+      );
+
+    if (botao) {
+      botao.classList.add('active');
+    }
+
+    if (pagina === 'estoque') {
+      renderEstoque();
+    }
+
+    if (pagina === 'lista') {
+      renderLista();
+    }
+
+    if (pagina === 'carrinho') {
+      renderCarrinho();
+    }
+
+    if (pagina === 'historico') {
+      renderHistorico();
+    }
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+      abrirPagina(btn.dataset.page);
+
+    });
+
+  });
+
+
+  /* =========================================================
+     TOAST
+  ========================================================= */
+
+  function mostrarMensagem(texto) {
+
+    const toast =
+      document.getElementById('toast');
+
+    toast.textContent = texto;
+
+    toast.style.display = 'block';
+
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2500);
+
+  }
+
+
+  /* =========================================================
+     FORMATAÇÃO
+  ========================================================= */
+
+  function dinheiro(valor) {
+
+    return Number(valor || 0).toLocaleString(
+      'pt-BR',
+      {
+        style: 'currency',
+        currency: 'BRL'
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     CARREGAR PRODUTOS DO SUPABASE
+  ========================================================= */
+
+  async function carregarProdutos() {
+
+    const lista =
+      document.getElementById('listaEstoque');
+
+    lista.innerHTML =
+      '<div class="empty">Carregando estoque...</div>';
+
+    try {
+
+      const resultado =
+        await supabaseClient
+          .from('produtos')
+          .select('*')
+          .order('id');
+
+      if (resultado.error) {
+        throw resultado.error;
+      }
+
+      produtos = resultado.data || [];
+
+      console.log(
+        'Produtos carregados:',
+        produtos
+      );
+
+      atualizarResumo();
+
+      renderEstoque();
+
+      renderLista();
+
+    } catch (erro) {
+
+      console.error(erro);
+
+      lista.innerHTML = `
+        <div class="empty">
+          <strong>Não consegui carregar o estoque.</strong>
+          <br><br>
+          Verifique se a tabela "produtos" existe no Supabase
+          e se a chave publicável foi colocada corretamente.
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     CAMPOS DOS PRODUTOS
+  ========================================================= */
+
+  function nomeProduto(p) {
+
+    return (
+      p.produto ||
+      p.nome ||
+      p.name ||
+      'Produto sem nome'
+    );
+
+  }
+
+
+  function categoriaProduto(p) {
+
+    return (
+      p.categoria ||
+      p.category ||
+      'GERAL'
+    );
+
+  }
+
+
+  function quantidadeAtual(p) {
+
+    return Number(
+      p.atual ??
+      p.quantidade_atual ??
+      p.quantidade ??
+      p.estoque ??
+      0
+    );
+
+  }
+
+
+  function quantidadeIdeal(p) {
+
+    return Number(
+      p.ideal ??
+      p.quantidade_ideal ??
+      p.meta ??
+      1
+    );
+
+  }
+
+
+  function quantidadeComprar(p) {
+
+    return Math.max(
+      quantidadeIdeal(p) - quantidadeAtual(p),
+      0
+    );
+
+  }
+
+
+  function precoProduto(p) {
+
+    return Number(
+      p.preco ??
+      p.valor ??
+      p.preco_unitario ??
+      0
+    );
+
+  }
+
+
+  /* =========================================================
+     RESUMO
+  ========================================================= */
+
+  function atualizarResumo() {
+
+    const total =
+      produtos.length;
+
+    const comprar =
+      produtos.filter(
+        p => quantidadeComprar(p) > 0
+      ).length;
+
+    const casa =
+      produtos.reduce(
+        (total, p) =>
+          total + quantidadeAtual(p),
+        0
+      );
+
+    document.getElementById(
+      'homeProdutos'
+    ).textContent = total;
+
+    document.getElementById(
+      'totalProdutos'
+    ).textContent = total;
+
+    document.getElementById(
+      'totalComprar'
+    ).textContent = comprar;
+
+    document.getElementById(
+      'totalCasa'
+    ).textContent = casa;
+
+    document.getElementById(
+      'homeLista'
+    ).textContent = comprar;
+
+    atualizarResumoHistorico();
+
+  }
+
+
+  /* =========================================================
+     ESTOQUE
+  ========================================================= */
+
+  function renderEstoque() {
+
+    const container =
+      document.getElementById('listaEstoque');
+
+    const busca =
+      (
+        document.getElementById(
+          'buscaEstoque'
+        )?.value || ''
+      ).toLowerCase();
+
+    const filtrados =
+      produtos.filter(p => {
+
+        const nome =
+          nomeProduto(p).toLowerCase();
+
+        const categoria =
+          categoriaProduto(p).toLowerCase();
+
+        return (
+          nome.includes(busca) ||
+          categoria.includes(busca)
+        );
+
+      });
+
+    if (!filtrados.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          Nenhum produto encontrado.
+        </div>
+      `;
+
+      return;
+
+    }
+
+    container.innerHTML =
+      filtrados.map(p => {
+
+        const atual =
+          quantidadeAtual(p);
+
+        const ideal =
+          quantidadeIdeal(p);
+
+        const comprar =
+          quantidadeComprar(p);
+
+        return `
+
+          <div class="product">
+
+            <div>
+
+              <div class="category">
+                ${categoriaProduto(p)}
+              </div>
+
+              <h3>
+                ${nomeProduto(p)}
+              </h3>
+
+              <div class="product-info">
+                Ideal: ${ideal} ·
+                Atual: ${atual}
+              </div>
+
+            </div>
+
+            <div class="product-right">
+
+              <div class="buy-amount">
+                ${
+                  comprar > 0
+                    ? 'Comprar ' + comprar
+                    : 'Estoque OK ✓'
+                }
+              </div>
+
+              <button
+                class="small-button"
+                onclick="adicionarAoCarrinho(${p.id})"
+              >
+                ${
+                  comprar > 0
+                    ? 'Adicionar ao carrinho'
+                    : 'Adicionar'
+                }
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join('');
+
+  }
+
+
+  document
+    .getElementById('buscaEstoque')
+    .addEventListener(
+      'input',
+      renderEstoque
+    );
+
+
+  /* =========================================================
+     LISTA DE COMPRAS
+  ========================================================= */
+
+  function renderLista() {
+
+    const container =
+      document.getElementById(
+        'listaCompras'
+      );
+
+    const itens =
+      produtos.filter(
+        p => quantidadeComprar(p) > 0
+      );
+
+    document.getElementById(
+      'descricaoLista'
+    ).textContent =
+      `${itens.length} produto(s) precisam de atenção.`;
+
+    if (!itens.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          🎉
+          <br><br>
+          Seu estoque está completo.
+          <br>
+          Nada para comprar agora.
+        </div>
+      `;
+
+      return;
+
+    }
+
+    container.innerHTML =
+      itens.map(p => {
+
+        const qtd =
+          quantidadeComprar(p);
+
+        return `
+
+          <div class="list-item">
+
+            <div class="list-row">
+
+              <div>
+
+                <div class="category">
+                  ${categoriaProduto(p)}
+                </div>
+
+                <h3>
+                  ${nomeProduto(p)}
+                </h3>
+
+                <div class="product-info">
+                  Em casa: ${quantidadeAtual(p)}
+                  · Ideal: ${quantidadeIdeal(p)}
+                </div>
+
+              </div>
+
+              <div>
+
+                <div class="quantity">
+                  Comprar ${qtd}
+                </div>
+
+                <button
+                  class="small-button"
+                  style="margin-top:8px"
+                  onclick="adicionarAoCarrinho(${p.id})"
+                >
+                  Ir para o carrinho
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join('');
+
+  }
+
+
+  /* =========================================================
+     CARRINHO
+  ========================================================= */
+
+  function salvarCarrinho() {
+
+    localStorage.setItem(
+      'ape_carrinho',
+      JSON.stringify(carrinho)
+    );
+
+  }
+
+
+  function adicionarAoCarrinho(id) {
+
+    const produto =
+      produtos.find(
+        p => Number(p.id) === Number(id)
+      );
+
+    if (!produto) {
+
+      mostrarMensagem(
+        'Produto não encontrado.'
+      );
+
+      return;
+    }
+
+    const existente =
+      carrinho.find(
+        item =>
+          Number(item.id) === Number(id)
+      );
+
+    if (existente) {
+
+      existente.quantidade++;
+
+    } else {
+
+      carrinho.push({
+
+        id: produto.id,
+
+        nome:
+          nomeProduto(produto),
+
+        categoria:
+          categoriaProduto(produto),
+
+        quantidade:
+          Math.max(
+            quantidadeComprar(produto),
+            1
+          ),
+
+        preco:
+          precoProduto(produto)
+
+      });
+
+    }
+
+    salvarCarrinho();
+
+    atualizarResumo();
+
+    mostrarMensagem(
+      `${nomeProduto(produto)} adicionado ao carrinho.`
+    );
+
+    abrirPagina('carrinho');
+
+  }
+
+
+  function removerDoCarrinho(id) {
+
+    carrinho =
+      carrinho.filter(
+        item =>
+          Number(item.id) !== Number(id)
+      );
+
+    salvarCarrinho();
+
+    renderCarrinho();
+
+  }
+
+
+  function alterarQuantidadeCarrinho(
+    id,
+    delta
+  ) {
+
+    const item =
+      carrinho.find(
+        item =>
+          Number(item.id) === Number(id)
+      );
+
+    if (!item) return;
+
+    item.quantidade += delta;
+
+    if (item.quantidade <= 0) {
+
+      removerDoCarrinho(id);
+
+      return;
+
+    }
+
+    salvarCarrinho();
+
+    renderCarrinho();
+
+  }
+
+
+  function renderCarrinho() {
+
+    const container =
+      document.getElementById(
+        'listaCarrinho'
+      );
+
+    const totalContainer =
+      document.getElementById(
+        'totalCarrinho'
+      );
+
+    if (!carrinho.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          🛒
+          <br><br>
+          Seu carrinho está vazio.
+          <br><br>
+          Vá até a Lista ou Estoque para adicionar produtos.
+        </div>
+      `;
+
+      totalContainer.innerHTML = '';
+
+      return;
+
+    }
+
+    container.innerHTML =
+      carrinho.map(item => {
+
+        const subtotal =
+          item.quantidade *
+          item.preco;
+
+        return `
+
+          <div class="cart-item">
+
+            <div class="cart-row">
+
+              <div>
+
+                <div class="category">
+                  ${item.categoria}
+                </div>
+
+                <h3>
+                  ${item.nome}
+                </h3>
+
+                <div class="product-info">
+                  ${item.quantidade}
+                  ×
+                  ${dinheiro(item.preco)}
+                </div>
+
+                <div style="margin-top:10px">
+
+                  <button
+                    class="small-button"
+                    onclick="alterarQuantidadeCarrinho(${item.id}, -1)"
+                  >
+                    −
+                  </button>
+
+                  <button
+                    class="small-button"
+                    onclick="alterarQuantidadeCarrinho(${item.id}, 1)"
+                  >
+                    +
+                  </button>
+
+                  <button
+                    class="small-button"
+                    onclick="removerDoCarrinho(${item.id})"
+                  >
+                    Remover
+                  </button>
+
+                </div>
+
+              </div>
+
+              <div class="cart-price">
+                ${dinheiro(subtotal)}
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join('');
+
+    const total =
+      carrinho.reduce(
+        (sum, item) =>
+          sum +
+          item.quantidade *
+          item.preco,
+        0
+      );
+
+    totalContainer.innerHTML = `
+
+      <div class="total-box">
+
+        <span>Total geral</span>
+
+        <strong>
+          ${dinheiro(total)}
+        </strong>
+
+      </div>
+
+      <button
+        class="finish"
+        onclick="finalizarCompra()"
+      >
+        Finalizar compra
+      </button>
+
+    `;
+
+  }
+
+
+  /* =========================================================
+     FINALIZAR COMPRA
+  ========================================================= */
+
+  function finalizarCompra() {
+
+    if (!carrinho.length) {
+
+      mostrarMensagem(
+        'O carrinho está vazio.'
+      );
+
+      return;
+
+    }
+
+    const total =
+      carrinho.reduce(
+        (sum, item) =>
+          sum +
+          item.quantidade *
+          item.preco,
+        0
+      );
+
+    const compra = {
+
+      id:
+        Date.now(),
+
+      data:
+        new Date().toISOString(),
+
+      total:
+        total,
+
+      itens:
+        [...carrinho]
+
+    };
+
+    historico.unshift(compra);
+
+    localStorage.setItem(
+      'ape_historico',
+      JSON.stringify(historico)
+    );
+
+    carrinho = [];
+
+    salvarCarrinho();
+
+    atualizarResumo();
+
+    renderHistorico();
+
+    mostrarMensagem(
+      'Compra finalizada com sucesso!'
+    );
+
+    abrirPagina('historico');
+
+  }
+
+
+  /* =========================================================
+     HISTÓRICO
+  ========================================================= */
+
+  function renderHistorico() {
+
+    const container =
+      document.getElementById(
+        'listaHistorico'
+      );
+
+    if (!historico.length) {
+
+      container.innerHTML = `
+        <div class="empty">
+          🧾
+          <br><br>
+          Nenhuma compra finalizada ainda.
+        </div>
+      `;
+
+      atualizarResumoHistorico();
+
+      return;
+
+    }
+
+    container.innerHTML =
+      historico.map(compra => {
+
+        const data =
+          new Date(
+            compra.data
+          ).toLocaleString(
+            'pt-BR'
+          );
+
+        const nomes =
+          compra.itens
+            .map(
+              item =>
+                `${item.quantidade}× ${item.nome}`
+            )
+            .join(', ');
+
+        return `
+
+          <div class="history-item">
+
+            <div class="history-date">
+              ${data}
+            </div>
+
+            <h3>
+              ${dinheiro(compra.total)}
+            </h3>
+
+            <div class="product-info"
+                 style="margin-top:7px">
+              ${nomes}
+            </div>
+
+          </div>
+
+        `;
+
+      }).join('');
+
+    atualizarResumoHistorico();
+
+  }
+
+
+  function atualizarResumoHistorico() {
+
+    const gasto =
+      historico
+        .filter(compra => {
+
+          const data =
+            new Date(compra.data);
+
+          const agora =
+            new Date();
+
+          return (
+            data.getMonth() ===
+              agora.getMonth()
+            &&
+            data.getFullYear() ===
+              agora.getFullYear()
+          );
+
+        })
+        .reduce(
+          (sum, compra) =>
+            sum + Number(compra.total || 0),
+          0
+        );
+
+    document.getElementById(
+      'homeGasto'
+    ).textContent =
+      dinheiro(gasto);
+
+    if (historico.length) {
+
+      const ultima =
+        historico[0];
+
+      document.getElementById(
+        'homeUltima'
+      ).textContent =
+        dinheiro(ultima.total);
+
+      document.getElementById(
+        'homeUltimaDesc'
+      ).textContent =
+        new Date(
+          ultima.data
+        ).toLocaleDateString(
+          'pt-BR'
+        );
+
+    } else {
+
+      document.getElementById(
+        'homeUltima'
+      ).textContent =
+        '—';
+
+      document.getElementById(
+        'homeUltimaDesc'
+      ).textContent =
+        'Nenhuma compra registrada ainda';
+
+    }
+
+  }
+
+
+  /* =========================================================
+     INICIALIZAÇÃO
+  ========================================================= */
+
+  async function iniciarAplicativo() {
+
+    renderCarrinho();
+
+    renderHistorico();
+
+    await carregarProdutos();
+
+  }
+
+
+  iniciarAplicativo();
+
+</script>
 
 </body>
 </html>
