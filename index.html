@@ -994,7 +994,7 @@ function adminEditarProduto(id){
 
  $('modalBody').innerHTML=`
  <div class="admin-form">
-   <label>Código<input id="admCodigo" value="${esc(p['código']||'')}"></label>
+   <label>Código<input id="admCodigo" value="${esc(p['código']||'')}" readonly></label>
    <label>Produto<input id="admProduto" value="${esc(p.produto||'')}"></label>
    <label>Categoria<input id="admCategoria" value="${esc(p['categoria']||'')}"></label>
    <label>Status<select id="admStatus">
@@ -1012,8 +1012,15 @@ async function adminSalvarProduto(editando){
  let codigo=$('admCodigo').value.trim(),nome=$('admProduto').value.trim(),categoria=$('admCategoria').value.trim(),status=$('admStatus').value,idealV=Math.max(0,Number($('admIdeal').value||0)),atualV=Math.max(0,Number($('admAtual').value||0));
  if(!nome){mostrar('Digite o nome do produto');return}
  if(!codigo){let nums=produtos.map(p=>Number(String(p['código']||'').replace(/\D/g,''))||0);let next=(nums.length?Math.max(...nums):0)+1;codigo='P'+String(next).padStart(3,'0')}
- let payload={'código':codigo,produto:nome,'categoria':categoria,ideal:idealV,atual:atualV,status};
- let result=editando?await supabaseClient.from('produtos').update(payload).eq('id',modalIndex):await supabaseClient.from('produtos').insert(payload).select().single();
+ let payload={produto:nome,categoria:categoria,ideal:idealV,atual:atualV,status};
+ let result;
+ if(editando){
+   // Na edição, não enviamos "código" porque o PostgREST está recusando essa
+   // coluna no UPDATE apesar dela existir na tabela. O código existente é preservado.
+   result=await supabaseClient.from('produtos').update(payload).eq('id',modalIndex).select().single();
+ }else{
+   result=await supabaseClient.from('produtos').insert({'código':codigo,...payload}).select().single();
+ }
  if(result.error){console.error(result.error);mostrar('Erro ao salvar: '+result.error.message);return}
  closeModal();await carregarProdutos();renderAdminProdutos();mostrar(editando?'Produto atualizado ✓':'Produto cadastrado ✓');
 }
