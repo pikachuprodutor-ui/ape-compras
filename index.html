@@ -364,6 +364,137 @@ main{padding:24px 14px 35px}
 .home-count strong{font-size:52px}
 .home-grid{grid-template-columns:1fr}
 }
+
+/* ===== CARRINHO V5 ===== */
+.cart-summary{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin:18px 0}
+.cart-summary .label{color:var(--muted);font-size:13px;margin-bottom:5px}
+.cart-summary .big{font-size:30px;font-weight:800}
+.cart-summary .total-value{font-size:28px;font-weight:800;color:var(--gold)}
+.cart-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px}
+.cart-card-top{display:flex;gap:14px;align-items:center}
+.cart-photo{width:62px;height:62px;border-radius:14px;object-fit:cover;background:var(--panel2);border:1px solid var(--line);flex:0 0 62px}
+.cart-photo-placeholder{width:62px;height:62px;border-radius:14px;background:var(--panel2);display:grid;place-items:center;color:var(--muted);font-size:24px;flex:0 0 62px}
+.cart-name{font-size:18px;font-weight:800}
+.cart-meta{color:var(--muted);font-size:13px;margin-top:4px}
+.cart-line{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.cart-field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+.cart-field input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#111;color:var(--text);outline:none}
+.cart-qty{display:flex;align-items:center;gap:10px}
+.cart-qty button{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:22px}
+.cart-qty strong{min-width:34px;text-align:center;font-size:18px}
+.cart-subtotal{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.cart-subtotal b{font-size:18px}
+.cart-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.cart-actions button{flex:1;min-width:150px}
+@media(max-width:650px){
+  .cart-summary{grid-template-columns:1fr;padding:16px}
+  .cart-summary .total-value{font-size:26px}
+  .cart-card{padding:15px}
+  .cart-line{grid-template-columns:1fr}
+  .cart-actions{position:sticky;bottom:76px;background:rgba(15,16,17,.96);padding:10px 0;z-index:10}
+}
+
+
+/* ===== CARRINHO V6 — MOBILE FIRST ===== */
+.cart-summary{
+  grid-template-columns:1fr;
+  gap:10px;
+  padding:16px;
+  margin:14px 0;
+}
+.cart-summary .big{font-size:25px}
+.cart-summary .total-value{font-size:26px}
+.cart-card{
+  padding:14px;
+  border-radius:16px;
+}
+.cart-card-top{
+  align-items:flex-start;
+}
+.cart-photo,.cart-photo-placeholder{
+  width:54px;height:54px;flex-basis:54px;border-radius:12px;
+}
+.cart-name{font-size:17px}
+.cart-line{
+  grid-template-columns:1fr;
+  gap:12px;
+}
+.cart-field input{
+  min-height:46px;
+  font-size:17px;
+}
+.cart-qty{
+  justify-content:space-between;
+  width:100%;
+}
+.cart-qty button{
+  width:48px;height:46px;
+}
+.cart-qty strong{
+  flex:1;
+  font-size:20px;
+}
+.cart-subtotal{
+  margin-top:12px;
+  padding-top:12px;
+}
+.cart-actions{
+  gap:8px;
+  margin-top:12px;
+}
+.cart-actions button{
+  min-width:0;
+  min-height:48px;
+  border-radius:12px;
+  font-size:15px;
+}
+
+/* Ações finais do carrinho: prioridade clara para finalizar */
+.cart-actions.cart-final-actions{
+  position:sticky;
+  bottom:0;
+  z-index:30;
+  margin:16px -2px 0;
+  padding:10px 0 calc(10px + env(safe-area-inset-bottom));
+  background:rgba(15,16,17,.96);
+  backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+}
+.cart-final-actions .secondary{
+  flex:0 0 34%;
+  color:var(--muted);
+}
+.cart-final-actions .primary2{
+  flex:1;
+  min-height:52px;
+  font-size:16px;
+  font-weight:800;
+}
+
+/* Não deixar o carrinho virar uma tela horizontal no celular */
+@media(max-width:700px){
+  .page{
+    padding-left:14px;
+    padding-right:14px;
+  }
+  .cart-summary{
+    margin-top:10px;
+  }
+  .cart-card{
+    margin-bottom:10px;
+  }
+  .cart-actions.cart-final-actions{
+    margin-left:0;
+    margin-right:0;
+  }
+}
+
+@media(min-width:701px){
+  .cart-summary{
+    grid-template-columns:1fr auto;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -495,7 +626,7 @@ main{padding:24px 14px 35px}
 </section>
 
 <section id="carrinho" class="page">
-<div class="title"><h1>Carrinho</h1><div class="sub">Coloque o preço que você viu na prateleira e ajuste a quantidade.</div></div>
+<div class="title"><h1>Carrinho</h1><div class="sub">Confira os itens, preços e quantidades antes de finalizar.</div></div>
 <div id="cartList"></div>
 </section>
 
@@ -881,7 +1012,7 @@ $('compraProdutoDetalhe').innerHTML=`
 <button class="detail-primary" onclick="adicionarDetalheAoCarrinho()">🛒 Adicionar ao carrinho</button>
 `;
 $('detalheCompraPreco').addEventListener('input',()=>{
-let q=Number($('detalheCompraQtd').textContent||1),v=Math.max(0,Number($('detalheCompraPreco').value||0));
+let q=Number($('detalheCompraQtd').textContent||1),v=parsePreco($('detalheCompraPreco').value);
 $('detalheCompraSubtotal').textContent=dinheiro(q*v);
 });
 }
@@ -890,7 +1021,7 @@ function alterarDetalheCompra(delta){
 let el=$('detalheCompraQtd');if(!el)return;
 let q=Math.max(1,Number(el.textContent||1)+Number(delta||0));
 el.textContent=q;
-let v=Math.max(0,Number($('detalheCompraPreco')?.value||0));
+let v=parsePreco($('detalheCompraPreco')?.value);
 $('detalheCompraSubtotal').textContent=dinheiro(q*v);
 }
 
@@ -898,7 +1029,7 @@ function adicionarDetalheAoCarrinho(){
 let x=itensLista().find(y=>String(y.key)===String(detalheCompraKey));
 if(!x){mostrar('Item não encontrado na lista');return}
 let qtd=Math.max(1,Number($('detalheCompraQtd').textContent||1));
-let preco=Math.max(0,Number($('detalheCompraPreco').value||0));
+let preco=parsePreco($('detalheCompraPreco').value);
 if(preco<=0){mostrar('Informe o preço do produto');return}
 let existente=x.id?carrinho.find(c=>Number(c.id)===Number(x.id)):carrinho.find(c=>String(c.key)===String(x.key));
 if(existente){existente.qtd=qtd;existente.preco=preco}
@@ -938,15 +1069,66 @@ function mandarTudoCarrinho(){itensLista().forEach(x=>{let e=x.id?carrinho.find(
    CARRINHO
 ========================= */
 function renderCarrinho(){
-if(!carrinho.length){$('cartList').innerHTML='<div class="empty">🛒 Carrinho vazio.<br><button class="primary" data-page="lista">Ir para lista →</button></div>';return}
+if(!carrinho.length){
+$('cartList').innerHTML='<div class="empty">Carrinho vazio.<br><button class="primary" data-page="lista">Ir para lista →</button></div>';
+return;
+}
 let total=carrinho.reduce((s,x)=>s+Number(x.qtd||0)*Number(x.preco||0),0);
-$('cartList').innerHTML=`<div class="total"><div><b>${carrinho.reduce((s,x)=>s+Number(x.qtd||0),0)} itens</b><div class="meta">Informe o preço visto na prateleira.</div></div><b>${dinheiro(total)}</b></div>`+
-carrinho.map((x,i)=>`<div class="item"><div class="item-grid"><div class="icon">🛒</div><div><div class="name">${esc(x.nome)}</div><div class="meta">Preço por unidade</div><input class="price" type="number" min="0" step="0.01" value="${Number(x.preco||0)}" onchange="mudarPreco(${i},this.value)"></div><div class="right"><div class="qty"><button onclick="mudarQtdCarrinho(${i},-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdCarrinho(${i},1)">+</button></div><div class="actions"><button onclick="removerCarrinho(${i})">Excluir</button></div></div></div></div>`).join('')+
-`<div class="actions" style="margin-top:15px"><button class="secondary" onclick="limparCarrinho()">Limpar carrinho</button><button class="primary2" onclick="finalizarCompra()">✓ Finalizar compra</button></div>`;
+let qtdItens=carrinho.reduce((s,x)=>s+Number(x.qtd||0),0);
+$('cartList').innerHTML=
+`<div class="cart-summary">
+  <div><div class="label">Itens no carrinho</div><div class="big">${qtdItens}</div></div>
+  <div><div class="label">Total da compra</div><div class="total-value">${dinheiro(total)}</div></div>
+</div>`+
+carrinho.map((x,i)=>{
+  let p=produtos.find(p=>x.id && Number(p.id)===Number(x.id));
+  let foto=p?.imagem||'';
+  return `<div class="cart-card">
+    <div class="cart-card-top">
+      ${foto?`<img class="cart-photo" src="${esc(foto)}" alt="">`:`<div class="cart-photo-placeholder">□</div>`}
+      <div><div class="cart-name">${esc(x.nome)}</div><div class="cart-meta">Preço e quantidade desta compra</div></div>
+    </div>
+    <div class="cart-line">
+      <div class="cart-field">
+        <label>Preço unitário (R$)</label>
+        <input inputmode="decimal" value="${formatarCampoPreco(x.preco)}" onchange="mudarPreco(${i},this.value)">
+      </div>
+      <div class="cart-field">
+        <label>Quantidade</label>
+        <div class="cart-qty">
+          <button onclick="mudarQtdCarrinho(${i},-1)">−</button>
+          <strong>${x.qtd}</strong>
+          <button onclick="mudarQtdCarrinho(${i},1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="cart-subtotal"><span>Subtotal</span><b>${dinheiro(Number(x.qtd||0)*Number(x.preco||0))}</b></div>
+    <div class="cart-actions"><button class="secondary danger" onclick="removerCarrinho(${i})">Remover item</button></div>
+  </div>`;
+}).join('')+
+`<div class="cart-actions cart-final-actions">
+  <button class="secondary" onclick="limparCarrinho()">Limpar carrinho</button>
+  <button class="primary2" onclick="finalizarCompra()">✓ Finalizar compra</button>
+</div>`;
 }
 
+function formatarCampoPreco(v){
+let n=Number(v||0);
+return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parsePreco(v){
+let s=String(v??'').trim().replace(/\s/g,'');
+if(!s)return 0;
+if(s.includes(',') && s.includes('.')){
+  s=s.lastIndexOf(',')>s.lastIndexOf('.') ? s.replace(/\./g,'').replace(',','.') : s.replace(/,/g,'');
+}else if(s.includes(',')){
+  s=s.replace(/\./g,'').replace(',','.');
+}
+let n=Number(s);
+return Number.isFinite(n)?Math.max(0,n):0;
+}
 function mudarQtdCarrinho(i,d){carrinho[i].qtd=Math.max(1,Number(carrinho[i].qtd)+d);salvarLocal();renderCarrinho();atualizarTudo()}
-function mudarPreco(i,v){carrinho[i].preco=Math.max(0,Number(v||0));salvarLocal();renderCarrinho()}
+function mudarPreco(i,v){carrinho[i].preco=parsePreco(v);salvarLocal();renderCarrinho();atualizarTudo()}
 function removerCarrinho(i){carrinho.splice(i,1);salvarLocal();renderCarrinho();atualizarTudo();mostrar('Item removido')}
 function limparCarrinho(){carrinho=[];salvarLocal();renderCarrinho();atualizarTudo();mostrar('Carrinho limpo')}
 
@@ -957,7 +1139,7 @@ let total=carrinho.reduce((s,x)=>s+Number(x.qtd)*Number(x.preco),0);
 modalMode='finalizar';modalIndex=null;
 $('modalTitle').textContent='Finalizar compra';
 $('modalText').textContent='Total: '+dinheiro(total);
-$('modalBody').innerHTML='<label>Mercado (opcional)<input id="modalMercado" placeholder="Ex.: Supermercado"></label>';
+$('modalBody').innerHTML='<label>Mercado<input id="modalMercado" placeholder="Ex.: Supermercado X"></label>';
 $('modal').classList.add('show');
 }
 
