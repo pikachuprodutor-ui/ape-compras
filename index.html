@@ -496,7 +496,9 @@ main{padding:24px 14px 35px}
 }
 
 </style>
-</head>
+<style>
+.history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 20px}.history-stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.history-stat .label{color:var(--muted);font-size:12px}.history-stat .value{font-size:24px;font-weight:800;margin-top:5px}.history-market{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:16px;padding:17px;margin-bottom:20px}.history-market .eyebrow{color:var(--gold);font-size:12px;font-weight:800;text-transform:uppercase}.history-market .market-name{font-size:20px;font-weight:800;margin-top:5px}.history-market .market-meta{color:var(--muted);font-size:13px;margin-top:4px}.history-list{display:grid;gap:10px}.history-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.history-card-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.history-date{font-size:16px;font-weight:800}.history-market-name{color:var(--muted);font-size:13px;margin-top:4px}.history-total{font-size:20px;font-weight:800;color:var(--gold);white-space:nowrap}.history-meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.history-details{margin-top:12px;display:none;border-top:1px solid var(--line);padding-top:12px}.history-card.open .history-details{display:block}.history-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}.history-item:last-child{border-bottom:0}.history-item .item-name{font-weight:700}.history-item .item-info{color:var(--muted);font-size:12px;margin-top:3px}.history-item .item-total{font-weight:700;text-align:right}.history-toggle{width:100%;margin-top:12px;min-height:44px}@media(max-width:700px){.history-summary{grid-template-columns:1fr 1fr}.history-summary .history-stat:last-child{grid-column:1/-1}.history-stat .value{font-size:22px}.history-card{padding:14px}.history-total{font-size:18px}}
+</style></head>
 <body>
 
 <header>
@@ -631,7 +633,7 @@ main{padding:24px 14px 35px}
 </section>
 
 <section id="historico" class="page">
-<div class="title"><h1>Histórico</h1><div class="sub">Compras finalizadas neste navegador.</div></div>
+<div class="title"><h1>Histórico</h1><div class="sub">Compras finalizadas, valores e mercados.</div></div>
 <div id="historyList"></div>
 </section>
 
@@ -1160,8 +1162,15 @@ carrinho=[];salvarLocal();atualizarTudo();renderCarrinho();renderLista();renderE
 
 function renderHistorico(){
 if(!historico.length){$('historyList').innerHTML='<div class="empty">🧾 Nenhuma compra finalizada ainda.</div>';return}
-$('historyList').innerHTML=historico.map(h=>`<div class="history"><b>${dinheiro(h.total)}</b><div class="meta">${esc(h.mercado)} • ${new Date(h.data).toLocaleString('pt-BR')}</div><div class="meta" style="margin-top:8px">${h.itens.map(x=>esc(x.nome)+' × '+x.qtd+' ('+dinheiro(x.preco)+')').join(' • ')}</div></div>`).join('');
+let totalGasto=historico.reduce((s,h)=>s+Number(h.total||0),0),media=totalGasto/historico.length;
+let porMercado={};
+historico.forEach(h=>{let m=(h.mercado||'Não informado').trim()||'Não informado';if(!porMercado[m])porMercado[m]={total:0,compras:0};porMercado[m].total+=Number(h.total||0);porMercado[m].compras++});
+let dados=Object.entries(porMercado).filter(([m])=>m!=='Não informado'),melhor=dados.length?dados.sort((a,b)=>(a[1].total/a[1].compras)-(b[1].total/b[1].compras))[0]:null;
+let market=melhor?`<div class="history-market"><div class="eyebrow">Melhor média até agora</div><div class="market-name">Mercado: ${esc(melhor[0])}</div><div class="market-meta">${melhor[1].compras} compra(s) • média de ${dinheiro(melhor[1].total/melhor[1].compras)}</div></div>`:`<div class="history-market"><div class="eyebrow">Comparação de mercados</div><div class="market-name">Ainda não há dados suficientes</div><div class="market-meta">Informe o mercado ao finalizar cada compra para comparar.</div></div>`;
+let cards=historico.slice().sort((a,b)=>new Date(b.data)-new Date(a.data)).map((h,i)=>{let itens=h.itens||[],data=new Date(h.data).toLocaleDateString('pt-BR'),det=itens.map(x=>`<div class="history-item"><div><div class="item-name">${esc(x.nome)}</div><div class="item-info">${Number(x.qtd||0)} un × ${dinheiro(Number(x.preco||0))}</div></div><div class="item-total">${dinheiro(Number(x.qtd||0)*Number(x.preco||0))}</div></div>`).join('');return `<article class="history-card" id="history-${i}"><div class="history-card-top"><div><div class="history-date">${data}</div><div class="history-market-name">${esc(h.mercado||'Mercado não informado')}</div></div><div class="history-total">${dinheiro(Number(h.total||0))}</div></div><div class="history-meta"><span>${itens.length} item(ns)</span><span>Compra finalizada</span></div><div class="history-details">${det||'<span style="color:var(--muted)">Sem itens registrados.</span>'}</div><button class="secondary history-toggle" onclick="toggleHistorico(${i})">Ver detalhes</button></article>`}).join('');
+$('historyList').innerHTML=`<div class="history-summary"><div class="history-stat"><div class="label">Total gasto</div><div class="value">${dinheiro(totalGasto)}</div></div><div class="history-stat"><div class="label">Compras</div><div class="value">${historico.length}</div></div><div class="history-stat"><div class="label">Média por compra</div><div class="value">${dinheiro(media)}</div></div></div>`+market+`<div class="history-list">${cards}</div>`;
 }
+function toggleHistorico(i){let c=$('history-'+i);if(!c)return;let o=c.classList.toggle('open'),b=c.querySelector('.history-toggle');if(b)b.textContent=o?'Ocultar detalhes':'Ver detalhes';}
 
 
 /* =========================
