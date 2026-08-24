@@ -79,6 +79,15 @@ main{padding:27px 14px}.cards{grid-template-columns:1fr}.welcome h1{font-size:27
 @media(max-width:720px){.admin-grid{grid-template-columns:1fr}.admin-form{grid-template-columns:1fr}}
 
 .admin-history-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.user-list-wrap{overflow:auto}
+.user-table{width:100%;border-collapse:collapse}
+.user-table th,.user-table td{text-align:left;padding:11px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+.user-table th{color:#aaa}
+.user-actions{display:flex;gap:7px;flex-wrap:wrap}
+.user-status{cursor:pointer}
+.user-help{color:var(--muted);font-size:13px;line-height:1.5;margin-top:7px}
+@media(max-width:720px){.user-table th:nth-child(2),.user-table td:nth-child(2){display:none}.user-actions button{width:100%}}
+
 .history-edit-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel2)}
 
 /* =========================
@@ -704,6 +713,23 @@ main{padding:24px 14px 35px}
 <div class="admin-grid">
 <div class="admin-box"><h2>📦 Produtos</h2><div class="sub">Cadastrar ou editar produtos do estoque.</div><button class="primary" onclick="adminNovoProduto()">＋ Novo produto</button></div>
 <div class="admin-box"><h2>🧾 Histórico</h2><div class="sub">Editar ou excluir compras registradas neste navegador.</div><div class="admin-history-actions"><button class="secondary" onclick="adminAbrirEdicaoHistorico()">✏️ Editar histórico</button><button class="secondary danger" onclick="adminLimparHistorico()">🗑️ Apagar histórico</button></div></div>
+</div>
+
+<div class="admin-box" style="margin-bottom:18px">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+    <div>
+      <h2>👥 Usuários</h2>
+      <div class="sub">Controle quem pode entrar no Apê Compras e qual acesso cada pessoa possui.</div>
+    </div>
+    <button class="primary" onclick="adminNovoUsuario()">＋ Novo usuário</button>
+  </div>
+  <div class="user-help">As senhas ficam no Supabase Auth. Aqui você controla nome, tipo e status do acesso.</div>
+  <div class="user-list-wrap" style="margin-top:14px">
+    <table class="user-table">
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody id="adminUsersBody"><tr><td colspan="5">Carregando usuários...</td></tr></tbody>
+    </table>
+  </div>
 </div>
 <div class="admin-box" style="margin-bottom:18px">
 <div class="toolbar" style="margin-bottom:12px">
@@ -1370,6 +1396,7 @@ function atualizarAdminTela(){
     denied.style.display='none';
     renderAdminProdutos();
     renderAdminHistorico();
+    renderAdminUsuarios();
   }else{
     panel.style.display='none';
     denied.style.display='block';
@@ -1573,6 +1600,162 @@ async function adminExcluirProduto(id){
  renderAdminProdutos();
  mostrar('Produto excluído ✓');
 }
+
+async function getAccessToken(){
+  const {data:{session},error}=await supabaseClient.auth.getSession();
+  if(error) throw error;
+  if(!session?.access_token) throw new Error('Sessão expirada. Entre novamente.');
+  return session.access_token;
+}
+
+async function chamarAdminUsuarios(payload){
+  const token=await getAccessToken();
+  const resp=await fetch(SUPABASE_URL+'/functions/v1/admin-users',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+token,
+      'apikey':SUPABASE_KEY
+    },
+    body:JSON.stringify(payload)
+  });
+  const body=await resp.json().catch(()=>({}));
+  if(!resp.ok) throw new Error(body.error||'Não foi possível executar a operação.');
+  return body;
+}
+
+async function renderAdminUsuarios(){
+  if(!usuarioEhAdmin())return;
+  const body=$('adminUsersBody');
+  if(!body)return;
+  body.innerHTML='<tr><td colspan="5">Carregando usuários...</td></tr>';
+  const {data,error}=await supabaseClient
+    .from('perfis')
+    .select('id,nome,email,tipo,ativo,criado_em')
+    .order('nome',{ascending:true});
+  if(error){
+    console.error('ERRO USUÁRIOS:',error);
+    body.innerHTML='<tr><td colspan="5">Erro ao carregar usuários: '+esc(error.message)+'</td></tr>';
+    return;
+  }
+  if(!data?.length){
+    body.innerHTML='<tr><td colspan="5">Nenhum usuário cadastrado.</td></tr>';
+    return;
+  }
+  body.innerHTML=data.map(u=>{
+    const self=usuarioAtual?.id===u.id;
+    const tipo=String(u.tipo||'usuario').toLowerCase()==='admin'?'Admin':'Usuário';
+    const ativoU=u.ativo!==false;
+    const deleteBtn=self?'':`<button class="secondary danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`;
+    return `<tr>
+      <td><b>${esc(u.nome||'Sem nome')}</b>${self?' <span class="tag">Você</span>':''}</td>
+      <td>${esc(u.email||'')}</td>
+      <td><span class="tag">${tipo}</span></td>
+      <td><span class="tag ${ativoU?'green':'red'}">${ativoU?'Ativo':'Bloqueado'}</span></td>
+      <td><div class="user-actions">
+        <button class="secondary" onclick="adminEditarUsuario('${u.id}')">Editar</button>
+        <button class="secondary" onclick="adminAlternarUsuario('${u.id}',${ativoU})">${ativoU?'Bloquear':'Liberar'}</button>
+        ${deleteBtn}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+async function adminNovoUsuario(){
+  if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
+  modalMode='admin-novo-usuario';modalIndex=null;
+  $('modalTitle').textContent='Novo usuário';
+  $('modalText').textContent='Crie o acesso. A senha ficará protegida no Supabase Auth.';
+  $('modalBody').innerHTML=`
+    <div class="admin-form">
+      <label>Nome<input id="usrNome" placeholder="Ex.: Mariana"></label>
+      <label>E-mail<input id="usrEmail" type="email" placeholder="nome@email.com"></label>
+      <label>Senha inicial<input id="usrSenha" type="password" placeholder="Mínimo de 6 caracteres"></label>
+      <label>Tipo<select id="usrTipo"><option value="usuario">Usuário</option><option value="admin">Admin</option></select></label>
+      <label>Status<select id="usrAtivo"><option value="true">Ativo</option><option value="false">Bloqueado</option></select></label>
+    </div>`;
+  $('modal').classList.add('show');
+}
+
+async function adminEditarUsuario(id){
+  if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
+  const {data,error}=await supabaseClient.from('perfis').select('id,nome,email,tipo,ativo').eq('id',id).single();
+  if(error||!data){mostrar('Usuário não encontrado');return}
+  modalMode='admin-editar-usuario';modalIndex=id;
+  $('modalTitle').textContent='Editar usuário';
+  $('modalText').textContent='Altere os dados do acesso. Deixe a senha vazia para manter a atual.';
+  $('modalBody').innerHTML=`
+    <div class="admin-form">
+      <label>Nome<input id="usrNome" value="${esc(data.nome||'')}"></label>
+      <label>E-mail<input id="usrEmail" type="email" value="${esc(data.email||'')}"></label>
+      <label>Nova senha<input id="usrSenha" type="password" placeholder="Deixe vazio para não alterar"></label>
+      <label>Tipo<select id="usrTipo">
+        <option value="usuario" ${data.tipo==='usuario'?'selected':''}>Usuário</option>
+        <option value="admin" ${data.tipo==='admin'?'selected':''}>Admin</option>
+      </select></label>
+      <label>Status<select id="usrAtivo">
+        <option value="true" ${data.ativo!==false?'selected':''}>Ativo</option>
+        <option value="false" ${data.ativo===false?'selected':''}>Bloqueado</option>
+      </select></label>
+    </div>`;
+  $('modal').classList.add('show');
+}
+
+async function adminSalvarUsuario(){
+  if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
+  const nome=($('usrNome')?.value||'').trim();
+  const email=($('usrEmail')?.value||'').trim().toLowerCase();
+  const senha=$('usrSenha')?.value||'';
+  const tipo=$('usrTipo')?.value||'usuario';
+  const ativo=($('usrAtivo')?.value||'true')==='true';
+
+  if(!nome||!email){mostrar('Informe nome e e-mail.');return}
+  if(modalMode==='admin-novo-usuario' && senha.length<6){mostrar('A senha precisa ter pelo menos 6 caracteres.');return}
+  if(modalMode==='admin-editar-usuario' && senha && senha.length<6){mostrar('A nova senha precisa ter pelo menos 6 caracteres.');return}
+
+  try{
+    if(modalMode==='admin-novo-usuario'){
+      await chamarAdminUsuarios({action:'create',nome,email,senha,tipo,ativo});
+      mostrar('Usuário criado ✓');
+    }else{
+      await chamarAdminUsuarios({action:'update',id:modalIndex,nome,email,senha:senha||undefined,tipo,ativo});
+      if(modalIndex===usuarioAtual?.id && email!==usuarioAtual?.email){
+        mostrar('Usuário atualizado. Entre novamente se o Supabase solicitar.');
+      }else{
+        mostrar('Usuário atualizado ✓');
+      }
+    }
+    closeModal();
+    await renderAdminUsuarios();
+  }catch(err){
+    console.error('ERRO USUÁRIO:',err);
+    mostrar(err?.message||'Não foi possível salvar o usuário.');
+  }
+}
+
+async function adminAlternarUsuario(id,ativoAtual){
+  if(!usuarioEhAdmin())return;
+  if(id===usuarioAtual?.id){mostrar('Você não pode bloquear seu próprio acesso.');return}
+  try{
+    await chamarAdminUsuarios({action:'update',id,ativo:!ativoAtual});
+    await renderAdminUsuarios();
+    mostrar(!ativoAtual?'Usuário liberado ✓':'Usuário bloqueado ✓');
+  }catch(err){mostrar(err?.message||'Não foi possível alterar o acesso.')}
+}
+
+async function adminExcluirUsuario(id){
+  if(!usuarioEhAdmin())return;
+  if(id===usuarioAtual?.id){mostrar('Você não pode excluir seu próprio acesso.');return}
+  const {data}=await supabaseClient.from('perfis').select('nome,email').eq('id',id).single();
+  if(!data){mostrar('Usuário não encontrado');return}
+  if(!confirm('Excluir o acesso de "'+(data.nome||data.email)+'"?'))return;
+  try{
+    await chamarAdminUsuarios({action:'delete',id});
+    await renderAdminUsuarios();
+    mostrar('Usuário excluído ✓');
+  }catch(err){mostrar(err?.message||'Não foi possível excluir o usuário.')}
+}
+
 function adminLimparHistorico(){
  if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   // Sem confirmação: o usuário pediu que o botão funcione de forma direta.
@@ -1698,6 +1881,7 @@ function adminExcluirHistorico(i){
 ========================= */
 function closeModal(){$('modal').classList.remove('show');modalMode=null;$('modalSaveBtn').style.display='inline-flex'}
 function modalSave(){
+if(modalMode==='admin-novo-usuario'||modalMode==='admin-editar-usuario'){adminSalvarUsuario();return}
 if(modalMode==='admin-produto'){adminSalvarProduto(false);return}
 if(modalMode==='admin-editar-produto'){adminSalvarProduto(true);return}
 if(modalMode==='admin-historico'){
