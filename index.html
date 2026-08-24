@@ -340,19 +340,54 @@ function abrirCadastroConta(){
   $('modal').classList.add('show');
 }
 async function criarContaIndependente(){
-  const nome=($('cadNome')?.value||'').trim(), email=($('cadEmail')?.value||'').trim(), senha=$('cadSenha')?.value||'';
-  if(!nome||!email||senha.length<6){mostrar('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');return}
+  const nome=($('cadNome')?.value||'').trim();
+  const email=($('cadEmail')?.value||'').trim().toLowerCase();
+  const senha=$('cadSenha')?.value||'';
+
+  if(!nome||!email||senha.length<6){
+    definirStatusLogin('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');
+    mostrar('Preencha todos os dados corretamente.');
+    return;
+  }
+
+  const btn=$('modalSaveBtn');
+  if(btn){btn.disabled=true;btn.textContent='Criando...';}
+
   try{
-    const {data,error}=await supabaseClient.auth.signUp({email,password:senha,options:{data:{nome}}});
+    const {data,error}=await supabaseClient.auth.signUp({
+      email,
+      password:senha,
+      options:{data:{nome:nome}}
+    });
+
     if(error)throw error;
-    if(data?.user){
-      const {error:pe}=await supabaseClient.from('perfis').upsert({id:data.user.id,nome,email,tipo:'usuario',ativo:true});
+
+    // Se o Supabase liberar a sessão imediatamente, já cria o perfil.
+    // Se exigir confirmação de e-mail, o perfil será criado no primeiro login.
+    if(data?.session && data?.user){
+      const {error:pe}=await supabaseClient.from('perfis').upsert({
+        id:data.user.id,
+        nome:nome,
+        email:email,
+        tipo:'usuario',
+        ativo:true
+      },{onConflict:'id'});
+
       if(pe)throw pe;
+
+      closeModal();
+      usuarioAtual=data.user;
+      await carregarCasasDoUsuario();
+      mostrar('Conta criada. Agora escolha como começar.');
+    }else{
+      closeModal();
+      definirStatusLogin('Conta criada. Se o Supabase pedir confirmação, confirme o e-mail e depois entre normalmente.');
     }
-    closeModal();
-    if(data?.session) await liberarSessao(data.user);
-    else definirStatusLogin('Conta criada. Confirme seu e-mail e depois entre.',true);
-  }catch(e){mostrar('Não foi possível criar a conta: '+(e.message||''))}
+  }catch(e){
+    console.error('ERRO AO CRIAR CONTA:',e);
+    if(btn){btn.disabled=false;btn.textContent='Salvar';}
+    mostrar('Não foi possível criar a conta: '+(e?.message||'verifique os dados e tente novamente.'));
+  }
 }
 
 /* AUTENTICAÇÃO */
@@ -361,9 +396,33 @@ function mostrarAplicativo(){$('authGate').style.display='none';document.body.cl
 function esconderAplicativo(){$('authGate').style.display='flex';document.body.classList.add('auth-locked');$('sessionPill').style.display='none'}
 
 async function carregarPerfil(user){
-  const {data,error}=await supabaseClient.from('perfis').select('id,nome,email,tipo,ativo').eq('id',user.id).maybeSingle();
+  let {data,error}=await supabaseClient
+    .from('perfis')
+    .select('id,nome,email,tipo,ativo')
+    .eq('id',user.id)
+    .maybeSingle();
+
   if(error)throw new Error('Não foi possível consultar seu perfil: '+error.message);
-  if(!data)throw new Error('Sua conta existe, mas ainda não possui um perfil.');
+
+  // Conta criada pelo próprio usuário: cria o perfil no primeiro login.
+  if(!data){
+    const nome=user.user_metadata?.nome || user.email?.split('@')[0] || 'Usuário';
+    const {data:novo,error:pe}=await supabaseClient
+      .from('perfis')
+      .insert({
+        id:user.id,
+        nome,
+        email:user.email,
+        tipo:'usuario',
+        ativo:true
+      })
+      .select('id,nome,email,tipo,ativo')
+      .single();
+
+    if(pe)throw new Error('Sua conta entrou, mas o perfil não pôde ser criado: '+pe.message);
+    data=novo;
+  }
+
   if(data.ativo===false)throw new Error('Seu acesso está bloqueado.');
   return data;
 }
