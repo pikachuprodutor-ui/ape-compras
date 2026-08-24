@@ -498,8 +498,61 @@ main{padding:24px 14px 35px}
 </style>
 <style>
 .history-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0 20px}.history-stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.history-stat .label{color:var(--muted);font-size:12px}.history-stat .value{font-size:24px;font-weight:800;margin-top:5px}.history-market{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:16px;padding:17px;margin-bottom:20px}.history-market .eyebrow{color:var(--gold);font-size:12px;font-weight:800;text-transform:uppercase}.history-market .market-name{font-size:20px;font-weight:800;margin-top:5px}.history-market .market-meta{color:var(--muted);font-size:13px;margin-top:4px}.history-list{display:grid;gap:10px}.history-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}.history-card-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.history-date{font-size:16px;font-weight:800}.history-market-name{color:var(--muted);font-size:13px;margin-top:4px}.history-total{font-size:20px;font-weight:800;color:var(--gold);white-space:nowrap}.history-meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.history-details{margin-top:12px;display:none;border-top:1px solid var(--line);padding-top:12px}.history-card.open .history-details{display:block}.history-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}.history-item:last-child{border-bottom:0}.history-item .item-name{font-weight:700}.history-item .item-info{color:var(--muted);font-size:12px;margin-top:3px}.history-item .item-total{font-weight:700;text-align:right}.history-toggle{width:100%;margin-top:12px;min-height:44px}@media(max-width:700px){.history-summary{grid-template-columns:1fr 1fr}.history-summary .history-stat:last-child{grid-column:1/-1}.history-stat .value{font-size:22px}.history-card{padding:14px}.history-total{font-size:18px}}
-</style></head>
-<body>
+</style>
+/* ===== AUTENTICAÇÃO ===== */
+.auth-gate{
+  position:fixed;inset:0;z-index:1000;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-card{
+  width:min(430px,100%);background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+.auth-logo{width:52px;height:52px;border-radius:14px;background:var(--gold);color:#111;display:grid;place-items:center;margin-bottom:18px}
+.auth-logo svg{width:29px;height:29px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.auth-card h1{margin:0 0 7px;font-size:29px}
+.auth-card p{margin:0 0 20px;color:var(--muted);font-size:14px;line-height:1.5}
+.auth-field{display:block;color:#bbb;font-size:13px;margin-top:13px}
+.auth-field input{width:100%;margin-top:7px;background:#111;color:#fff;border:1px solid #555;border-radius:10px;padding:13px;outline:0}
+.auth-field input:focus{border-color:var(--gold)}
+.auth-submit{width:100%;border:0;background:var(--gold);color:#111;font-weight:800;border-radius:10px;padding:14px;margin-top:18px;font-size:16px}
+.auth-status{min-height:20px;margin-top:12px;font-size:13px;color:var(--red)}
+.auth-status.ok{color:var(--green)}
+.auth-loading{opacity:.65;pointer-events:none}
+.session-pill{
+  position:fixed;top:10px;right:14px;z-index:25;display:none;
+  background:#222527;border:1px solid var(--line);border-radius:999px;
+  padding:7px 10px;color:#aaa;font-size:11px;max-width:260px;
+}
+.session-pill strong{color:#fff}
+.session-pill button{margin-left:8px;border:0;background:none;color:#ffaaaa;font-size:11px}
+@media(max-width:720px){.session-pill{display:none!important}}
+</head>
+<body class="auth-locked">
+<div id="authGate" class="auth-gate">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>
+    </div>
+    <h1>Apê Compras</h1>
+    <p>Entre com seu e-mail e senha para acessar as compras da casa.</p>
+    <form id="authForm" onsubmit="entrarSistema(event)">
+      <label class="auth-field">E-mail
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="seu@email.com" required>
+      </label>
+      <label class="auth-field">Senha
+        <input id="loginSenha" type="password" autocomplete="current-password" placeholder="Sua senha" required>
+      </label>
+      <button id="authSubmit" class="auth-submit" type="submit">Entrar</button>
+      <div id="authStatus" class="auth-status"></div>
+    </form>
+  </div>
+</div>
+<div id="sessionPill" class="session-pill">
+  <strong id="sessionEmail"></strong>
+  <button type="button" onclick="sairSistema()">Sair</button>
+</div>
+
 
 <header>
 <div class="header-inner">
@@ -510,7 +563,7 @@ main{padding:24px 14px 35px}
 <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg><span>Lista <span id="badgeLista"></span></span></button>
 <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg><span>Carrinho <span id="badgeCart"></span></span></button>
 <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6M12 7v5l3 2"/></svg><span>Histórico</span></button>
-<button data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3 14 5.2l3-.1.8 2.9 2.5 1.7-1.2 2.7 1.2 2.7-2.5 1.7-.8 2.9-3-.1L12 21l-2-2.2-3 .1-.8-2.9-2.5-1.7 1.2-2.7-1.2-2.7 2.5-1.7.8-2.9 3 .1L12 3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Admin</span></button>
+<button id="navAdmin" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3 14 5.2l3-.1.8 2.9 2.5 1.7-1.2 2.7 1.2 2.7-2.5 1.7-.8 2.9-3-.1L12 21l-2-2.2-3 .1-.8-2.9-2.5-1.7 1.2-2.7-1.2-2.7 2.5-1.7.8-2.9 3 .1L12 3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Admin</span></button>
 </nav>
 </div>
 </header>
@@ -639,22 +692,23 @@ main{padding:24px 14px 35px}
 
 
 <section id="admin" class="page">
-<div id="adminLocked" class="admin-login admin-box">
-<h1 style="margin:0 0 8px">Área administrativa</h1>
-<p class="sub">Cadastre, edite e apague produtos e gerencie o histórico deste navegador.</p>
-<label style="display:block;color:#bbb;font-size:13px;margin-top:15px">Senha administrativa</label>
-<input id="adminPin" type="password" placeholder="Digite a senha">
-<button class="primary" style="margin-top:4px" onclick="entrarAdmin()">Entrar</button>
-<div class="meta" style="margin-top:12px">Aviso: esta senha é uma proteção da interface. Para segurança real contra alterações externas, o projeto precisa usar autenticação do Supabase + políticas RLS.</div>
+<div id="adminDenied" class="admin-login admin-box" style="display:none">
+  <h1 style="margin:0 0 8px">Acesso restrito</h1>
+  <p class="sub">Sua conta não possui permissão para acessar a área administrativa.</p>
 </div>
+
 <div id="adminPanel" style="display:none">
-<div class="title"><h1>⚙ Administração</h1><div class="sub">Controle completo do cadastro de produtos e do histórico local.</div></div>
+<div class="title"><h1>⚙ Administração</h1><div class="sub">Controle completo do cadastro de produtos e do histórico.</div></div>
 <div class="admin-grid">
 <div class="admin-box"><h2>📦 Produtos</h2><div class="sub">Cadastrar ou editar produtos do estoque.</div><button class="primary" onclick="adminNovoProduto()">＋ Novo produto</button></div>
 <div class="admin-box"><h2>🧾 Histórico</h2><div class="sub">Editar ou excluir compras registradas neste navegador.</div><div class="admin-history-actions"><button class="secondary" onclick="adminAbrirEdicaoHistorico()">✏️ Editar histórico</button><button class="secondary danger" onclick="adminLimparHistorico()">🗑️ Apagar histórico</button></div></div>
 </div>
 <div class="admin-box" style="margin-bottom:18px">
-<div class="toolbar" style="margin-bottom:12px"><input id="adminSearch" class="search" placeholder="🔎 Buscar produto no cadastro..." oninput="renderAdminProdutos()"><button class="secondary" onclick="carregarProdutos()">↻ Recarregar banco</button><button class="secondary danger" onclick="sairAdmin()">Sair</button></div>
+<div class="toolbar" style="margin-bottom:12px">
+  <input id="adminSearch" class="search" placeholder="🔎 Buscar produto no cadastro..." oninput="renderAdminProdutos()">
+  <button class="secondary" onclick="carregarProdutos()">↻ Recarregar banco</button>
+  <button class="secondary danger" onclick="sairSistema()">Sair da conta</button>
+</div>
 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Ideal</th><th>Atual</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminProductsBody"></tbody></table></div>
 </div>
 <div class="admin-box"><h2>🧾 Histórico de compras</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Data</th><th>Mercado</th><th>Total</th><th>Itens</th><th>Ações</th></tr></thead><tbody id="adminHistoryBody"></tbody></table></div></div>
@@ -712,7 +766,10 @@ if(id==='compraProduto')renderDetalheCompra();
 if(id==='lista')renderLista();
 if(id==='carrinho')renderCarrinho();
 if(id==='historico')renderHistorico();
-if(id==='admin')atualizarAdminTela();
+if(id==='admin'){
+  if(!usuarioEhAdmin()){mostrar('Acesso restrito ao administrador');abrirPagina('inicio');return;}
+  atualizarAdminTela();
+}
 window.scrollTo(0,0);
 }
 document.addEventListener('click',function(e){
@@ -1174,29 +1231,158 @@ function toggleHistorico(i){let c=$('history-'+i);if(!c)return;let o=c.classList
 
 
 /* =========================
-   ADMINISTRAÇÃO
+   AUTENTICAÇÃO + ADMINISTRAÇÃO
 ========================= */
-const ADMIN_PIN='2468';
-let adminAutorizado=sessionStorage.getItem('ape_admin')==='1';
+let usuarioAtual=null;
+let perfilAtual=null;
+let appIniciado=false;
+let authMudancaEmAndamento=false;
+
+function usuarioEhAdmin(){
+  return String(perfilAtual?.tipo||'').toLowerCase()==='admin' && perfilAtual?.ativo!==false;
+}
+
+function definirStatusLogin(msg='',ok=false){
+  const el=$('authStatus');
+  if(!el)return;
+  el.textContent=msg;
+  el.className='auth-status'+(ok?' ok':'');
+}
+
+function mostrarAplicativo(){
+  $('authGate').style.display='none';
+  document.body.classList.remove('auth-locked');
+  if($('sessionPill')){
+    $('sessionPill').style.display='block';
+    $('sessionEmail').textContent=usuarioAtual?.email||'';
+  }
+}
+
+function esconderAplicativo(){
+  $('authGate').style.display='flex';
+  document.body.classList.add('auth-locked');
+  if($('sessionPill'))$('sessionPill').style.display='none';
+}
+
+async function carregarPerfil(user){
+  const {data,error}=await supabaseClient
+    .from('perfis')
+    .select('id,nome,email,tipo,ativo')
+    .eq('id',user.id)
+    .maybeSingle();
+
+  if(error){
+    console.error('ERRO AO CARREGAR PERFIL:',error);
+    throw new Error('Não foi possível consultar seu perfil. Verifique as políticas RLS da tabela perfis.');
+  }
+
+  if(!data){
+    throw new Error('Sua conta existe, mas ainda não possui um perfil liberado.');
+  }
+
+  if(data.ativo===false){
+    throw new Error('Seu acesso está bloqueado. Fale com o administrador.');
+  }
+
+  return data;
+}
+
+async function liberarSessao(user){
+  usuarioAtual=user;
+  perfilAtual=await carregarPerfil(user);
+  mostrarAplicativo();
+
+  const navAdmin=$('navAdmin');
+  if(navAdmin)navAdmin.style.display=usuarioEhAdmin()?'inline-flex':'none';
+
+  atualizarAdminTela();
+
+  if(!appIniciado){
+    appIniciado=true;
+    carregarLocal();
+    atualizarTudo();
+    renderLista();
+    renderCarrinho();
+    renderHistorico();
+    carregarProdutos();
+  }else{
+    atualizarTudo();
+  }
+}
+
+async function entrarSistema(event){
+  event?.preventDefault();
+  const email=($('loginEmail').value||'').trim();
+  const senha=$('loginSenha').value||'';
+  if(!email||!senha){definirStatusLogin('Informe e-mail e senha.');return}
+
+  const btn=$('authSubmit');
+  btn.textContent='Entrando...';
+  btn.classList.add('auth-loading');
+  definirStatusLogin('');
+
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password:senha});
+    if(error)throw error;
+    authMudancaEmAndamento=true;
+    try{
+      await liberarSessao(data.user);
+    }finally{
+      authMudancaEmAndamento=false;
+    }
+    definirStatusLogin('',true);
+    mostrar('Login realizado ✓');
+  }catch(err){
+    console.error('ERRO LOGIN:',err);
+    esconderAplicativo();
+    definirStatusLogin(err?.message||'Não foi possível entrar.');
+  }finally{
+    btn.textContent='Entrar';
+    btn.classList.remove('auth-loading');
+  }
+}
+
+async function sairSistema(){
+  await supabaseClient.auth.signOut();
+  usuarioAtual=null;
+  perfilAtual=null;
+  appIniciado=false;
+  esconderAplicativo();
+  $('loginSenha').value='';
+  definirStatusLogin('Sessão encerrada.');
+  abrirPagina('inicio');
+}
+
 function atualizarAdminTela(){
- if(!$('adminLocked'))return;
- $('adminLocked').style.display=adminAutorizado?'none':'block';
- $('adminPanel').style.display=adminAutorizado?'block':'none';
- if(adminAutorizado){renderAdminProdutos();renderAdminHistorico()}
+  const panel=$('adminPanel'), denied=$('adminDenied');
+  if(!panel||!denied)return;
+
+  if(!usuarioAtual){
+    panel.style.display='none';
+    denied.style.display='none';
+    return;
+  }
+
+  if(usuarioEhAdmin()){
+    panel.style.display='block';
+    denied.style.display='none';
+    renderAdminProdutos();
+    renderAdminHistorico();
+  }else{
+    panel.style.display='none';
+    denied.style.display='block';
+  }
 }
-function entrarAdmin(){
- if(($('adminPin').value||'')!==ADMIN_PIN){mostrar('Senha incorreta');return}
- adminAutorizado=true;sessionStorage.setItem('ape_admin','1');$('adminPin').value='';atualizarAdminTela();mostrar('Área administrativa liberada ✓')
-}
-function sairAdmin(){adminAutorizado=false;sessionStorage.removeItem('ape_admin');atualizarAdminTela();mostrar('Sessão encerrada')}
+
 function renderAdminProdutos(){
- if(!adminAutorizado)return;
+ if(!usuarioEhAdmin())return;
  let q=($('adminSearch')?.value||'').toLowerCase();
  let arr=produtos.filter(p=>(String(p.produto||'')+' '+String(p['codigo']||'')+' '+String(p['categoria']||'')).toLowerCase().includes(q));
  if(!arr.length){$('adminProductsBody').innerHTML='<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';return}
  $('adminProductsBody').innerHTML=arr.map(p=>`<tr><td>${esc(p['codigo']||'')}</td><td><b>${esc(p.produto)}</b></td><td>${esc(p['categoria']||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="admin-actions"><button class="secondary" onclick="adminEditarProduto(${p['id']})">Editar</button><button class="secondary danger" onclick="adminExcluirProduto(${p['id']})">Excluir</button></div></td></tr>`).join('');
 }
 function adminNovoProduto(){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
  modalMode='admin-produto';modalIndex=null;
  $('modalTitle').textContent='Novo produto';$('modalText').textContent='Preencha os dados do produto.';
  $('modalBody').innerHTML=`<div class="admin-form"><label>Código<input id="admCodigo" placeholder="Ex.: P102"></label><label>Produto<input id="admProduto" placeholder="Nome do produto"></label><label>Categoria<input id="admCategoria" placeholder="Ex.: Alimentos"></label><label class="adm-photo-field">Foto do produto<input id="admFotoFile" type="file" accept="image/*"><input id="admFotoUrl" type="hidden" value=""><div id="admFotoPreview" class="adm-photo-preview"><span>Sem foto</span></div><button type="button" class="secondary" id="admFotoRemover">Remover foto</button></label><label>Status<select id="admStatus"><option>Ativo</option><option>Inativo</option></select></label><label>Quantidade ideal<input id="admIdeal" type="number" min="0" value="1"></label><label>Quantidade atual<input id="admAtual" type="number" min="0" value="0"></label></div>`;
@@ -1224,6 +1410,7 @@ function prepararFotoAdmin(){
 
 
 function adminEditarProduto(id){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
  let p=produtos.find(x=>Number(x['id'])===Number(id));
  if(!p){mostrar('Produto não encontrado');return}
 
@@ -1259,6 +1446,7 @@ function adminEditarProduto(id){
  setTimeout(()=>{ prepararFotoAdmin(); document.getElementById('admProduto')?.focus(); },50);
 }
 async function adminSalvarProduto(){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   const modoEdicao = modalMode === 'admin-editar-produto';
 
   let codigo=$('admCodigo').value.trim();
@@ -1358,6 +1546,7 @@ async function adminSalvarProduto(){
 
 
 async function adminExcluirProduto(id){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
  let p=produtos.find(x=>Number(x['id'])===Number(id));
  if(!p){mostrar('Produto não encontrado');return}
  if(!confirm('Excluir definitivamente "'+p.produto+'"?'))return;
@@ -1383,6 +1572,7 @@ async function adminExcluirProduto(id){
  mostrar('Produto excluído ✓');
 }
 function adminLimparHistorico(){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   // Sem confirmação: o usuário pediu que o botão funcione de forma direta.
   historico=[];
   localStorage.setItem('ape_historico','[]');
@@ -1400,6 +1590,7 @@ function adminApagarHistorico(){
 }
 
 function adminAbrirEdicaoHistorico(){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   if(!historico.length){
     mostrar('Nenhuma compra no histórico');
     return;
@@ -1459,6 +1650,7 @@ function renderAdminHistorico(){
 }
 
 function adminEditarHistorico(i){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   let h=historico[i];
   if(!h){mostrar('Compra não encontrada');return}
 
@@ -1487,6 +1679,7 @@ function adminEditarHistorico(i){
 }
 
 function adminExcluirHistorico(i){
+ if(!usuarioEhAdmin()){mostrar('Acesso restrito');return}
   if(!historico[i]){mostrar('Compra não encontrada');return}
 
   historico.splice(i,1);
@@ -1544,13 +1737,46 @@ $('search').addEventListener('input',renderEstoque);
 /* =========================
    INICIAR
 ========================= */
-carregarLocal();
-atualizarTudo();
-renderLista();
-renderCarrinho();
-renderHistorico();
-carregarProdutos();
-atualizarAdminTela();
+async function inicializarAutenticacao(){
+  esconderAplicativo();
+  const {data:{session}}=await supabaseClient.auth.getSession();
+
+  if(session?.user){
+    try{
+      await liberarSessao(session.user);
+    }catch(err){
+      console.error('ERRO AO RESTAURAR SESSÃO:',err);
+      await supabaseClient.auth.signOut();
+      definirStatusLogin(err?.message||'Não foi possível restaurar seu acesso.');
+    }
+  }
+
+  supabaseClient.auth.onAuthStateChange(async (event,session)=>{
+    if(authMudancaEmAndamento)return;
+    if(event==='SIGNED_OUT'){
+      usuarioAtual=null;
+      perfilAtual=null;
+      appIniciado=false;
+      esconderAplicativo();
+      return;
+    }
+    if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session?.user && !usuarioAtual){
+      authMudancaEmAndamento=true;
+      try{
+        await liberarSessao(session.user);
+      }catch(err){
+        console.error('ERRO AO VALIDAR SESSÃO:',err);
+        await supabaseClient.auth.signOut();
+        esconderAplicativo();
+        definirStatusLogin(err?.message||'Acesso não liberado.');
+      }finally{
+        authMudancaEmAndamento=false;
+      }
+    }
+  });
+}
+
+inicializarAutenticacao();
 </script>
 </body>
 </html>
