@@ -1767,12 +1767,32 @@ async function adminSalvarUsuario(){
 
 async function adminAlternarUsuario(id,ativoAtual){
   if(!usuarioEhAdmin())return;
-  if(id===usuarioAtual?.id){mostrar('Você não pode bloquear seu próprio acesso.');return}
+  if(id===usuarioAtual?.id){
+    mostrar('Você não pode bloquear seu próprio acesso.');
+    return;
+  }
+
+  const novoStatus=!ativoAtual;
+
   try{
-    await chamarAdminUsuarios({action:'update',id,ativo:!ativoAtual});
+    // Bloquear/liberar não precisa de senha.
+    // Atualizamos somente o perfil; o login já valida "ativo" em carregarPerfil().
+    const {data,error}=await supabaseClient
+      .from('perfis')
+      .update({ativo:novoStatus})
+      .eq('id',id)
+      .select('id,ativo')
+      .single();
+
+    if(error) throw error;
+    if(!data) throw new Error('O banco não confirmou a alteração.');
+
     await renderAdminUsuarios();
-    mostrar(!ativoAtual?'Usuário liberado ✓':'Usuário bloqueado ✓');
-  }catch(err){mostrar(err?.message||'Não foi possível alterar o acesso.')}
+    mostrar(novoStatus?'Usuário liberado ✓':'Usuário bloqueado ✓');
+  }catch(err){
+    console.error('ERRO AO ALTERAR STATUS DO USUÁRIO:',err);
+    mostrar('Não foi possível alterar o acesso: '+(err?.message||'erro desconhecido'));
+  }
 }
 
 async function adminExcluirUsuario(id){
