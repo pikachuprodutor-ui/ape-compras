@@ -1610,18 +1610,37 @@ async function getAccessToken(){
 
 async function chamarAdminUsuarios(payload){
   const token=await getAccessToken();
-  const resp=await fetch(SUPABASE_URL+'/functions/v1/admin-users',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer '+token,
-      'apikey':SUPABASE_KEY
-    },
-    body:JSON.stringify(payload)
-  });
-  const body=await resp.json().catch(()=>({}));
-  if(!resp.ok) throw new Error(body.error||'Não foi possível executar a operação.');
-  return body;
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),15000);
+
+  try{
+    const resp=await fetch(SUPABASE_URL+'/functions/v1/admin-users',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+token,
+        'apikey':SUPABASE_KEY
+      },
+      body:JSON.stringify(payload),
+      signal:controller.signal
+    });
+
+    const raw=await resp.text();
+    let body={};
+    try{ body=raw?JSON.parse(raw):{} }catch(_){ body={raw} }
+
+    if(!resp.ok){
+      throw new Error(body.error || body.message || body.raw || ('Erro HTTP '+resp.status));
+    }
+    return body;
+  }catch(err){
+    if(err?.name==='AbortError'){
+      throw new Error('A criação demorou mais de 15 segundos. Verifique se a Edge Function "admin-users" está publicada e tente novamente.');
+    }
+    throw err;
+  }finally{
+    clearTimeout(timeout);
+  }
 }
 
 async function renderAdminUsuarios(){
@@ -1713,23 +1732,36 @@ async function adminSalvarUsuario(){
   if(modalMode==='admin-novo-usuario' && senha.length<6){mostrar('A senha precisa ter pelo menos 6 caracteres.');return}
   if(modalMode==='admin-editar-usuario' && senha && senha.length<6){mostrar('A nova senha precisa ter pelo menos 6 caracteres.');return}
 
+  const btn=$('modalSaveBtn');
+  if(btn){
+    btn.disabled=true;
+    btn.textContent='Salvando...';
+    btn.style.opacity='.65';
+  }
+  mostrar('Salvando usuário...');
+
   try{
     if(modalMode==='admin-novo-usuario'){
       await chamarAdminUsuarios({action:'create',nome,email,senha,tipo,ativo});
+      closeModal();
+      await renderAdminUsuarios();
       mostrar('Usuário criado ✓');
     }else{
       await chamarAdminUsuarios({action:'update',id:modalIndex,nome,email,senha:senha||undefined,tipo,ativo});
-      if(modalIndex===usuarioAtual?.id && email!==usuarioAtual?.email){
-        mostrar('Usuário atualizado. Entre novamente se o Supabase solicitar.');
-      }else{
-        mostrar('Usuário atualizado ✓');
-      }
+      const mudouEmail=modalIndex===usuarioAtual?.id && email!==usuarioAtual?.email;
+      closeModal();
+      await renderAdminUsuarios();
+      mostrar(mudouEmail?'Usuário atualizado. Entre novamente se o Supabase solicitar.':'Usuário atualizado ✓');
     }
-    closeModal();
-    await renderAdminUsuarios();
   }catch(err){
     console.error('ERRO USUÁRIO:',err);
     mostrar(err?.message||'Não foi possível salvar o usuário.');
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='Salvar';
+      btn.style.opacity='1';
+    }
   }
 }
 
