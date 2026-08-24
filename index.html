@@ -845,8 +845,19 @@ async function gerarConvite(){
   if(error){mostrar('Não foi possível gerar o convite: '+error.message);return}
   const token=data?.token||data;
   const link=location.origin+location.pathname+'?convite='+encodeURIComponent(token);
-  $('inviteArea').innerHTML='<input id="inviteLink" value="'+esc(link)+'" readonly><button class="btn primary" onclick="navigator.clipboard.writeText(document.getElementById(\\'inviteLink\\').value);mostrar(\\'Convite copiado\\')">Copiar convite</button>';
+  $('inviteArea').innerHTML='<input id="inviteLink" value="'+esc(link)+'" readonly><button class="btn primary" onclick="copiarConvite()">Copiar convite</button>';
   mostrar('Convite gerado');
+}
+async function copiarConvite(){
+  const input=$('inviteLink');
+  if(!input)return;
+  try{
+    await navigator.clipboard.writeText(input.value);
+  }catch(e){
+    input.select();
+    document.execCommand('copy');
+  }
+  mostrar('Convite copiado');
 }
 function renderAreaConvite(){
   const area=$('inviteArea');
