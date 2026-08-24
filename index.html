@@ -196,7 +196,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
     </div>
     <div class="admin-box">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-        <div><h2>Usuários</h2><div class="sub">Novos usuários criados aqui entram automaticamente nesta casa. O vínculo é feito pelo banco para evitar bloqueios de permissão.</div></div>
+        <div><h2>Usuários</h2><div class="sub">Novos usuários criados aqui entram automaticamente nesta casa.</div></div>
         <button class="btn primary" onclick="adminNovoUsuario()">Novo usuário</button>
       </div>
       <div class="table-wrap" style="margin-top:12px"><table class="user-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
@@ -466,11 +466,54 @@ async function concluirCompra(){
 }
 async function carregarHistorico(){
   if(!casaAtual?.id)return;
-  const {data,error}=await supabaseClient.from('compras').select('id,data_compra,mercado,total,created_at,usuario_id,perfis(nome,email)').eq('casa_id',casaAtual.id).order('created_at',{ascending:false});
-  if(error){console.error(error);mostrar('Erro no histórico: '+error.message);return}
-  const compras=data||[];
-  historico=compras.map(c=>({id:c.id,data:c.created_at||c.data_compra,mercado:c.mercado,total:Number(c.total||0),usuario:c.perfis?.nome||c.perfis?.email||'Usuário'}));
-  renderHistorico();renderAdminHistorico();atualizarTudo();
+
+  try{
+    const {data:compras,error}=await supabaseClient
+      .from('compras')
+      .select('id,data_compra,mercado,total,created_at,usuario_id')
+      .eq('casa_id',casaAtual.id)
+      .order('created_at',{ascending:false});
+
+    if(error)throw error;
+
+    const registros=compras||[];
+    const ids=[...new Set(registros.map(c=>c.usuario_id).filter(Boolean))];
+
+    let perfisPorId={};
+
+    if(ids.length){
+      const {data:perfis,error:perfilError}=await supabaseClient
+        .from('perfis')
+        .select('id,nome,email')
+        .in('id',ids);
+
+      if(perfilError)throw perfilError;
+
+      (perfis||[]).forEach(p=>{
+        perfisPorId[p.id]=p;
+      });
+    }
+
+    historico=registros.map(c=>{
+      const perfil=perfisPorId[c.usuario_id];
+
+      return {
+        id:c.id,
+        data:c.created_at||c.data_compra,
+        mercado:c.mercado,
+        total:Number(c.total||0),
+        usuario:perfil?.nome||perfil?.email||'Usuário'
+      };
+    });
+
+    renderHistorico();
+    renderAdminHistorico();
+    atualizarTudo();
+
+  }catch(error){
+    console.error('ERRO AO CARREGAR HISTÓRICO:',error);
+    mostrar('Erro no histórico: '+(error?.message||'Não foi possível carregar o histórico.'));
+  }
 }
 async function carregarItensCompra(compraId){
   const {data,error}=await supabaseClient.from('itens_compra').select('quantidade,preco_unitario,subtotal,produto_id,produtos(produto,imagem)').eq('compra_id',compraId);
@@ -583,13 +626,10 @@ async function adminSalvarUsuario(){
       let uid=result?.user?.id||result?.id;
       if(!uid){const {data}=await supabaseClient.from('perfis').select('id').eq('email',email).maybeSingle();uid=data?.id}
       if(!uid)throw new Error('Usuário criado, mas não consegui localizar o perfil para vinculá-lo à casa.');
-
-      // Vincula o novo usuário à casa usando uma função RPC com SECURITY DEFINER.
-      // Isso evita falhas de RLS que podem bloquear INSERT direto em membros_casa.
       const {data:linkData,error:linkError}=await supabaseClient.rpc('vincular_usuario_casa',{
         p_usuario_id:uid,
         p_casa_id:casaAtual.id,
-        p_papel:tipo==='admin'?'admin':'usuario'
+        p_papel:'membro'
       });
       if(linkError)throw new Error('Usuário criado, mas não foi possível vinculá-lo à casa: '+linkError.message);
       if(!linkData?.vinculado)throw new Error('Usuário criado, mas o vínculo com a casa não foi confirmado.');
