@@ -445,7 +445,7 @@ async function concluirCompra(){
       mercado,total,usuario_id:usuarioAtual.id,casa_id:casaAtual.id
     }).select('id').single();
     if(error)throw error;
-    const linhas=itens.map(x=>({compra_id:compra.id,produto_id:x.id,quantidade:x.qtd,preco_unitario:x.preco,subtotal:Number(x.qtd)*Number(x.preco)})).filter(x=>x.produto_id);
+    const linhas=itens.map(x=>({compra_id:compra.id,produto_id:x.id,quantidade:x.qtd,preco_unitario:x.preco})).filter(x=>x.produto_id);
     if(linhas.length){
       const {error:e2}=await supabaseClient.from('itens_compra').insert(linhas);
       if(e2)throw e2;
