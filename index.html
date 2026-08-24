@@ -807,7 +807,7 @@ function renderEstoque(){
 
   const arr=produtos.filter(p=>{
     const nome=normalizarTexto(p.produto||'');
-    const codigo=normalizarTexto(p['código']||'');
+    const codigo=normalizarTexto(p['codigo']||'');
     const categoria=normalizarTexto(p.categoria||'');
 
     const passaBusca=!busca||nome.includes(busca)||codigo.includes(busca);
@@ -879,7 +879,7 @@ $('estoqueProdutoDetalhe').innerHTML=`
 <div class="detail-head">
 <div class="category">${esc(p['categoria']||'Sem categoria')}</div>
 <h1>${esc(p.produto)}</h1>
-<div class="code">${esc(p['código']||'')}</div>
+<div class="code">${esc(p['codigo']||'')}</div>
 </div>
 <div class="detail-stats">
 <div class="detail-stat"><span>Estoque ideal</span><strong>${i} un</strong></div>
@@ -996,7 +996,7 @@ $('compraProdutoDetalhe').innerHTML=`
 <div class="detail-head">
 <div class="category">${esc(x.auto?(produtos.find(p=>Number(p.id)===Number(x.id))?.['categoria']||'Sem categoria'):'Compra manual')}</div>
 <h1>${esc(x.nome)}</h1>
-<div class="code">${esc(x.id?(produtos.find(p=>Number(p.id)===Number(x.id))?.['código']||''):'')}</div>
+<div class="code">${esc(x.id?(produtos.find(p=>Number(p.id)===Number(x.id))?.['codigo']||''):'')}</div>
 </div>
 <div class="detail-stats">
 <div class="detail-stat"><span>Quantidade da lista</span><strong>${Number(x.qtd)} un</strong></div>
@@ -1192,9 +1192,9 @@ function sairAdmin(){adminAutorizado=false;sessionStorage.removeItem('ape_admin'
 function renderAdminProdutos(){
  if(!adminAutorizado)return;
  let q=($('adminSearch')?.value||'').toLowerCase();
- let arr=produtos.filter(p=>(String(p.produto||'')+' '+String(p['código']||'')+' '+String(p['categoria']||'')).toLowerCase().includes(q));
+ let arr=produtos.filter(p=>(String(p.produto||'')+' '+String(p['codigo']||'')+' '+String(p['categoria']||'')).toLowerCase().includes(q));
  if(!arr.length){$('adminProductsBody').innerHTML='<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';return}
- $('adminProductsBody').innerHTML=arr.map(p=>`<tr><td>${esc(p['código']||'')}</td><td><b>${esc(p.produto)}</b></td><td>${esc(p['categoria']||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="admin-actions"><button class="secondary" onclick="adminEditarProduto(${p['id']})">Editar</button><button class="secondary danger" onclick="adminExcluirProduto(${p['id']})">Excluir</button></div></td></tr>`).join('');
+ $('adminProductsBody').innerHTML=arr.map(p=>`<tr><td>${esc(p['codigo']||'')}</td><td><b>${esc(p.produto)}</b></td><td>${esc(p['categoria']||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="admin-actions"><button class="secondary" onclick="adminEditarProduto(${p['id']})">Editar</button><button class="secondary danger" onclick="adminExcluirProduto(${p['id']})">Excluir</button></div></td></tr>`).join('');
 }
 function adminNovoProduto(){
  modalMode='admin-produto';modalIndex=null;
@@ -1234,7 +1234,7 @@ function adminEditarProduto(id){
 
  $('modalBody').innerHTML=`
  <div class="admin-form">
-   <label>Código<input id="admCodigo" value="${esc(p['código']||'')}" readonly></label>
+   <label>Código<input id="admCodigo" value="${esc(p['codigo']||'')}" readonly></label>
    <label>Produto<input id="admProduto" value="${esc(p.produto||'')}"></label>
    <label>Categoria<input id="admCategoria" value="${esc(p['categoria']||'')}"></label>
 <label class="adm-photo-field">
@@ -1271,7 +1271,7 @@ async function adminSalvarProduto(){
   if(!nome){mostrar('Informe o nome');return}
 
   if(!codigo){
-    let nums=produtos.map(p=>Number(String(p['código']||'').replace(/\D/g,''))||0);
+    let nums=produtos.map(p=>Number(String(p['codigo']||'').replace(/\D/g,''))||0);
     let next=(nums.length?Math.max(...nums):0)+1;
     codigo='P'+String(next).padStart(3,'0');
   }
@@ -1340,7 +1340,7 @@ async function adminSalvarProduto(){
   }else{
     result=await supabaseClient
       .from('produtos')
-      .insert({'código':codigo,...payload})
+      .insert({'codigo':codigo,...payload})
       .select()
       .single();
   }
