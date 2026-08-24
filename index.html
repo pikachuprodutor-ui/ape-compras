@@ -122,7 +122,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <label class="auth-field">E-mail<input id="loginEmail" type="email" autocomplete="username" required></label>
       <label class="auth-field">Senha<input id="loginSenha" type="password" autocomplete="current-password" required></label>
       <button id="authSubmit" class="auth-submit" type="submit">Entrar</button>
-      <div id="authStatus" class="auth-status"></div>
+      <div id="authStatus" class="auth-status"></div><button type="button" class="btn" style="width:100%;margin-top:10px" onclick="abrirCadastroConta()">Criar minha conta</button>
     </form>
   </div>
 </div>
@@ -153,10 +153,22 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 <div id="onboarding" class="onboarding">
   <div class="onboarding-card">
     <div class="eyebrow">APÊ COMPRAS</div>
-    <h1>Vamos criar sua casa</h1>
-    <p>Essa casa terá um estoque próprio. Depois você poderá convidar quem mora com você.</p>
-    <label class="auth-field">Nome da casa<input id="newHouseName" placeholder="Ex.: Minha casa"></label>
-    <button class="auth-submit" style="margin-top:16px" onclick="criarMinhaCasa()">Criar minha casa</button>
+    <h1>Comece sua casa</h1>
+    <p>Você ainda não participa de nenhuma casa. Crie a sua ou entre por um convite.</p>
+    <div id="onboardingChoice">
+      <button class="auth-submit" style="margin-top:16px" onclick="mostrarCriarCasa()">Criar minha casa</button>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="mostrarEntrarConvite()">Entrar por convite</button>
+    </div>
+    <div id="onboardingCreate" style="display:none">
+      <label class="auth-field">Nome da casa<input id="newHouseName" placeholder="Ex.: Minha casa"></label>
+      <button class="auth-submit" style="margin-top:16px" onclick="criarMinhaCasa()">Criar minha casa</button>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="voltarEscolhaCasa()">Voltar</button>
+    </div>
+    <div id="onboardingInvite" style="display:none">
+      <label class="auth-field">Código do convite<input id="inviteTokenInput" placeholder="Cole o código do convite"></label>
+      <button class="auth-submit" style="margin-top:16px" onclick="aceitarConviteDigitado()">Entrar na casa</button>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="voltarEscolhaCasa()">Voltar</button>
+    </div>
     <div id="onboardingStatus" class="auth-status"></div>
   </div>
 </div>
@@ -236,7 +248,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
           <button class="btn primary" onclick="abrirCriarCasa()">+ Nova casa</button>
         </div>
         <div id="adminHouseList" class="house-list"></div>
-        <div id="inviteArea" class="invite-box"></div>
+        <div id="inviteArea" class="invite-box"></div><div style="margin-top:14px"><button class="btn" onclick="excluirCasaAtual()" style="border-color:#8b3b3b;color:#ff9b9b">Excluir esta casa</button></div>
       </div>
     </div>
     <div class="admin-box">
@@ -316,6 +328,32 @@ function abrirPagina(id){
   window.scrollTo(0,0);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b){e.preventDefault();abrirPagina(b.dataset.page)}});
+
+/* CADASTRO INDEPENDENTE */
+function abrirCadastroConta(){
+  modalMode='cadastro-conta'; modalIndex=null;
+  $('modalTitle').textContent='Criar minha conta';
+  $('modalText').textContent='Depois do cadastro você poderá criar sua própria casa ou entrar por convite.';
+  $('modalBody').innerHTML=`<label class="auth-field">Nome<input id="cadNome" placeholder="Seu nome"></label>
+  <label class="auth-field">E-mail<input id="cadEmail" type="email" placeholder="seu@email.com"></label>
+  <label class="auth-field">Senha<input id="cadSenha" type="password" placeholder="Mínimo de 6 caracteres"></label>`;
+  $('modal').classList.add('show');
+}
+async function criarContaIndependente(){
+  const nome=($('cadNome')?.value||'').trim(), email=($('cadEmail')?.value||'').trim(), senha=$('cadSenha')?.value||'';
+  if(!nome||!email||senha.length<6){mostrar('Preencha nome, e-mail e senha com pelo menos 6 caracteres.');return}
+  try{
+    const {data,error}=await supabaseClient.auth.signUp({email,password:senha,options:{data:{nome}}});
+    if(error)throw error;
+    if(data?.user){
+      const {error:pe}=await supabaseClient.from('perfis').upsert({id:data.user.id,nome,email,tipo:'usuario',ativo:true});
+      if(pe)throw pe;
+    }
+    closeModal();
+    if(data?.session) await liberarSessao(data.user);
+    else definirStatusLogin('Conta criada. Confirme seu e-mail e depois entre.',true);
+  }catch(e){mostrar('Não foi possível criar a conta: '+(e.message||''))}
+}
 
 /* AUTENTICAÇÃO */
 function definirStatusLogin(msg='',ok=false){const el=$('authStatus');if(!el)return;el.textContent=msg;el.className='auth-status'+(ok?' ok':'')}
@@ -811,6 +849,38 @@ async function verItensCompra(id,btn){
 }
 
 
+function mostrarCriarCasa(){
+  $('onboardingChoice').style.display='none'; $('onboardingCreate').style.display='block'; $('onboardingInvite').style.display='none';
+}
+function mostrarEntrarConvite(){
+  $('onboardingChoice').style.display='none'; $('onboardingCreate').style.display='none'; $('onboardingInvite').style.display='block';
+}
+function voltarEscolhaCasa(){
+  $('onboardingChoice').style.display='block'; $('onboardingCreate').style.display='none'; $('onboardingInvite').style.display='none'; $('onboardingStatus').textContent='';
+}
+async function aceitarConviteDigitado(){
+  const token=($('inviteTokenInput')?.value||'').trim();
+  if(!token){$('onboardingStatus').textContent='Cole o código do convite.';return}
+  try{
+    const {error}=await supabaseClient.rpc('aceitar_convite_casa',{p_token:token});
+    if(error)throw error;
+    sessionStorage.removeItem('ape_convite_pendente'); $('onboarding').classList.remove('show');
+    await carregarCasasDoUsuario(); mostrar('Você entrou na casa');
+  }catch(e){$('onboardingStatus').textContent=e.message||'Convite inválido.'}
+}
+async function excluirCasaAtual(){
+  if(!casaAtual)return;
+  if(casaAtual.papel!=='proprietario'){mostrar('Somente o proprietário pode excluir esta casa.');return}
+  if(!confirm(`Excluir "${casaAtual.nome}"? O estoque, produtos e histórico desta casa serão apagados.`))return;
+  try{
+    const {error}=await supabaseClient.rpc('excluir_casa',{p_casa_id:casaAtual.id});
+    if(error)throw error;
+    casasUsuario=casasUsuario.filter(c=>c.id!==casaAtual.id); localStorage.removeItem('ape_casa_selecionada_'+usuarioAtual.id); casaAtual=null;
+    if(casasUsuario.length) await selecionarCasa(casasUsuario[0].id); else { $('onboarding').classList.add('show'); voltarEscolhaCasa(); }
+    mostrar('Casa excluída');
+  }catch(e){mostrar('Não foi possível excluir a casa: '+(e.message||''))}
+}
+
 /* CASAS */
 function abrirCriarCasa(){
   modalMode='nova-casa';modalIndex=null;
@@ -1021,6 +1091,7 @@ function atualizarTudo(){
 /* MODAL */
 function closeModal(){$('modal').classList.remove('show');modalMode=null;modalIndex=null;$('modalSaveBtn').disabled=false;$('modalSaveBtn').textContent='Salvar'}
 async function modalSave(){
+  if(modalMode==='cadastro-conta'){await criarContaIndependente();return;}
   if(modalMode==='nova-casa'){await criarCasaPeloModal();return;}
   if(modalMode==='manual'){
     const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1));if(!nome){mostrar('Informe o produto');return}
