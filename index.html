@@ -82,6 +82,22 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
  header{padding:11px 13px}.header-inner{flex-direction:column;align-items:stretch}.logo{justify-content:center}nav{width:100%}nav button{font-size:12px;padding:8px}.session-pill{top:auto;bottom:12px;right:12px}
  main{padding:26px 13px 90px}.home-grid,.admin-grid{grid-template-columns:1fr}.home-small{grid-template-columns:1fr 1fr}.page-head{display:block}.page-head .btn{margin-top:12px}.history-summary{grid-template-columns:1fr 1fr}.history-stat:last-child{grid-column:1/-1}.admin-form{grid-template-columns:1fr}.cart-row{grid-template-columns:1fr}.price-input{width:100%}.cart-summary{display:block}.cart-summary .btn{width:100%;margin-top:10px}
 }
+
+.market-compare{margin:0 0 22px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+.market-compare h2{margin:0 0 5px;font-size:20px}
+.market-compare .compare-sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+.market-best{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(53,200,120,.35);background:rgba(53,200,120,.08);border-radius:12px}
+.market-best strong{font-size:18px}
+.market-best .saving{color:var(--green);font-weight:700}
+.market-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+.market-table{width:100%;border-collapse:collapse;min-width:650px}
+.market-table th,.market-table td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:14px}
+.market-table th{color:var(--muted);font-weight:600}
+.market-table tr:last-child td{border-bottom:0}
+.market-table .best-price{font-weight:700;color:var(--green)}
+.market-empty{padding:15px;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
+.compare-note{color:var(--muted);font-size:12px;margin-top:12px}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -521,10 +537,201 @@ async function carregarItensCompra(compraId){
   return data||[];
 }
 async function renderHistorico(){
-  if(!historico.length){$('historyList').innerHTML='<div class="empty">Nenhuma compra registrada para esta casa.</div>';return}
-  const total=historico.reduce((s,h)=>s+Number(h.total||0),0),media=total/historico.length;
-  $('historyList').innerHTML=`<div class="history-summary"><div class="history-stat"><span>Total registrado</span><strong>${dinheiro(total)}</strong></div><div class="history-stat"><span>Compras</span><strong>${historico.length}</strong></div><div class="history-stat"><span>Média</span><strong>${dinheiro(media)}</strong></div></div><div class="history-list">${historico.map(h=>`<article class="history-card"><div class="history-top"><div><strong>${esc(h.mercado)}</strong><div class="history-meta">${new Date(h.data).toLocaleString('pt-BR')} • ${esc(h.usuario)}</div></div><div class="history-total">${dinheiro(h.total)}</div></div><div class="history-items" id="items-${h.id}"><button class="btn small" onclick="verItensCompra('${h.id}',this)">Ver itens</button></div></article>`).join('')}</div>`;
+  if(!historico.length){
+    $('historyList').innerHTML='<div class="empty">Nenhuma compra registrada para esta casa.</div>';
+    return;
+  }
+
+  const total=historico.reduce((s,h)=>s+Number(h.total||0),0);
+  const media=total/historico.length;
+
+  let comparativoHtml='';
+  try{
+    comparativoHtml=await gerarComparativoMercados(historico);
+  }catch(e){
+    console.error('ERRO NO COMPARATIVO:',e);
+    comparativoHtml='';
+  }
+
+  $('historyList').innerHTML=
+    comparativoHtml+
+    `<div class="history-summary">
+      <div class="history-stat"><span>Total registrado</span><strong>${dinheiro(total)}</strong></div>
+      <div class="history-stat"><span>Compras</span><strong>${historico.length}</strong></div>
+      <div class="history-stat"><span>Média</span><strong>${dinheiro(media)}</strong></div>
+    </div>
+    <div class="history-list">
+      ${historico.map(h=>`
+        <article class="history-card">
+          <div class="history-top">
+            <div>
+              <strong>${esc(h.mercado)}</strong>
+              <div class="history-meta">${new Date(h.data).toLocaleString('pt-BR')} • ${esc(h.usuario)}</div>
+            </div>
+            <div class="history-total">${dinheiro(h.total)}</div>
+          </div>
+          <div class="history-items" id="items-${h.id}">
+            <button class="btn small" onclick="verItensCompra('${h.id}',this)">Ver itens</button>
+          </div>
+        </article>
+      `).join('')}
+    </div>`;
 }
+
+async function gerarComparativoMercados(compras){
+  const ids=compras.map(c=>c.id).filter(Boolean);
+  if(!ids.length)return '';
+
+  // Busca os itens das compras e os nomes dos produtos.
+  // O relacionamento itens_compra -> produtos já existe no banco.
+  const {data:itens,error}=await supabaseClient
+    .from('itens_compra')
+    .select('compra_id,produto_id,quantidade,preco_unitario,subtotal,produtos(produto)')
+    .in('compra_id',ids);
+
+  if(error)throw error;
+  if(!itens?.length){
+    return `<div class="market-compare">
+      <h2>Comparativo de mercados</h2>
+      <div class="compare-sub">Ainda não há itens suficientes para comparar preços.</div>
+      <div class="market-empty">Finalize compras em pelo menos dois mercados para comparar o mesmo produto.</div>
+    </div>`;
+  }
+
+  const compraPorId={};
+  compras.forEach(c=>{compraPorId[c.id]=c});
+
+  // produto -> mercado -> lista de preços unitários
+  const mapa={};
+
+  itens.forEach(item=>{
+    const compra=compraPorId[item.compra_id];
+    if(!compra)return;
+
+    const produto=item.produtos?.produto||`Produto #${item.produto_id}`;
+    const mercado=(compra.mercado||'Mercado não informado').trim();
+    const preco=Number(item.preco_unitario);
+
+    if(!Number.isFinite(preco))return;
+
+    if(!mapa[produto])mapa[produto]={};
+    if(!mapa[produto][mercado])mapa[produto][mercado]=[];
+    mapa[produto][mercado].push(preco);
+  });
+
+  const linhas=[];
+
+  Object.entries(mapa).forEach(([produto,mercados])=>{
+    const nomes=Object.keys(mercados);
+    if(nomes.length<2)return;
+
+    const medias=nomes.map(mercado=>{
+      const valores=mercados[mercado];
+      return {
+        mercado,
+        preco:valores.reduce((a,b)=>a+b,0)/valores.length
+      };
+    }).sort((a,b)=>a.preco-b.preco);
+
+    if(medias.length>=2){
+      const melhor=medias[0];
+      const segundo=medias[1];
+      linhas.push({
+        produto,
+        melhor,
+        economia:Math.max(0,segundo.preco-melhor.preco),
+        medias
+      });
+    }
+  });
+
+  if(!linhas.length){
+    return `<div class="market-compare">
+      <h2>Comparativo de mercados</h2>
+      <div class="compare-sub">Compare o mesmo produto em mercados diferentes.</div>
+      <div class="market-empty">Ainda não existem produtos comprados em pelo menos dois mercados diferentes. Conforme você registrar novas compras, o comparativo aparecerá aqui.</div>
+    </div>`;
+  }
+
+  // Melhor mercado geral:
+  // calcula a média dos preços dos produtos que foram comparados.
+  const desempenho={};
+  linhas.forEach(linha=>{
+    linha.medias.forEach(x=>{
+      if(!desempenho[x.mercado])desempenho[x.mercado]={soma:0,qtd:0};
+      desempenho[x.mercado].soma+=x.preco;
+      desempenho[x.mercado].qtd++;
+    });
+  });
+
+  const ranking=Object.entries(desempenho)
+    .map(([mercado,v])=>({
+      mercado,
+      media:v.soma/v.qtd,
+      produtos:v.qtd
+    }))
+    .sort((a,b)=>a.media-b.media);
+
+  const melhorGeral=ranking[0];
+  const segundoGeral=ranking[1];
+  const economiaGeral=segundoGeral
+    ? Math.max(0,segundoGeral.media-melhorGeral.media)
+    : 0;
+
+  const tabela=linhas.map(linha=>{
+    const celulas=linha.medias.map(x=>{
+      const melhor=x.mercado===linha.melhor.mercado;
+      return `<td class="${melhor?'best-price':''}">${dinheiro(x.preco)}${melhor?' <small>(melhor)</small>':''}</td>`;
+    }).join('');
+
+    return `<tr>
+      <td><strong>${esc(linha.produto)}</strong></td>
+      ${celulas}
+      <td class="best-price">${esc(linha.melhor.mercado)}</td>
+    </tr>`;
+  }).join('');
+
+  // Descobre todos os mercados presentes para formar as colunas.
+  const mercados=[...new Set(
+    linhas.flatMap(l=>l.medias.map(x=>x.mercado))
+  )];
+
+  const headerMercados=mercados.map(m=>`<th>${esc(m)}</th>`).join('');
+
+  return `<div class="market-compare">
+    <h2>Comparativo de mercados</h2>
+    <div class="compare-sub">Compara a média do preço unitário do mesmo produto entre os mercados registrados.</div>
+
+    <div class="market-best">
+      <div>
+        <span>Melhor mercado até agora</span><br>
+        <strong>${esc(melhorGeral.mercado)}</strong>
+        <div class="compare-note">${melhorGeral.produtos} produto(s) comparado(s)</div>
+      </div>
+      ${economiaGeral>0
+        ? `<div class="saving">até ${dinheiro(economiaGeral)} a menos por produto comparado</div>`
+        : ''}
+    </div>
+
+    <div class="market-table-wrap">
+      <table class="market-table">
+        <thead>
+          <tr>
+            <th>Produto</th>
+            ${headerMercados}
+            <th>Melhor</th>
+          </tr>
+        </thead>
+        <tbody>${tabela}</tbody>
+      </table>
+    </div>
+
+    <div class="compare-note">
+      O sistema compara o preço unitário médio registrado de cada produto. Ele só considera produtos que já foram comprados em pelo menos dois mercados.
+    </div>
+  </div>`;
+}
+
 async function verItensCompra(id,btn){
   const box=$('items-'+id);if(!box)return;
   try{const itens=await carregarItensCompra(id);box.innerHTML=itens.length?itens.map(x=>`<div class="history-item"><span>${esc(x.produtos?.produto||'Produto')} × ${x.quantidade}</span><strong>${dinheiro(x.subtotal)}</strong></div>`).join(''):'<div class="product-meta">Sem itens registrados.</div>'}
