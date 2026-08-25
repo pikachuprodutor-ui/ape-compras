@@ -380,8 +380,20 @@ async function criarContaIndependente(){
       await carregarCasasDoUsuario();
       mostrar('Conta criada. Agora escolha como começar.');
     }else{
-      closeModal();
-      definirStatusLogin('Conta criada. Se o Supabase pedir confirmação, confirme o e-mail e depois entre normalmente.');
+      // O projeto está com confirmação de e-mail ativa no Supabase.
+      // Não fecha o formulário silenciosamente: informa exatamente o próximo passo.
+      if(btn){btn.disabled=false;btn.textContent='Salvar';}
+      const msg='Conta criada! Verifique seu e-mail para confirmar a conta. Depois volte aqui e faça login.';
+      $('modalText').textContent=msg;
+      $('modalBody').innerHTML=`
+        <div class="auth-status ok" style="display:block;padding:14px;border-radius:10px">
+          ${msg}
+        </div>
+        <button type="button" class="btn primary" style="width:100%;margin-top:14px"
+          onclick="closeModal();$('loginEmail').value=${JSON.stringify(email)};$('loginSenha').focus()">
+          Voltar para o login
+        </button>`;
+      mostrar(msg);
     }
   }catch(e){
     console.error('ERRO AO CRIAR CONTA:',e);
