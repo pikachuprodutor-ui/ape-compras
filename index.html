@@ -256,7 +256,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
         <div><h2>Usuários</h2><div class="sub">Novos usuários criados aqui entram automaticamente nesta casa.</div></div>
         <button class="btn primary" onclick="adminNovoUsuario()">Novo usuário</button>
       </div>
-      <div class="table-wrap" style="margin-top:12px"><table class="user-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
+      <div class="table-wrap" style="margin-top:12px"><table class="user-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Casa</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
     </div>
     <div class="admin-box">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><input id="adminSearch" class="search" style="max-width:450px;padding-left:14px" placeholder="Buscar produto..." oninput="renderAdminProdutos()"><button class="btn" onclick="carregarProdutos()">Atualizar</button></div>
@@ -1096,42 +1096,47 @@ async function renderAdminUsuarios(){
   if(!usuarioPodeGerenciarCasa())return;
   const body=$('adminUsersBody');
   if(!body)return;
-  body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
+  body.innerHTML='<tr><td colspan="6">Carregando...</td></tr>';
+
+  if(usuarioEhAdmin()){
+    const {data,error}=await supabaseClient.rpc('listar_usuarios_admin');
+    if(error){
+      body.innerHTML='<tr><td colspan="6">'+esc(error.message)+'</td></tr>';
+      return;
+    }
+
+    body.innerHTML=(data||[]).map(u=>{
+      const isMe=u.id===usuarioAtual.id;
+      return `<tr>
+        <td><strong>${esc(u.nome||'Sem nome')}</strong>${isMe?' <span class="tag">Você</span>':''}</td>
+        <td>${esc(u.email||'')}</td>
+        <td>${esc(u.casas||'Sem casa')}</td>
+        <td>${esc(u.tipo==='admin'?'Administrador':'Usuário')}</td>
+        <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
+        <td>${isMe?'':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6">Nenhum usuário cadastrado.</td></tr>';
+    return;
+  }
 
   const {data:members,error:me}=await supabaseClient
-    .from('membros_casa')
-    .select('usuario_id,papel')
-    .eq('casa_id',casaAtual.id);
-
-  if(me){
-    body.innerHTML='<tr><td colspan="5">'+esc(me.message)+'</td></tr>';
-    return;
-  }
+    .from('membros_casa').select('usuario_id,papel').eq('casa_id',casaAtual.id);
+  if(me){body.innerHTML='<tr><td colspan="6">'+esc(me.message)+'</td></tr>';return}
 
   const ids=(members||[]).map(m=>m.usuario_id).filter(Boolean);
-  if(!ids.length){
-    body.innerHTML='<tr><td colspan="5">Nenhuma pessoa nesta casa.</td></tr>';
-    return;
-  }
+  if(!ids.length){body.innerHTML='<tr><td colspan="6">Nenhuma pessoa nesta casa.</td></tr>';return}
 
   const {data:profiles,error}=await supabaseClient
-    .from('perfis')
-    .select('id,nome,email,tipo,ativo')
-    .in('id',ids)
-    .order('nome');
-
-  if(error){
-    body.innerHTML='<tr><td colspan="5">'+esc(error.message)+'</td></tr>';
-    return;
-  }
+    .from('perfis').select('id,nome,email,tipo,ativo').in('id',ids).order('nome');
+  if(error){body.innerHTML='<tr><td colspan="6">'+esc(error.message)+'</td></tr>';return}
 
   body.innerHTML=(profiles||[]).map(u=>{
     const member=members.find(m=>m.usuario_id===u.id);
-    const isOwner=member?.papel==='proprietario';
-    const isMe=u.id===usuarioAtual.id;
+    const isOwner=member?.papel==='proprietario', isMe=u.id===usuarioAtual.id;
     return `<tr>
       <td><strong>${esc(u.nome||'Sem nome')}</strong>${isMe?' <span class="tag">Você</span>':''}</td>
       <td>${esc(u.email||'')}</td>
+      <td>${esc(casaAtual.nome)}</td>
       <td>${isOwner?'Proprietário':'Membro'}</td>
       <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
       <td>${isMe||isOwner?'':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
@@ -1171,13 +1176,23 @@ async function adminSalvarUsuario(){
 }
 async function adminAlternarUsuario(id,ativoAtual){
   if(id===usuarioAtual.id){mostrar('Você não pode bloquear seu próprio acesso.');return}
-  const {error}=await supabaseClient.from('perfis').update({ativo:!ativoAtual}).eq('id',id);if(error){mostrar(error.message);return}await renderAdminUsuarios();mostrar(ativoAtual?'Usuário bloqueado':'Usuário liberado');
+  if(!usuarioEhAdmin() && casaAtual?.papel!=='proprietario'){mostrar('Sem permissão.');return}
+  const {error}=await supabaseClient.from('perfis').update({ativo:!ativoAtual}).eq('id',id);
+  if(error){mostrar(error.message);return}
+  await renderAdminUsuarios();
+  mostrar(ativoAtual?'Usuário bloqueado':'Usuário liberado');
 }
 async function adminExcluirUsuario(id){
   if(id===usuarioAtual.id){mostrar('Você não pode excluir seu próprio acesso.');return}
-  if(!confirm('Excluir este usuário?'))return;
-  await supabaseClient.from('membros_casa').delete().eq('casa_id',casaAtual.id).eq('usuario_id',id);
-  try{await chamarAdminUsuarios({action:'delete',id});await renderAdminUsuarios();mostrar('Usuário excluído')}catch(e){mostrar(e.message||'Não foi possível excluir')}
+  if(!usuarioEhAdmin()){mostrar('Somente o administrador principal pode excluir usuários.');return}
+  if(!confirm('Excluir este usuário definitivamente? Ele será removido de todas as casas.'))return;
+  try{
+    const {error:unlinkError}=await supabaseClient.from('membros_casa').delete().eq('usuario_id',id);
+    if(unlinkError)throw unlinkError;
+    await chamarAdminUsuarios({action:'delete',id});
+    await renderAdminUsuarios();
+    mostrar('Usuário excluído');
+  }catch(e){mostrar(e.message||'Não foi possível excluir o usuário')}
 }
 
 /* ADMIN HISTÓRICO */
