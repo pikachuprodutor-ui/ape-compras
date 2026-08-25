@@ -463,7 +463,9 @@ async function carregarCasasDoUsuario(){
   }
 
   const salvo=localStorage.getItem('ape_casa_selecionada_'+usuarioAtual.id);
-  const escolhida=casasUsuario.find(c=>c.id===salvo)||casasUsuario[0];
+  const escolhida=casasUsuario.length===1
+    ? casasUsuario[0]
+    : (casasUsuario.find(c=>c.id===salvo)||casasUsuario[0]);
   await selecionarCasa(escolhida.id);
   return casaAtual;
 }
