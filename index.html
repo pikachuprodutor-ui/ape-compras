@@ -298,7 +298,7 @@ const ideal=p=>Number(p?.ideal||0);
 const falta=p=>Math.max(ideal(p)-atual(p),0);
 const ativo=p=>String(p?.status||'Ativo').toLowerCase()!=='inativo';
 function mostrar(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2300)}
-function usuarioEhAdmin(){return String(perfilAtual?.tipo||'').toLowerCase()==='admin'&&perfilAtual?.ativo!==false}
+function usuarioEhAdmin(){return perfilAtual?.ativo!==false && (String(perfilAtual?.tipo||'').toLowerCase()==='admin' || casaAtual?.papel==='proprietario')}
 
 function chaveLocal(nome){return 'ape_'+nome+'_'+(casaAtual?.id||'sem-casa')+'_'+(usuarioAtual?.id||'sem-usuario')}
 function salvarLocal(){
@@ -1081,10 +1081,49 @@ async function chamarAdminUsuarios(payload){
 }
 async function renderAdminUsuarios(){
   if(!usuarioEhAdmin())return;
-  const body=$('adminUsersBody');body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
-  const {data,error}=await supabaseClient.from('perfis').select('id,nome,email,tipo,ativo').order('nome');
-  if(error){body.innerHTML='<tr><td colspan="5">'+esc(error.message)+'</td></tr>';return}
-  body.innerHTML=(data||[]).map(u=>`<tr><td><strong>${esc(u.nome||'Sem nome')}</strong>${u.id===usuarioAtual.id?' <span class="tag">Você</span>':''}</td><td>${esc(u.email||'')}</td><td><span class="tag">${String(u.tipo||'usuario')==='admin'?'Admin':'Usuário'}</span></td><td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td><td><div class="actions"><button class="btn small" onclick="adminEditarUsuario('${u.id}')">Editar</button><button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button>${u.id!==usuarioAtual.id?`<button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`:''}</div></td></tr>`).join('');
+  const body=$('adminUsersBody');
+  if(!body)return;
+  body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
+
+  const {data:members,error:me}=await supabaseClient
+    .from('membros_casa')
+    .select('usuario_id,papel')
+    .eq('casa_id',casaAtual.id);
+
+  if(me){
+    body.innerHTML='<tr><td colspan="5">'+esc(me.message)+'</td></tr>';
+    return;
+  }
+
+  const ids=(members||[]).map(m=>m.usuario_id).filter(Boolean);
+  if(!ids.length){
+    body.innerHTML='<tr><td colspan="5">Nenhuma pessoa nesta casa.</td></tr>';
+    return;
+  }
+
+  const {data:profiles,error}=await supabaseClient
+    .from('perfis')
+    .select('id,nome,email,tipo,ativo')
+    .in('id',ids)
+    .order('nome');
+
+  if(error){
+    body.innerHTML='<tr><td colspan="5">'+esc(error.message)+'</td></tr>';
+    return;
+  }
+
+  body.innerHTML=(profiles||[]).map(u=>{
+    const member=members.find(m=>m.usuario_id===u.id);
+    const isOwner=member?.papel==='proprietario';
+    const isMe=u.id===usuarioAtual.id;
+    return `<tr>
+      <td><strong>${esc(u.nome||'Sem nome')}</strong>${isMe?' <span class="tag">Você</span>':''}</td>
+      <td>${esc(u.email||'')}</td>
+      <td>${isOwner?'Proprietário':'Membro'}</td>
+      <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
+      <td>${isMe||isOwner?'':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
+    </tr>`;
+  }).join('');
 }
 async function adminNovoUsuario(){
   modalMode='admin-novo-usuario';modalIndex=null;$('modalTitle').textContent='Novo usuário';$('modalText').textContent='O novo usuário será vinculado automaticamente à casa atual.';
