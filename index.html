@@ -443,18 +443,14 @@ async function carregarPerfil(user){
 
 async function carregarCasasDoUsuario(){
   if(!usuarioAtual?.id)throw new Error('Usuário não identificado.');
-  const {data,error}=await supabaseClient
-    .from('membros_casa')
-    .select('casa_id,papel,casas(id,nome,proprietario_id)')
-    .eq('usuario_id',usuarioAtual.id);
-
+  const {data,error}=await supabaseClient.rpc('listar_minhas_casas');
   if(error)throw new Error('Não foi possível carregar suas casas: '+error.message);
 
-  casasUsuario=(data||[]).filter(x=>x.casa_id&&x.casas).map(x=>({
+  casasUsuario=(data||[]).map(x=>({
     id:x.casa_id,
-    nome:x.casas.nome||'Minha casa',
+    nome:x.nome||'Minha casa',
     papel:x.papel||'membro',
-    proprietario_id:x.casas.proprietario_id||null
+    proprietario_id:x.proprietario_id||null
   }));
 
   if(!casasUsuario.length){
