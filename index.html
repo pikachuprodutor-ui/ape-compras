@@ -500,7 +500,7 @@ async function liberarSessao(user){
   await aceitarConvitePendente();
   if(!casaAtual){ mostrarAplicativo(); return; }
   mostrarAplicativo();
-  $('navAdmin').style.display=usuarioPodeEditarCasa()?'flex':'none';
+  $('navAdmin').style.display=usuarioPodeGerenciarCasa()?'flex':'none';
   carregarLocal();
   atualizarAdminTela();
   await carregarProdutos();
@@ -566,7 +566,10 @@ function abrirDetalheEstoque(id){detalheEstoqueId=id;renderDetalheEstoque();abri
 function renderDetalheEstoque(){
   const p=produtos.find(x=>Number(x.id)===Number(detalheEstoqueId));
   if(!p){$('estoqueDetail').innerHTML='<div class="empty">Produto não encontrado.</div>';return}
-  $('estoqueDetail').innerHTML=`<div class="detail"><div class="detail-top">${fotoHtml(p,'detail-photo')}<div><h2>${esc(p.produto)}</h2><div class="product-meta">${esc(p.categoria||'Sem categoria')}</div></div></div><div class="product-stats" style="margin-top:18px"><span>Ideal <strong>${ideal(p)}</strong></span><span>Atual <strong>${atual(p)}</strong></span><span class="${falta(p)>0?'need':'ok'}">${falta(p)>0?'A comprar '+falta(p):'Estoque OK'}</span></div><div class="detail-actions"><div class="qty"><button onclick="alterarEstoque(${p.id},-1)">−</button><strong>${atual(p)}</strong><button onclick="alterarEstoque(${p.id},1)">+</button></div></div></div>`;
+  $('estoqueDetail').innerHTML=`<div class="detail"><div class="detail-top">${fotoHtml(p,'detail-photo')}<div><h2>${esc(p.produto)}</h2><div class="product-meta">${esc(p.categoria||'Sem categoria')}</div></div></div><div class="product-stats" style="margin-top:18px"><span>Ideal <strong>${ideal(p)}</strong></span><span>Atual <strong>${atual(p)}</strong></span><span class="${falta(p)>0?'need':'ok'}">${falta(p)>0?'A comprar '+falta(p):'Estoque OK'}</span></div><div class="detail-actions">
+  <div class="qty"><button onclick="alterarEstoque(${p.id},-1)">−</button><strong>${atual(p)}</strong><button onclick="alterarEstoque(${p.id},1)">+</button></div>
+  <button class="btn" onclick="adminEditarProduto(${p.id})">Editar produto</button>
+</div></div>`;
 }
 async function alterarEstoque(id,delta){
   const p=produtos.find(x=>Number(x.id)===Number(id));if(!p)return;
@@ -1027,12 +1030,14 @@ function renderAdminProdutos(){
   $('adminProductsBody').innerHTML=arr.length?arr.map(p=>`<tr><td>${esc(p.codigo||'')}</td><td><strong>${esc(p.produto)}</strong></td><td>${esc(p.categoria||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="actions"><button class="btn small" onclick="adminEditarProduto(${p.id})">Editar</button><button class="btn small danger" onclick="adminExcluirProduto(${p.id})">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';
 }
 function adminNovoProduto(){
+  if(!usuarioPodeEditarCasa())return;
   modalMode='admin-produto';modalIndex=null;
   $('modalTitle').textContent='Novo produto';$('modalText').textContent='O produto será criado dentro da casa atual.';
   $('modalBody').innerHTML=`<div class="admin-form"><label>Código<input id="admCodigo" placeholder="Ex.: P103"></label><label>Produto<input id="admProduto" placeholder="Nome do produto"></label><label>Categoria<input id="admCategoria" placeholder="Ex.: Alimentos"></label><label>Status<select id="admStatus"><option>Ativo</option><option>Inativo</option></select></label><label>Quantidade ideal<input id="admIdeal" type="number" min="0" value="1"></label><label>Quantidade atual<input id="admAtual" type="number" min="0" value="0"></label><label class="full">Foto do produto<input id="admFotoFile" type="file" accept="image/*"><input id="admFotoUrl" type="hidden"><div id="admFotoPreview" class="photo-preview">Sem foto</div></label></div>`;
   prepararFotoAdmin();$('modal').classList.add('show');
 }
 function adminEditarProduto(id){
+  if(!usuarioPodeEditarCasa())return;
   const p=produtos.find(x=>Number(x.id)===Number(id));if(!p)return;
   modalMode='admin-editar-produto';modalIndex=id;
   $('modalTitle').textContent='Editar produto';$('modalText').textContent='Alterações valem para todos os membros desta casa.';
