@@ -273,6 +273,19 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
           </table>
         </div>
       </div>
+
+      <div class="admin-box">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div><h2>Catálogo padrão</h2><div class="sub">Produtos que serão usados como base quando uma nova casa for criada.</div></div>
+          <button class="btn primary" onclick="adminNovoProdutoPadrao()">+ Adicionar produto padrão</button>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table class="admin-table">
+            <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Ideal</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="adminCatalogBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
@@ -1132,6 +1145,83 @@ async function chamarAdminUsuarios(payload){
   finally{clearTimeout(timeout)}
 }
 
+
+async function renderAdminCatalogo(){
+  if(!usuarioEhAdmin())return;
+  const body=$('adminCatalogBody'); if(!body)return;
+  body.innerHTML='<tr><td colspan="6">Carregando...</td></tr>';
+  const {data,error}=await supabaseClient.rpc('listar_catalogo_padrao');
+  if(error){body.innerHTML='<tr><td colspan="6">'+esc(error.message)+'</td></tr>';return}
+  body.innerHTML=(data||[]).map(p=>`<tr>
+    <td>${esc(p.codigo||'')}</td>
+    <td><strong>${esc(p.produto||'')}</strong></td>
+    <td>${esc(p.categoria||'')}</td>
+    <td>${p.ideal??0}</td>
+    <td><span class="tag ${p.status==='Ativo'?'green':'red'}">${esc(p.status||'Ativo')}</span></td>
+    <td>
+      <button class="btn small" onclick="adminEditarProdutoPadrao('${p.codigo}')">Editar</button>
+      <button class="btn small danger" onclick="adminExcluirProdutoPadrao('${p.codigo}')">Excluir</button>
+    </td>
+  </tr>`).join('')||'<tr><td colspan="6">Nenhum produto padrão.</td></tr>';
+}
+
+function adminNovoProdutoPadrao(){
+  if(!usuarioEhAdmin())return;
+  modalMode='admin-produto-padrao';modalIndex=null;
+  $('modalTitle').textContent='Novo produto padrão';
+  $('modalText').textContent='Este produto será usado nas próximas casas criadas.';
+  $('modalBody').innerHTML=`<div class="admin-form">
+    <label>Código<input id="admCodigo" placeholder="Ex.: P103"></label>
+    <label>Produto<input id="admProduto" placeholder="Nome do produto"></label>
+    <label>Categoria<input id="admCategoria" placeholder="Ex.: Alimentos"></label>
+    <label>Status<select id="admStatus"><option>Ativo</option><option>Inativo</option></select></label>
+    <label>Quantidade ideal<input id="admIdeal" type="number" min="0" value="1"></label>
+  </div>`;
+  $('modal').classList.add('show');
+}
+
+async function adminEditarProdutoPadrao(codigo){
+  if(!usuarioEhAdmin())return;
+  const {data,error}=await supabaseClient.rpc('buscar_produto_padrao',{p_codigo:codigo});
+  if(error){mostrar(error.message);return}
+  const p=data?.[0]||data;
+  if(!p){mostrar('Produto padrão não encontrado');return}
+  modalMode='admin-editar-produto-padrao';modalIndex=codigo;
+  $('modalTitle').textContent='Editar produto padrão';
+  $('modalText').textContent='A alteração vale para novas casas criadas.';
+  $('modalBody').innerHTML=`<div class="admin-form">
+    <label>Código<input id="admCodigo" value="${esc(p.codigo||'')}" disabled></label>
+    <label>Produto<input id="admProduto" value="${esc(p.produto||'')}"></label>
+    <label>Categoria<input id="admCategoria" value="${esc(p.categoria||'')}"></label>
+    <label>Status<select id="admStatus"><option ${p.status==='Ativo'?'selected':''}>Ativo</option><option ${p.status==='Inativo'?'selected':''}>Inativo</option></select></label>
+    <label>Quantidade ideal<input id="admIdeal" type="number" min="0" value="${Number(p.ideal||0)}"></label>
+  </div>`;
+  $('modal').classList.add('show');
+}
+
+async function adminSalvarProdutoPadrao(){
+  if(!usuarioEhAdmin())return;
+  const produto=$('admProduto').value.trim(),categoria=$('admCategoria').value.trim(),status=$('admStatus').value,ideal=Math.max(0,Number($('admIdeal').value||0));
+  let codigo=$('admCodigo').value.trim();
+  if(!produto||!codigo){mostrar('Informe código e produto');return}
+  let r;
+  if(modalMode==='admin-editar-produto-padrao'){
+    r=await supabaseClient.rpc('editar_produto_padrao',{p_codigo:modalIndex,p_produto:produto,p_categoria:categoria,p_ideal:ideal,p_status:status});
+  }else{
+    r=await supabaseClient.rpc('adicionar_produto_padrao',{p_codigo:codigo,p_produto:produto,p_categoria:categoria,p_ideal:ideal,p_status:status});
+  }
+  if(r.error){mostrar(r.error.message);return}
+  closeModal();await renderAdminCatalogo();mostrar('Catálogo atualizado');
+}
+
+async function adminExcluirProdutoPadrao(codigo){
+  if(!usuarioEhAdmin())return;
+  if(!confirm('Excluir este produto do catálogo padrão? Ele não será adicionado a novas casas.'))return;
+  const {error}=await supabaseClient.rpc('excluir_produto_padrao',{p_codigo:codigo});
+  if(error){mostrar(error.message);return}
+  await renderAdminCatalogo();mostrar('Produto padrão excluído');
+}
+
 async function renderAdminPrincipal(){
   if(!usuarioEhAdmin())return;
   const up=$('adminGlobalUsersBody'), hp=$('adminGlobalHousesBody');
@@ -1315,6 +1405,7 @@ function atualizarAdminTela(){
     denied.style.display='none';
     if(global)global.style.display='block';
     renderAdminPrincipal();
+    renderAdminCatalogo();
   }else if(usuarioPodeGerenciarCasa()){
     panel.style.display='block';
     denied.style.display='none';
