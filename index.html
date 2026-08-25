@@ -274,25 +274,14 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
         </div>
       </div>
 
-      <div class="admin-box">
-        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-          <div><h2>Catálogo padrão</h2><div class="sub">Produtos que serão usados como base quando uma nova casa for criada.</div></div>
-          <button class="btn primary" onclick="adminNovoProdutoPadrao()">+ Adicionar produto padrão</button>
-        </div>
-        <div class="table-wrap" style="margin-top:12px">
-          <table class="admin-table">
-            <thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Ideal</th><th>Status</th><th>Ações</th></tr></thead>
-            <tbody id="adminCatalogBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
     <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
     <div class="admin-grid">
-      <div class="admin-box">
-        <h2>Produtos</h2><div class="sub">Cadastre, edite e remova produtos da casa atual.</div>
-        <button class="btn primary" onclick="adminNovoProduto()">Novo produto</button>
+      <div class="admin-box" id="adminProductCard">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div><h2 id="adminProductsTitle">Produtos</h2><div class="sub" id="adminProductsSub">Cadastre, edite e remova produtos da casa atual.</div></div>
+          <button id="adminNewProductBtn" class="btn primary" onclick="adminNovoProduto()">Novo produto</button>
+        </div>
       </div>
       <div class="admin-box">
         <h2>Minha casa</h2>
@@ -1075,9 +1064,25 @@ function renderAreaConvite(){
 
 
 /* ADMIN PRODUTOS */
-function renderAdminProdutos(){
-  if(!usuarioPodeEditarCasa())return;
+async function renderAdminProdutos(){
+  if(!usuarioPodeEditarCasa() && !usuarioEhAdmin())return;
   const q=normalizar($('adminSearch')?.value||'');
+  if(usuarioEhAdmin()){
+    const title=$('adminProductsTitle'),sub=$('adminProductsSub'),btn=$('adminNewProductBtn');
+    if(title)title.textContent='Produtos padrão';
+    if(sub)sub.textContent='Esta é a lista padrão usada como base para novas casas.';
+    if(btn){btn.textContent='Cadastrar produto padrão';btn.onclick=adminNovoProdutoPadrao}
+    const {data,error}=await supabaseClient.rpc('listar_catalogo_padrao');
+    if(error){$('adminProductsBody').innerHTML='<tr><td colspan="7">'+esc(error.message)+'</td></tr>';return}
+    const arr=(data||[]).filter(p=>!q||normalizar(p.produto).includes(q)||normalizar(p.codigo).includes(q)||normalizar(p.categoria).includes(q));
+    $('adminProductsBody').innerHTML=arr.length?arr.map(p=>`<tr><td>${esc(p.codigo||'')}</td><td><strong>${esc(p.produto||'')}</strong></td><td>${esc(p.categoria||'')}</td><td>${p.ideal??0}</td><td>—</td><td><span class="tag ${p.status==='Ativo'?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="actions"><button class="btn small" onclick="adminEditarProdutoPadrao('${esc(p.codigo)}')">Editar</button><button class="btn small danger" onclick="adminExcluirProdutoPadrao('${esc(p.codigo)}')">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7">Nenhum produto padrão encontrado.</td></tr>';
+    return;
+  }
+  if(!usuarioPodeEditarCasa())return;
+  const title=$('adminProductsTitle'),sub=$('adminProductsSub'),btn=$('adminNewProductBtn');
+  if(title)title.textContent='Produtos';
+  if(sub)sub.textContent='Cadastre, edite e remova produtos da casa atual.';
+  if(btn){btn.textContent='Novo produto';btn.onclick=adminNovoProduto}
   const arr=produtos.filter(p=>!q||normalizar(p.produto).includes(q)||normalizar(p.codigo).includes(q)||normalizar(p.categoria).includes(q));
   $('adminProductsBody').innerHTML=arr.length?arr.map(p=>`<tr><td>${esc(p.codigo||'')}</td><td><strong>${esc(p.produto)}</strong></td><td>${esc(p.categoria||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="actions"><button class="btn small" onclick="adminEditarProduto(${p.id})">Editar</button><button class="btn small danger" onclick="adminExcluirProduto(${p.id})">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';
 }
@@ -1405,7 +1410,7 @@ function atualizarAdminTela(){
     denied.style.display='none';
     if(global)global.style.display='block';
     renderAdminPrincipal();
-    renderAdminCatalogo();
+    renderAdminProdutos();
   }else if(usuarioPodeGerenciarCasa()){
     panel.style.display='block';
     denied.style.display='none';
