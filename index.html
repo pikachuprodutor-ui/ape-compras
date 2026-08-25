@@ -234,6 +234,47 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 <section id="admin" class="page">
   <div id="adminDenied" class="empty" style="display:none">Acesso restrito à administração.</div>
   <div id="adminPanel" style="display:none">
+    <div id="adminGlobalPanel" style="display:none">
+      <div class="page-head">
+        <div>
+          <h1>Painel do Administrador</h1>
+          <p>Visão geral de usuários e casas do aplicativo.</p>
+        </div>
+      </div>
+
+      <div class="admin-grid" id="adminStats">
+        <div class="admin-box"><div class="sub">Usuários</div><div id="statUsuarios" style="font-size:32px;font-weight:800">—</div></div>
+        <div class="admin-box"><div class="sub">Casas</div><div id="statCasas" style="font-size:32px;font-weight:800">—</div></div>
+        <div class="admin-box"><div class="sub">Usuários ativos</div><div id="statAtivos" style="font-size:32px;font-weight:800">—</div></div>
+        <div class="admin-box"><div class="sub">Bloqueados</div><div id="statBloqueados" style="font-size:32px;font-weight:800">—</div></div>
+      </div>
+
+      <div class="admin-box">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div><h2>Usuários do aplicativo</h2><div class="sub">Todas as contas cadastradas, independentemente da casa.</div></div>
+          <button class="btn" onclick="renderAdminPrincipal()">Atualizar</button>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table class="user-table">
+            <thead><tr><th>Nome</th><th>E-mail</th><th>Casa(s)</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody id="adminGlobalUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-box">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div><h2>Casas cadastradas</h2><div class="sub">Todas as casas e seus proprietários.</div></div>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table class="admin-table">
+            <thead><tr><th>Casa</th><th>Proprietário</th><th>Membros</th><th>Ações</th></tr></thead>
+            <tbody id="adminGlobalHousesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
     <div class="admin-grid">
       <div class="admin-box">
@@ -1090,6 +1131,59 @@ async function chamarAdminUsuarios(payload){
   }catch(e){if(e?.name==='AbortError')throw new Error('A criação demorou mais de 15 segundos.');throw e}
   finally{clearTimeout(timeout)}
 }
+
+async function renderAdminPrincipal(){
+  if(!usuarioEhAdmin())return;
+  const up=$('adminGlobalUsersBody'), hp=$('adminGlobalHousesBody');
+  if(up)up.innerHTML='<tr><td colspan="6">Carregando...</td></tr>';
+  if(hp)hp.innerHTML='<tr><td colspan="4">Carregando...</td></tr>';
+
+  const [{data:users,error:ue},{data:houses,error:he}]=await Promise.all([
+    supabaseClient.rpc('listar_usuarios_admin'),
+    supabaseClient.rpc('listar_casas_admin')
+  ]);
+
+  if(ue){if(up)up.innerHTML='<tr><td colspan="6">'+esc(ue.message)+'</td></tr>';}
+  else{
+    const rows=users||[];
+    if($('statUsuarios'))$('statUsuarios').textContent=rows.length;
+    if($('statAtivos'))$('statAtivos').textContent=rows.filter(x=>x.ativo!==false).length;
+    if($('statBloqueados'))$('statBloqueados').textContent=rows.filter(x=>x.ativo===false).length;
+    if(up)up.innerHTML=rows.map(u=>{
+      const me=u.id===usuarioAtual.id;
+      return `<tr>
+        <td><strong>${esc(u.nome||'Sem nome')}</strong>${me?' <span class="tag">Você</span>':''}</td>
+        <td>${esc(u.email||'')}</td>
+        <td>${esc(u.casas||'Sem casa')}</td>
+        <td>${esc(u.tipo==='admin'?'Administrador':(u.tipo==='proprietario'?'Proprietário':'Membro'))}</td>
+        <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
+        <td>${me?'—':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
+      </tr>`;
+    }).join('')||'<tr><td colspan="6">Nenhum usuário.</td></tr>';
+  }
+
+  if(he){if(hp)hp.innerHTML='<tr><td colspan="4">'+esc(he.message)+'</td></tr>';}
+  else{
+    const rows=houses||[];
+    if($('statCasas'))$('statCasas').textContent=rows.length;
+    if(hp)hp.innerHTML=rows.map(h=>`<tr>
+      <td><strong>${esc(h.nome||'Sem nome')}</strong></td>
+      <td>${esc(h.proprietario_nome||'Sem proprietário')}<br><span class="sub">${esc(h.proprietario_email||'')}</span></td>
+      <td>${h.membros||0}</td>
+      <td><button class="btn small danger" onclick="adminExcluirCasaGlobal('${h.id}')">Excluir</button></td>
+    </tr>`).join('')||'<tr><td colspan="4">Nenhuma casa.</td></tr>';
+  }
+}
+
+async function adminExcluirCasaGlobal(id){
+  if(!usuarioEhAdmin())return;
+  if(!confirm('Excluir esta casa e seus vínculos? Esta ação não pode ser desfeita.'))return;
+  const {error}=await supabaseClient.rpc('excluir_casa_admin',{p_casa_id:id});
+  if(error){mostrar(error.message);return}
+  await renderAdminPrincipal();
+  mostrar('Casa excluída');
+}
+
 async function renderAdminUsuarios(){
   if(!usuarioPodeGerenciarCasa())return;
   const body=$('adminUsersBody');
@@ -1214,8 +1308,26 @@ async function adminLimparHistorico(){
 
 /* ADMIN TELA */
 function atualizarAdminTela(){
-  const panel=$('adminPanel'),denied=$('adminDenied');if(!panel||!denied)return;
-  if(usuarioPodeEditarCasa()){panel.style.display='block';denied.style.display='none';renderAdminProdutos();renderAdminHistorico();renderAreaConvite();if(usuarioPodeGerenciarCasa())renderAdminUsuarios()}else{panel.style.display='none';denied.style.display='block'}
+  const panel=$('adminPanel'),denied=$('adminDenied'),global=$('adminGlobalPanel');
+  if(!panel||!denied)return;
+  if(usuarioEhAdmin()){
+    panel.style.display='block';
+    denied.style.display='none';
+    if(global)global.style.display='block';
+    renderAdminPrincipal();
+  }else if(usuarioPodeGerenciarCasa()){
+    panel.style.display='block';
+    denied.style.display='none';
+    if(global)global.style.display='none';
+    renderAdminProdutos();
+    renderAdminHistorico();
+    renderAreaConvite();
+    renderAdminUsuarios();
+  }else{
+    panel.style.display='none';
+    denied.style.display='block';
+    if(global)global.style.display='none';
+  }
 }
 
 /* ATUALIZAÇÃO */
