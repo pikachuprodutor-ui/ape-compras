@@ -157,7 +157,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
     <p>Você ainda não participa de nenhuma casa. Crie a sua ou entre por um convite.</p>
     <div id="onboardingChoice">
       <button class="auth-submit" style="margin-top:16px" onclick="mostrarCriarCasa()">Criar minha casa</button>
-      <button class="btn" style="width:100%;margin-top:10px" onclick="mostrarEntrarConvite()">Entrar por convite</button>
+      <button class="btn" style="width:100%;margin-top:10px" onclick="mostrarEntrarConvite()">Entrar com código</button>
     </div>
     <div id="onboardingCreate" style="display:none">
       <label class="auth-field">Nome da casa<input id="newHouseName" placeholder="Ex.: Minha casa"></label>
@@ -234,7 +234,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 <section id="admin" class="page">
   <div id="adminDenied" class="empty" style="display:none">Acesso restrito à administração.</div>
   <div id="adminPanel" style="display:none">
-    <div class="page-head"><div><h1>Administração</h1><p>Controle da casa, estoque e usuários.</p></div></div>
+    <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
     <div class="admin-grid">
       <div class="admin-box">
         <h2>Produtos</h2><div class="sub">Cadastre, edite e remova produtos da casa atual.</div>
@@ -298,7 +298,9 @@ const ideal=p=>Number(p?.ideal||0);
 const falta=p=>Math.max(ideal(p)-atual(p),0);
 const ativo=p=>String(p?.status||'Ativo').toLowerCase()!=='inativo';
 function mostrar(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2300)}
-function usuarioEhAdmin(){return perfilAtual?.ativo!==false && (String(perfilAtual?.tipo||'').toLowerCase()==='admin' || casaAtual?.papel==='proprietario')}
+function usuarioPodeEditarCasa(){return perfilAtual?.ativo!==false && !!casaAtual;}
+function usuarioEhAdmin(){return String(perfilAtual?.tipo||'').toLowerCase()==='admin'&&perfilAtual?.ativo!==false}
+function usuarioPodeGerenciarCasa(){return perfilAtual?.ativo!==false && (usuarioEhAdmin() || casaAtual?.papel==='proprietario');}
 
 function chaveLocal(nome){return 'ape_'+nome+'_'+(casaAtual?.id||'sem-casa')+'_'+(usuarioAtual?.id||'sem-usuario')}
 function salvarLocal(){
@@ -498,7 +500,7 @@ async function liberarSessao(user){
   await aceitarConvitePendente();
   if(!casaAtual){ mostrarAplicativo(); return; }
   mostrarAplicativo();
-  $('navAdmin').style.display=usuarioEhAdmin()?'flex':'none';
+  $('navAdmin').style.display=usuarioPodeEditarCasa()?'flex':'none';
   carregarLocal();
   atualizarAdminTela();
   await carregarProdutos();
@@ -982,12 +984,18 @@ async function criarCasaPeloModal(){
 }
 async function gerarConvite(){
   if(!casaAtual)return;
-  const {data,error}=await supabaseClient.rpc('criar_convite_casa',{p_casa_id:casaAtual.id});
-  if(error){mostrar('Não foi possível gerar o convite: '+error.message);return}
-  const token=data?.token||data;
-  const link=location.origin+location.pathname+'?convite='+encodeURIComponent(token);
-  $('inviteArea').innerHTML='<input id="inviteLink" value="'+esc(link)+'" readonly><button class="btn primary" onclick="copiarConvite()">Copiar convite</button>';
-  mostrar('Convite gerado');
+  const {data,error}=await supabaseClient.rpc('criar_codigo_convite_casa',{p_casa_id:casaAtual.id});
+  if(error){mostrar('Não foi possível gerar o código: '+error.message);return}
+  const codigo=data?.codigo||data;
+  $('inviteArea').innerHTML=`
+    <div style="width:100%">
+      <div class="sub" style="margin-bottom:6px">Código de convite — válido para 1 pessoa</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <strong style="font-size:22px;letter-spacing:2px">${esc(codigo)}</strong>
+        <button class="btn primary" onclick="navigator.clipboard.writeText('${esc(codigo)}');mostrar('Código copiado')">Copiar código</button>
+      </div>
+    </div>`;
+  mostrar('Código de convite gerado');
 }
 async function copiarConvite(){
   const input=$('inviteLink');
@@ -1003,7 +1011,7 @@ async function copiarConvite(){
 function renderAreaConvite(){
   const area=$('inviteArea');
   if(!area)return;
-  if(casaAtual?.papel==='proprietario'){
+  if(usuarioPodeGerenciarCasa()){
     area.innerHTML='<button class="btn" onclick="gerarConvite()">Convidar pessoa</button>';
   }else{
     area.innerHTML='<span class="product-meta">Você participa desta casa como membro.</span>';
@@ -1013,7 +1021,7 @@ function renderAreaConvite(){
 
 /* ADMIN PRODUTOS */
 function renderAdminProdutos(){
-  if(!usuarioEhAdmin())return;
+  if(!usuarioPodeEditarCasa())return;
   const q=normalizar($('adminSearch')?.value||'');
   const arr=produtos.filter(p=>!q||normalizar(p.produto).includes(q)||normalizar(p.codigo).includes(q)||normalizar(p.categoria).includes(q));
   $('adminProductsBody').innerHTML=arr.length?arr.map(p=>`<tr><td>${esc(p.codigo||'')}</td><td><strong>${esc(p.produto)}</strong></td><td>${esc(p.categoria||'')}</td><td>${ideal(p)}</td><td>${atual(p)}</td><td><span class="tag ${ativo(p)?'green':'red'}">${esc(p.status||'Ativo')}</span></td><td><div class="actions"><button class="btn small" onclick="adminEditarProduto(${p.id})">Editar</button><button class="btn small danger" onclick="adminExcluirProduto(${p.id})">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7">Nenhum produto encontrado.</td></tr>';
@@ -1036,7 +1044,7 @@ function prepararFotoAdmin(){
   input.onchange=function(){const f=this.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>preview.innerHTML=`<img src="${r.result}" alt="">`;r.readAsDataURL(f)}
 }
 async function adminSalvarProduto(){
-  if(!usuarioEhAdmin())return;
+  if(!usuarioPodeEditarCasa())return;
   const nome=$('admProduto').value.trim(),categoria=$('admCategoria').value.trim(),status=$('admStatus').value;
   let codigo=$('admCodigo').value.trim(),idealV=Math.max(0,Number($('admIdeal').value||0)),atualV=Math.max(0,Number($('admAtual').value||0));
   if(!nome){mostrar('Informe o produto');return}
@@ -1080,7 +1088,7 @@ async function chamarAdminUsuarios(payload){
   finally{clearTimeout(timeout)}
 }
 async function renderAdminUsuarios(){
-  if(!usuarioEhAdmin())return;
+  if(!usuarioPodeGerenciarCasa())return;
   const body=$('adminUsersBody');
   if(!body)return;
   body.innerHTML='<tr><td colspan="5">Carregando...</td></tr>';
@@ -1189,7 +1197,7 @@ async function adminLimparHistorico(){
 /* ADMIN TELA */
 function atualizarAdminTela(){
   const panel=$('adminPanel'),denied=$('adminDenied');if(!panel||!denied)return;
-  if(usuarioEhAdmin()){panel.style.display='block';denied.style.display='none';renderAdminProdutos();renderAdminUsuarios();renderAdminHistorico();renderAreaConvite()}else{panel.style.display='none';denied.style.display='block'}
+  if(usuarioPodeEditarCasa()){panel.style.display='block';denied.style.display='none';renderAdminProdutos();renderAdminHistorico();renderAreaConvite();if(usuarioPodeGerenciarCasa())renderAdminUsuarios()}else{panel.style.display='none';denied.style.display='block'}
 }
 
 /* ATUALIZAÇÃO */
@@ -1214,22 +1222,23 @@ async function modalSave(){
 
 
 async function processarConviteInicial(){
-  const token=new URLSearchParams(location.search).get('convite');
-  if(!token)return;
-  // Guarda o token até o usuário estar autenticado.
-  sessionStorage.setItem('ape_convite_pendente',token);
+  // Convites agora são códigos digitados pelo usuário.
+  // Mantemos suporte a um código já pendente na sessão.
 }
 async function aceitarConvitePendente(){
-  const token=sessionStorage.getItem('ape_convite_pendente');
-  if(!token||!usuarioAtual?.id)return;
+  const codigo=sessionStorage.getItem('ape_convite_pendente');
+  if(!codigo||!usuarioAtual?.id)return;
   try{
-    const {error}=await supabaseClient.rpc('aceitar_convite_casa',{p_token:token});
+    const {error}=await supabaseClient.rpc('aceitar_codigo_convite_casa',{p_codigo:codigo});
     if(error)throw error;
     sessionStorage.removeItem('ape_convite_pendente');
-    history.replaceState({},'',location.pathname);
     await carregarCasasDoUsuario();
-    mostrar('Você entrou na casa pelo convite');
-  }catch(e){console.error('CONVITE:',e);mostrar('Não foi possível aceitar o convite: '+e.message)}
+    mostrar('Você entrou na casa pelo código');
+  }catch(e){
+    console.error('CONVITE:',e);
+    sessionStorage.removeItem('ape_convite_pendente');
+    mostrar('Não foi possível usar o código: '+e.message);
+  }
 }
 
 /* INICIALIZAÇÃO */
