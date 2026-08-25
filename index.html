@@ -288,7 +288,6 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       </div>
     </div>
 
-    <div id="adminHousePanel">
     <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
     <div class="admin-grid">
       <div class="admin-box">
@@ -322,7 +321,6 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <div class="table-wrap" style="margin-top:12px"><table class="admin-table"><thead><tr><th>Data</th><th>Mercado</th><th>Total</th><th>Usuário</th><th>Ações</th></tr></thead><tbody id="adminHistoryBody"></tbody></table></div>
     </div>
   </div>
-    </div>
 </section>
 
 </main>
@@ -1406,14 +1404,12 @@ function atualizarAdminTela(){
     panel.style.display='block';
     denied.style.display='none';
     if(global)global.style.display='block';
-    if($('adminHousePanel'))$('adminHousePanel').style.display='none';
     renderAdminPrincipal();
     renderAdminCatalogo();
   }else if(usuarioPodeGerenciarCasa()){
     panel.style.display='block';
     denied.style.display='none';
     if(global)global.style.display='none';
-    if($('adminHousePanel'))$('adminHousePanel').style.display='block';
     renderAdminProdutos();
     renderAdminHistorico();
     renderAreaConvite();
@@ -1422,7 +1418,6 @@ function atualizarAdminTela(){
     panel.style.display='none';
     denied.style.display='block';
     if(global)global.style.display='none';
-    if($('adminHousePanel'))$('adminHousePanel').style.display='none';
   }
 }
 
