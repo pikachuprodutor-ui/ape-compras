@@ -109,6 +109,141 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 .onboarding.show{display:flex}.onboarding-card{width:min(500px,100%);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px}
 .onboarding-card h1{margin:0 0 8px}.onboarding-card p{color:var(--muted)}
 
+
+
+/* =========================================================
+   ADMIN — RESPONSIVIDADE COMPLETA PARA CELULAR (V16)
+   Desktop permanece em tabelas. No celular, as linhas viram cards.
+========================================================= */
+@media(max-width:760px){
+  /* Resumo do administrador: 2 x 2 */
+  #adminStats.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #adminStats .admin-box{padding:14px;min-height:96px}
+  #adminStats .admin-box .sub{font-size:11px;line-height:1.25}
+  #adminStats .admin-box div[style*="font-size:32px"]{font-size:26px!important;margin-top:6px}
+
+  /* Área admin: espaçamento e botões confortáveis */
+  #admin .admin-box{padding:14px;margin-bottom:12px}
+  #admin .admin-box h2{font-size:18px}
+  #admin .admin-box .sub{font-size:12px;line-height:1.45}
+  #admin .btn{min-height:42px}
+  #admin .page-head{margin-bottom:16px}
+  #admin .page-head h1{font-size:26px;line-height:1.1}
+
+  /* Produtos + Minha casa: uma coluna, sem aperto */
+  #admin .admin-grid{grid-template-columns:1fr;gap:12px}
+
+  /* Busca de produto */
+  #admin .admin-box input.search{max-width:none!important;width:100%}
+  #admin .admin-box > div[style*="gap:8px"] > .btn{width:100%}
+
+  /* Tabelas administrativas viram cards */
+  #admin .table-wrap{overflow:visible;border:0;background:transparent}
+  #admin .table-wrap table,
+  #admin .table-wrap thead,
+  #admin .table-wrap tbody,
+  #admin .table-wrap tr,
+  #admin .table-wrap th,
+  #admin .table-wrap td{display:block;width:100%;min-width:0}
+  #admin .table-wrap thead{display:none}
+  #admin .table-wrap table{border:0;background:transparent}
+  #admin .table-wrap tbody{display:grid;gap:10px}
+  #admin .table-wrap tr{
+    background:var(--panel2,#1b1f21);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+  }
+  #admin .table-wrap td{
+    border:0!important;
+    padding:7px 0!important;
+    min-height:0;
+    text-align:left!important;
+    overflow-wrap:anywhere;
+  }
+  #admin .table-wrap td:before{
+    display:block;
+    color:var(--muted);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    margin-bottom:3px;
+  }
+  #admin .table-wrap tr td[colspan]{padding:16px!important;text-align:center!important}
+  #admin .table-wrap tr td[colspan]:before{display:none}
+
+  /* Usuários globais */
+  #adminGlobalUsersBody tr td:nth-child(1):before{content:'Nome'}
+  #adminGlobalUsersBody tr td:nth-child(2):before{content:'E-mail'}
+  #adminGlobalUsersBody tr td:nth-child(3):before{content:'Casa(s)'}
+  #adminGlobalUsersBody tr td:nth-child(4):before{content:'Tipo'}
+  #adminGlobalUsersBody tr td:nth-child(5):before{content:'Status'}
+  #adminGlobalUsersBody tr td:nth-child(6):before{content:'Ações'}
+
+  /* Casas globais */
+  #adminGlobalHousesBody tr td:nth-child(1):before{content:'Casa'}
+  #adminGlobalHousesBody tr td:nth-child(2):before{content:'Proprietário'}
+  #adminGlobalHousesBody tr td:nth-child(3):before{content:'Membros'}
+  #adminGlobalHousesBody tr td:nth-child(4):before{content:'Ações'}
+
+  /* Usuários da casa */
+  #adminUsersBody tr td:nth-child(1):before{content:'Nome'}
+  #adminUsersBody tr td:nth-child(2):before{content:'E-mail'}
+  #adminUsersBody tr td:nth-child(3):before{content:'Casa'}
+  #adminUsersBody tr td:nth-child(4):before{content:'Tipo'}
+  #adminUsersBody tr td:nth-child(5):before{content:'Status'}
+  #adminUsersBody tr td:nth-child(6):before{content:'Ações'}
+
+  /* Produtos */
+  #adminProductsBody tr td:nth-child(1):before{content:'Código'}
+  #adminProductsBody tr td:nth-child(2):before{content:'Produto'}
+  #adminProductsBody tr td:nth-child(3):before{content:'Categoria'}
+  #adminProductsBody tr td:nth-child(4):before{content:'Quantidade ideal'}
+  #adminProductsBody tr td:nth-child(5):before{content:'Estoque atual'}
+  #adminProductsBody tr td:nth-child(6):before{content:'Status'}
+  #adminProductsBody tr td:nth-child(7):before{content:'Ações'}
+
+  /* Histórico */
+  #adminHistoryBody tr td:nth-child(1):before{content:'Data'}
+  #adminHistoryBody tr td:nth-child(2):before{content:'Mercado'}
+  #adminHistoryBody tr td:nth-child(3):before{content:'Total'}
+  #adminHistoryBody tr td:nth-child(4):before{content:'Usuário'}
+  #adminHistoryBody tr td:nth-child(5):before{content:'Ações'}
+
+  /* Ações: nunca cortadas */
+  #admin .actions,
+  #admin .admin-actions,
+  #admin .user-actions,
+  #adminGlobalUsersBody td:last-child,
+  #adminGlobalHousesBody td:last-child,
+  #adminUsersBody td:last-child,
+  #adminProductsBody td:last-child,
+  #adminHistoryBody td:last-child{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  #admin .actions .btn,
+  #admin .admin-actions .btn,
+  #admin .user-actions .btn{flex:1 1 120px}
+  #adminGlobalUsersBody td:last-child .btn,
+  #adminGlobalHousesBody td:last-child .btn,
+  #adminUsersBody td:last-child .btn,
+  #adminProductsBody td:last-child .btn,
+  #adminHistoryBody td:last-child .btn{flex:1 1 120px}
+
+  /* Minha casa / lista de casas */
+  #admin .house-item{align-items:flex-start;flex-direction:column}
+  #admin .house-item .btn{width:100%}
+  #admin .invite-box{display:grid;grid-template-columns:1fr}
+  #admin .invite-box input,#admin .invite-box .btn{width:100%;min-width:0}
+
+  /* Cabeçalhos das caixas com botão */
+  #admin .admin-box > div[style*="justify-content:space-between"] > .btn{width:100%}
+}
+
+@media(max-width:390px){
+  #adminStats.admin-grid{gap:8px}
+  #adminStats .admin-box{padding:12px}
+  #admin .page-head h1{font-size:24px}
+}
 </style>
 </head>
 <body class="auth-locked">
