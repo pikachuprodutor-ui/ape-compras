@@ -1665,7 +1665,40 @@ async function adminExcluirUsuario(id){
 /* ADMIN HISTÓRICO */
 async function renderAdminHistorico(){
   const body=$('adminHistoryBody');if(!body||!usuarioEhAdmin())return;
-  body.innerHTML=historico.length?historico.map(h=>`<tr><td>${new Date(h.data).toLocaleString('pt-BR')}</td><td>${esc(h.mercado)}</td><td>${dinheiro(h.total)}</td><td>${esc(h.usuario||'Usuário')}</td><td><button class="btn small danger" onclick="adminExcluirCompra('${h.id}')">Excluir</button></td></tr>`).join(''):'<tr><td colspan="5">Nenhuma compra registrada.</td></tr>';
+  body.innerHTML=historico.length?historico.map(h=>`<tr><td>${new Date(h.data).toLocaleString('pt-BR')}</td><td>${esc(h.mercado)}</td><td>${dinheiro(h.total)}</td><td>${esc(h.usuario||'Usuário')}</td><td><button class="btn small" onclick="adminEditarCompra('${h.id}')">Editar</button><button class="btn small danger" onclick="adminExcluirCompra('${h.id}')">Excluir</button></td></tr>`).join(''):'<tr><td colspan="5">Nenhuma compra registrada.</td></tr>';
+}
+
+function adminEditarCompra(id){
+  const compra=historico.find(h=>String(h.id)===String(id));
+  if(!compra){mostrar('Compra não encontrada.');return;}
+  modalMode='admin-editar-compra';
+  modalIndex=id;
+  $('modalTitle').textContent='Editar histórico';
+  $('modalText').textContent='Corrija as informações principais desta compra.';
+  $('modalBody').innerHTML=`
+    <div class="admin-form">
+      <label>Mercado<input id="modalEditMercado" value="${esc(compra.mercado||'')}"></label>
+      <label>Total (R$)<input id="modalEditTotal" type="number" min="0" step="0.01" value="${Number(compra.total||0)}"></label>
+    </div>
+    <div class="sub" style="margin-top:10px">A edição altera o mercado e o total exibido no histórico. Os itens da compra não são modificados.</div>
+  `;
+  $('modal').classList.add('show');
+}
+
+async function adminSalvarCompraEditada(){
+  const mercado=($('modalEditMercado')?.value||'').trim();
+  const total=Number(String($('modalEditTotal')?.value||0).replace(',','.'));
+  if(!mercado){mostrar('Informe o mercado.');return;}
+  if(!Number.isFinite(total)||total<0){mostrar('Informe um total válido.');return;}
+  const {error}=await supabaseClient
+    .from('compras')
+    .update({mercado,total})
+    .eq('id',modalIndex)
+    .eq('casa_id',casaAtual.id);
+  if(error){mostrar('Erro ao editar compra: '+error.message);return;}
+  closeModal();
+  await carregarHistorico();
+  mostrar('Histórico atualizado');
 }
 async function adminExcluirCompra(id){
   if(!confirm('Excluir esta compra do histórico da casa?'))return;
@@ -1763,6 +1796,7 @@ async function modalSave(){
     listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item adicionado');return;
   }
   if(modalMode==='finalizar'){await concluirCompra();return}
+  if(modalMode==='admin-editar-compra'){await adminSalvarCompraEditada();return}
   if(modalMode==='admin-produto'||modalMode==='admin-editar-produto'){await adminSalvarProduto();return}
   if(modalMode==='admin-novo-usuario'||modalMode==='admin-editar-usuario'){await adminSalvarUsuario();return}
 }
