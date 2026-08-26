@@ -450,6 +450,57 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
   }
 }
 
+
+/* V23 — HISTÓRICO MAIS CLARO E COMPACTO NO CELULAR */
+.history-purchases{margin-top:4px}
+.history-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px}
+.history-section-head h2{margin:0;font-size:19px}
+.history-section-head span{color:var(--muted);font-size:12px;white-space:nowrap}
+
+.history-card{padding:14px 15px}
+.history-card-main{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.history-card-info{min-width:0}
+.history-market{display:block;font-size:17px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-total{flex:0 0 auto;font-size:19px;text-align:right}
+.history-meta{margin-top:5px}
+.history-card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.history-user{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-view-btn{flex:0 0 auto}
+.history-items{margin-top:0;border-top:0;padding-top:0}
+.history-items:not(:empty){margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+
+.history-compare-details{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+.history-compare-details summary{list-style:none;cursor:pointer;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.history-compare-details summary::-webkit-details-marker{display:none}
+.history-compare-details summary strong{display:block;font-size:16px}
+.history-compare-details summary small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.history-compare-arrow{width:20px;height:20px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s ease}
+.history-compare-details[open] .history-compare-arrow{transform:rotate(180deg)}
+.history-compare-content{padding:0 12px 12px}
+.history-compare-content .market-compare{margin:0;padding:14px;border-radius:12px}
+.history-compare-content .market-compare h2{font-size:17px}
+.history-compare-content .market-best{padding:12px;margin-bottom:12px}
+.history-compare-content .market-table{min-width:560px}
+
+@media(max-width:760px){
+  #historico .page-head{margin-bottom:18px}
+  #historico .page-head .btn{width:auto;margin-top:10px}
+  .history-summary{gap:8px;margin-bottom:20px}
+  .history-stat{padding:12px;border-radius:12px}
+  .history-stat strong{font-size:20px;margin-top:5px}
+  .history-section-head{margin-bottom:8px}
+  .history-card{padding:13px}
+  .history-list{gap:8px}
+  .history-card-footer{margin-top:10px;padding-top:9px}
+  .history-compare-details{margin-top:14px}
+}
+@media(max-width:420px){
+  .history-summary{grid-template-columns:repeat(2,1fr)}
+  .history-stat:last-child{grid-column:1/-1}
+  .history-market{font-size:16px}
+  .history-total{font-size:18px}
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -1109,47 +1160,90 @@ async function carregarItensCompra(compraId){
   return data||[];
 }
 async function renderHistorico(){
+  const list=$('historyList');
+
   if(!historico.length){
-    $('historyList').innerHTML='<div class="empty">Nenhuma compra registrada para esta casa.</div>';
+    list.innerHTML='<div class="empty">Nenhuma compra registrada para esta casa.</div>';
     return;
   }
 
   const total=historico.reduce((s,h)=>s+Number(h.total||0),0);
   const media=total/historico.length;
 
+  /*
+    Histórico reorganizado para celular:
+    1. resumo primeiro;
+    2. compras logo em seguida;
+    3. comparativo detalhado fica recolhido para não poluir a tela.
+  */
   let comparativoHtml='';
   try{
     comparativoHtml=await gerarComparativoMercados(historico);
   }catch(e){
     console.error('ERRO NO COMPARATIVO:',e);
-    comparativoHtml='';
   }
 
-  $('historyList').innerHTML=
-    comparativoHtml+
-    `<div class="history-summary">
-      <div class="history-stat"><span>Total registrado</span><strong>${dinheiro(total)}</strong></div>
-      <div class="history-stat"><span>Compras</span><strong>${historico.length}</strong></div>
-      <div class="history-stat"><span>Média</span><strong>${dinheiro(media)}</strong></div>
-    </div>
-    <div class="history-list">
-      ${historico.map(h=>`
-        <article class="history-card">
-          <div class="history-top">
-            <div>
-              <strong>${esc(h.mercado)}</strong>
-              <div class="history-meta">${new Date(h.data).toLocaleString('pt-BR')} • ${esc(h.usuario)}</div>
-            </div>
-            <div class="history-total">${dinheiro(h.total)}</div>
-          </div>
-          <div class="history-items" id="items-${h.id}">
-            <button class="btn small" onclick="verItensCompra('${h.id}',this)">Ver itens</button>
-          </div>
-        </article>
-      `).join('')}
-    </div>`;
-}
+  const comprasHtml=historico.map(h=>{
+    const data=new Date(h.data);
+    const dataTxt=Number.isNaN(data.getTime())?'Data não informada':data.toLocaleString('pt-BR');
 
+    return `
+      <article class="history-card">
+        <div class="history-card-main">
+          <div class="history-card-info">
+            <strong class="history-market">${esc(h.mercado||'Mercado')}</strong>
+            <div class="history-meta">${dataTxt}</div>
+          </div>
+          <div class="history-total">${dinheiro(h.total)}</div>
+        </div>
+
+        <div class="history-card-footer">
+          <span class="history-user">${esc(h.usuario||'Usuário')}</span>
+          <button class="btn small history-view-btn" onclick="verItensCompra('${h.id}',this)">Ver itens</button>
+        </div>
+
+        <div class="history-items" id="items-${h.id}"></div>
+      </article>`;
+  }).join('');
+
+  list.innerHTML=`
+    <section class="history-summary" aria-label="Resumo do histórico">
+      <div class="history-stat">
+        <span>Total</span>
+        <strong>${dinheiro(total)}</strong>
+      </div>
+      <div class="history-stat">
+        <span>Compras</span>
+        <strong>${historico.length}</strong>
+      </div>
+      <div class="history-stat">
+        <span>Média</span>
+        <strong>${dinheiro(media)}</strong>
+      </div>
+    </section>
+
+    <section class="history-purchases">
+      <div class="history-section-head">
+        <h2>Compras recentes</h2>
+        <span>${historico.length} registro${historico.length===1?'':'s'}</span>
+      </div>
+      <div class="history-list">${comprasHtml}</div>
+    </section>
+
+    ${comparativoHtml?`
+      <details class="history-compare-details">
+        <summary>
+          <span>
+            <strong>Comparativo de mercados</strong>
+            <small>Veja onde os produtos estão mais baratos</small>
+          </span>
+          <svg class="history-compare-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="history-compare-content">${comparativoHtml}</div>
+      </details>
+    `:''}
+  `;
+}
 async function gerarComparativoMercados(compras){
   const ids=compras.map(c=>c.id).filter(Boolean);
   if(!ids.length)return '';
@@ -1306,8 +1400,25 @@ async function gerarComparativoMercados(compras){
 
 async function verItensCompra(id,btn){
   const box=$('items-'+id);if(!box)return;
-  try{const itens=await carregarItensCompra(id);box.innerHTML=itens.length?itens.map(x=>`<div class="history-item"><span>${esc(x.produtos?.produto||'Produto')} × ${x.quantidade}</span><strong>${dinheiro(x.subtotal)}</strong></div>`).join(''):'<div class="product-meta">Sem itens registrados.</div>'}
-  catch(e){box.innerHTML='<div class="product-meta">Não foi possível carregar os itens.</div>'}
+
+  // Segundo toque fecha os itens e mantém o card compacto.
+  if(box.dataset.loaded==='true'){
+    const aberto=box.style.display!=='none';
+    box.style.display=aberto?'none':'block';
+    if(btn)btn.textContent=aberto?'Ver itens':'Ocultar itens';
+    return;
+  }
+
+  try{
+    const itens=await carregarItensCompra(id);
+    box.innerHTML=itens.length
+      ?itens.map(x=>`<div class="history-item"><span>${esc(x.produtos?.produto||'Produto')} × ${x.quantidade}</span><strong>${dinheiro(x.subtotal)}</strong></div>`).join('')
+      :'<div class="product-meta">Sem itens registrados.</div>';
+    box.dataset.loaded='true';
+    if(btn)btn.textContent='Ocultar itens';
+  }catch(e){
+    box.innerHTML='<div class="product-meta">Não foi possível carregar os itens.</div>';
+  }
 }
 
 
