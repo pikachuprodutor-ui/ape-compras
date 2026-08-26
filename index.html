@@ -332,6 +332,124 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
   #admin .table-wrap td:last-child .btn{flex-basis:100%}
 }
 
+
+/* V21 — cartões internos compactos e com menos poluição visual */
+@media (max-width:700px){
+  /* Os cards internos deixam de parecer formulários gigantes */
+  #admin .table-wrap tbody{gap:8px}
+
+  #admin .table-wrap tr{
+    padding:12px!important;
+    border-radius:14px;
+  }
+
+  /* Cada informação vira uma linha curta: RÓTULO | VALOR */
+  #admin .table-wrap td:not(:last-child){
+    display:flex!important;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:6px 0!important;
+    font-size:14px!important;
+    line-height:1.35;
+  }
+
+  #admin .table-wrap td:before{
+    display:block!important;
+    flex:0 0 78px;
+    margin:1px 0 0!important;
+    font-size:10px!important;
+    line-height:1.3;
+    color:#9ba3a8;
+  }
+
+  /* Conteúdo fica alinhado à direita e ocupa só o necessário */
+  #admin .table-wrap td:not(:last-child){
+    text-align:right!important;
+  }
+
+  #admin .table-wrap td:not(:last-child) > *{
+    max-width:68%;
+    margin-left:auto;
+  }
+
+  /* Nome é o destaque principal, sem criar uma área enorme */
+  #adminGlobalUsersBody tr td:nth-child(1),
+  #adminUsersBody tr td:nth-child(1),
+  #adminGlobalHousesBody tr td:nth-child(1),
+  #adminProductsBody tr td:nth-child(2){
+    padding-top:0!important;
+    font-weight:700;
+    font-size:16px!important;
+  }
+
+  /* E-mail e textos longos quebram sem estourar o card */
+  #admin .table-wrap td{
+    overflow-wrap:anywhere;
+  }
+
+  /* Ações ficam separadas visualmente e compactas */
+  #adminGlobalUsersBody td:last-child,
+  #adminGlobalHousesBody td:last-child,
+  #adminUsersBody td:last-child,
+  #adminProductsBody td:last-child,
+  #adminHistoryBody td:last-child{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px!important;
+    margin-top:8px;
+    padding-top:10px!important;
+    border-top:1px solid var(--line)!important;
+  }
+
+  #adminGlobalUsersBody td:last-child:before,
+  #adminGlobalHousesBody td:last-child:before,
+  #adminUsersBody td:last-child:before,
+  #adminProductsBody td:last-child:before,
+  #adminHistoryBody td:last-child:before{
+    display:none!important;
+  }
+
+  #adminGlobalUsersBody td:last-child .btn,
+  #adminGlobalHousesBody td:last-child .btn,
+  #adminUsersBody td:last-child .btn,
+  #adminProductsBody td:last-child .btn,
+  #adminHistoryBody td:last-child .btn{
+    width:100%!important;
+    min-height:38px!important;
+    height:38px!important;
+    padding:7px 8px!important;
+    font-size:13px!important;
+    flex:auto!important;
+  }
+
+  /* Se houver apenas um botão, ele ocupa a largura toda */
+  #adminGlobalHousesBody td:last-child .btn:only-child,
+  #adminHistoryBody td:last-child .btn:only-child{
+    grid-column:1/-1;
+  }
+
+  /* Tags pequenas e discretas */
+  #admin .tag{
+    padding:3px 7px;
+    font-size:11px;
+  }
+
+  /* Histórico: card ainda mais enxuto */
+  #adminHistoryBody tr td:not(:last-child){
+    padding:5px 0!important;
+  }
+
+  /* Seções internas: menos espaço morto */
+  #admin .admin-box{
+    padding:14px!important;
+  }
+  #admin .admin-box > h2,
+  #admin .admin-box h2{
+    margin-bottom:5px!important;
+  }
+}
+
 </style>
 </head>
 <body class="auth-locked">
