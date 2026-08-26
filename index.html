@@ -273,6 +273,65 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 }
 @media(min-width:761px){#adminMobileMenu,#adminMobileBack,#adminMobileTitle{display:none!important}}
 
+
+/* =========================================================
+   ADMIN MOBILE — CARDS COMPACTOS
+   Cada registro vira um cartão enxuto, com rótulo e valor
+   na mesma linha para aproveitar melhor a tela do celular.
+========================================================= */
+@media(max-width:760px){
+  #admin .table-wrap tbody{gap:8px}
+  #admin .table-wrap tr{
+    padding:10px 12px;
+    border-radius:12px;
+  }
+  #admin .table-wrap td{
+    display:grid!important;
+    grid-template-columns:104px minmax(0,1fr);
+    column-gap:10px;
+    align-items:start;
+    padding:6px 0!important;
+    font-size:15px;
+    line-height:1.35;
+  }
+  #admin .table-wrap td:before{
+    display:block;
+    margin:2px 0 0!important;
+    font-size:10px;
+    line-height:1.2;
+  }
+  #admin .table-wrap td:last-child{
+    grid-template-columns:1fr!important;
+    margin-top:3px;
+  }
+  #admin .table-wrap td:last-child:before{
+    margin-bottom:5px!important;
+  }
+  #admin .table-wrap td:last-child .btn{
+    flex:1 1 calc(50% - 4px);
+    min-height:42px;
+    padding:9px 10px;
+    font-size:14px;
+  }
+  #adminGlobalHousesBody td:last-child .btn,
+  #adminHistoryBody td:last-child .btn{
+    flex-basis:100%;
+  }
+  #admin .table-wrap td[colspan]{display:block!important;padding:14px!important}
+
+  /* Status fica compacto, sem ocupar uma linha gigante */
+  #admin .table-wrap .tag{display:inline-flex;width:max-content}
+
+  /* Caixas internas das áreas também mais enxutas */
+  #admin .admin-box{padding:16px}
+  #admin .admin-box h2{margin-bottom:5px}
+  #admin .admin-box .sub{line-height:1.4}
+}
+@media(max-width:390px){
+  #admin .table-wrap td{grid-template-columns:92px minmax(0,1fr);font-size:14px}
+  #admin .table-wrap td:last-child .btn{flex-basis:100%}
+}
+
 </style>
 </head>
 <body class="auth-locked">
