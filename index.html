@@ -252,7 +252,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
   #adminMobileTitle{display:block!important;margin-bottom:12px}
   #adminMobileMenu{display:grid;gap:10px;margin-top:8px}
   .admin-mobile-menu-card{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);cursor:pointer}
-  .admin-mobile-menu-card strong{display:block;font-size:16px;margin-bottom:2px}.admin-mobile-menu-card span{font-size:12px;color:var(--muted)}.admin-mobile-arrow{font-size:24px;color:var(--accent)}
+  .admin-mobile-menu-card strong{display:flex;align-items:center;gap:10px;font-size:16px;margin-bottom:2px}.admin-mobile-menu-card span{font-size:12px;color:var(--muted)}.admin-mobile-arrow{font-size:24px;color:var(--accent)}.admin-mobile-icon{width:25px;height:25px;flex:0 0 25px;color:#8fa4b8;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   #adminMobileBack{display:none;width:100%;margin:0 0 12px}
   #adminPanel.admin-mobile-menu-mode > .admin-mobile-source,
   #adminPanel.admin-mobile-menu-mode > .admin-grid,
@@ -456,6 +456,9 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
           <button class="btn primary" onclick="abrirCriarCasa()">+ Nova casa</button>
         </div>
         <div id="adminHouseList" class="house-list"></div>
+        <div class="home-actions" style="margin-top:12px">
+          <button class="btn" onclick="abrirEditarCasa()">Editar nome da casa</button>
+        </div>
         <div id="inviteArea" class="invite-box"></div><div style="margin-top:14px"><button class="btn" onclick="excluirCasaAtual()" style="border-color:#8b3b3b;color:#ff9b9b">Excluir esta casa</button></div>
       </div>
     </div>
@@ -1182,6 +1185,33 @@ async function criarMinhaCasa(){
     mostrar('Casa criada com sucesso');
   }catch(e){$('onboardingStatus').textContent=e.message||'Não foi possível criar a casa.'}
 }
+function abrirEditarCasa(){
+  if(!casaAtual)return;
+  if(casaAtual.papel!=='proprietario' && !usuarioEhAdmin()){
+    mostrar('Somente o proprietário pode editar o nome desta casa.');
+    return;
+  }
+  modalMode='editar-casa'; modalIndex=casaAtual.id;
+  $('modalTitle').textContent='Editar nome da casa';
+  $('modalText').textContent='Altere o nome exibido para todos os membros desta casa.';
+  $('modalBody').innerHTML=`<label class="auth-field">Nome da casa<input id="modalCasaNome" value="${esc(casaAtual.nome||'')}"></label>`;
+  $('modal').classList.add('show');
+}
+async function salvarNomeCasa(){
+  const nome=($('modalCasaNome')?.value||'').trim();
+  if(!nome){mostrar('Informe o nome da casa.');return}
+  if(!casaAtual){mostrar('Casa não encontrada.');return}
+  if(casaAtual.papel!=='proprietario' && !usuarioEhAdmin()){
+    mostrar('Somente o proprietário pode editar o nome desta casa.');
+    return;
+  }
+  const {error}=await supabaseClient.from('casas').update({nome}).eq('id',casaAtual.id);
+  if(error){mostrar('Não foi possível editar a casa: '+error.message);return}
+  closeModal();
+  await carregarCasasDoUsuario();
+  mostrar('Nome da casa atualizado');
+}
+
 async function criarCasaPeloModal(){
   const nome=($('modalCasaNome').value||'').trim();
   if(!nome){mostrar('Informe o nome da casa');return}
@@ -1324,7 +1354,7 @@ async function renderAdminPrincipal(){
         <td>${esc(u.casas||'Sem casa')}</td>
         <td>${esc(u.tipo==='admin'?'Administrador':(u.tipo==='proprietario'?'Proprietário':'Membro'))}</td>
         <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
-        <td>${me?'—':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
+        <td>${me?`<button class="btn small" onclick="adminEditarUsuario('${u.id}')">Editar</button>`:`<button class="btn small" onclick="adminEditarUsuario('${u.id}')">Editar</button> <button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
       </tr>`;
     }).join('')||'<tr><td colspan="6">Nenhum usuário.</td></tr>';
   }
@@ -1372,7 +1402,7 @@ async function renderAdminUsuarios(){
         <td>${esc(u.casas||'Sem casa')}</td>
         <td>${esc(u.tipo==='admin'?'Administrador':'Usuário')}</td>
         <td><span class="tag ${u.ativo!==false?'green':'red'}">${u.ativo!==false?'Ativo':'Bloqueado'}</span></td>
-        <td>${isMe?'':`<button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
+        <td>${isMe?`<button class="btn small" onclick="adminEditarUsuario('${u.id}')">Editar</button>`:`<button class="btn small" onclick="adminEditarUsuario('${u.id}')">Editar</button> <button class="btn small" onclick="adminAlternarUsuario('${u.id}',${u.ativo!==false})">${u.ativo!==false?'Bloquear':'Liberar'}</button> <button class="btn small danger" onclick="adminExcluirUsuario('${u.id}')">Excluir</button>`}</td>
       </tr>`;
     }).join('') || '<tr><td colspan="6">Nenhum usuário cadastrado.</td></tr>';
     return;
@@ -1407,6 +1437,7 @@ async function adminNovoUsuario(){
   $('modalBody').innerHTML='<div class="admin-form"><label>Nome<input id="usrNome"></label><label>E-mail<input id="usrEmail" type="email"></label><label>Senha inicial<input id="usrSenha" type="password" placeholder="Mínimo de 6 caracteres"></label><label>Tipo<select id="usrTipo"><option value="usuario">Usuário</option><option value="admin">Admin</option></select></label><label>Status<select id="usrAtivo"><option value="true">Ativo</option><option value="false">Bloqueado</option></select></label></div>';$('modal').classList.add('show');
 }
 async function adminEditarUsuario(id){
+  if(!usuarioEhAdmin()){mostrar('Somente o administrador principal pode editar usuários do aplicativo.');return}
   const {data,error}=await supabaseClient.from('perfis').select('id,nome,email,tipo,ativo').eq('id',id).single();if(error||!data){mostrar('Usuário não encontrado');return}
   modalMode='admin-editar-usuario';modalIndex=id;$('modalTitle').textContent='Editar usuário';$('modalText').textContent='Deixe a senha vazia para manter a atual.';
   $('modalBody').innerHTML=`<div class="admin-form"><label>Nome<input id="usrNome" value="${esc(data.nome||'')}"></label><label>E-mail<input id="usrEmail" type="email" value="${esc(data.email||'')}"></label><label>Nova senha<input id="usrSenha" type="password"></label><label>Tipo<select id="usrTipo"><option value="usuario" ${data.tipo==='usuario'?'selected':''}>Usuário</option><option value="admin" ${data.tipo==='admin'?'selected':''}>Admin</option></select></label><label>Status<select id="usrAtivo"><option value="true" ${data.ativo!==false?'selected':''}>Ativo</option><option value="false" ${data.ativo===false?'selected':''}>Bloqueado</option></select></label></div>`;$('modal').classList.add('show');
@@ -1477,16 +1508,26 @@ async function adminLimparHistorico(){
 /* ADMIN MOBILE — MENU DE ÁREAS (CORREÇÃO) */
 function setupAdminMobile(){
   const panel=$('adminPanel'),menu=$('adminMobileMenu'); if(!panel||!menu)return;
+  const icon=(name)=>{
+    const paths={
+      users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+      home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z"/><path d="M9 21v-6h6v6"/>',
+      box:'<path d="m21 8-9 5-9-5 9-5 9 5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/>',
+      user:'<circle cx="12" cy="7" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>',
+      receipt:'<path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 7h6M9 11h6M9 15h4"/>'
+    };
+    return `<svg class="admin-mobile-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.box}</svg>`;
+  };
   const itens=[];
   if(usuarioEhAdmin()){
-    itens.push(['usuarios-app','👥','Usuários do aplicativo','Contas cadastradas no aplicativo']);
-    itens.push(['casas','🏠','Casas cadastradas','Veja casas e proprietários']);
+    itens.push(['usuarios-app','users','Usuários do aplicativo','Contas cadastradas no aplicativo']);
+    itens.push(['casas','home','Casas cadastradas','Veja casas e proprietários']);
   }
-  itens.push(['produtos','📦','Produtos','Cadastre, edite e acompanhe o estoque']);
-  itens.push(['minha-casa','🏡','Minha casa','Casas, convites e configurações']);
-  itens.push(['usuarios-casa','👤','Usuários da casa','Gerencie os membros']);
-  itens.push(['historico-admin','🧾','Histórico da casa','Compras e registros']);
-  menu.innerHTML=itens.map(x=>`<button class="admin-mobile-menu-card" onclick="adminMobileOpen('${x[0]}')"><div><strong>${x[1]} ${x[2]}</strong><span>${x[3]}</span></div><div class="admin-mobile-arrow">›</div></button>`).join('');
+  itens.push(['produtos','box','Produtos','Cadastre, edite e acompanhe o estoque']);
+  itens.push(['minha-casa','home','Minha casa','Casas, convites e configurações']);
+  itens.push(['usuarios-casa','user','Usuários da casa','Gerencie os membros']);
+  itens.push(['historico-admin','receipt','Histórico da casa','Compras e registros']);
+  menu.innerHTML=itens.map(x=>`<button class="admin-mobile-menu-card" onclick="adminMobileOpen('${x[0]}')"><div><strong>${icon(x[1])}${x[2]}</strong><span>${x[3]}</span></div><div class="admin-mobile-arrow">›</div></button>`).join('');
   panel.classList.remove('admin-mobile-detail'); panel.classList.add('admin-mobile-menu-mode');
   panel.querySelectorAll('.admin-mobile-open').forEach(el=>el.classList.remove('admin-mobile-open'));
   $('adminGlobalPanel')?.classList.remove('admin-global-open');
@@ -1539,6 +1580,7 @@ function closeModal(){$('modal').classList.remove('show');modalMode=null;modalIn
 async function modalSave(){
   if(modalMode==='cadastro-conta'){await criarContaIndependente();return;}
   if(modalMode==='nova-casa'){await criarCasaPeloModal();return;}
+  if(modalMode==='editar-casa'){await salvarNomeCasa();return;}
   if(modalMode==='manual'){
     const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1));if(!nome){mostrar('Informe o produto');return}
     listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item adicionado');return;
