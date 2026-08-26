@@ -246,39 +246,32 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 }
 
 /* =========================================================
-   ADMIN MOBILE — NAVEGAÇÃO POR SEÇÕES (V17)
-   No celular, o Admin vira um menu. Cada item abre sua área.
+   ADMIN MOBILE — MENU DE ÁREAS (CORREÇÃO)
 ========================================================= */
 @media(max-width:760px){
-  #adminMobileMenu{display:grid;gap:10px;margin-top:14px}
-  .admin-mobile-menu-card{
-    width:100%;display:flex;align-items:center;justify-content:space-between;
-    gap:12px;text-align:left;padding:16px;border:1px solid var(--line);
-    border-radius:14px;background:var(--panel);color:var(--text);cursor:pointer;
-  }
-  .admin-mobile-menu-card strong{display:block;font-size:16px;margin-bottom:3px}
-  .admin-mobile-menu-card span{font-size:12px;color:var(--muted)}
-  .admin-mobile-arrow{font-size:24px;line-height:1;color:var(--accent)}
+  #adminMobileTitle{display:block!important;margin-bottom:12px}
+  #adminMobileMenu{display:grid;gap:10px;margin-top:8px}
+  .admin-mobile-menu-card{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);cursor:pointer}
+  .admin-mobile-menu-card strong{display:block;font-size:16px;margin-bottom:2px}.admin-mobile-menu-card span{font-size:12px;color:var(--muted)}.admin-mobile-arrow{font-size:24px;color:var(--accent)}
   #adminMobileBack{display:none;width:100%;margin:0 0 12px}
-  #admin.admin-mobile-detail #adminMobileMenu,
-  #admin.admin-mobile-detail #adminStats,
-  #admin.admin-mobile-detail #adminMobileTitle{display:none}
-  #admin.admin-mobile-detail #adminMobileBack{display:block}
-  #admin.admin-mobile-detail [data-admin-mobile-section]{display:none!important}
-  #admin.admin-mobile-detail [data-admin-mobile-section].admin-mobile-open{display:block!important}
-
-  /* Quando um grupo contém a grade Produtos/Minha casa, mantém só a caixa correta */
-  #admin.admin-mobile-detail .admin-mobile-grid-section.admin-mobile-open{display:grid!important;grid-template-columns:1fr;gap:12px}
-  #admin.admin-mobile-detail .admin-mobile-grid-section.admin-mobile-show-house .admin-box:nth-child(1){display:none!important}
-  #admin.admin-mobile-detail .admin-mobile-grid-section:not(.admin-mobile-show-house) .admin-box:nth-child(2){display:none!important}
-
-  /* Remove a conversão de tabelas em cards gigantes: agora cada seção abre separada */
-  #admin .table-wrap tr{padding:10px 12px}
-  #admin .table-wrap td{padding:6px 0!important}
+  #adminPanel.admin-mobile-menu-mode > .admin-mobile-source,
+  #adminPanel.admin-mobile-menu-mode > .admin-grid,
+  #adminPanel.admin-mobile-menu-mode > .page-head:not(#adminMobileTitle),
+  #adminPanel.admin-mobile-menu-mode #adminGlobalPanel{display:none!important}
+  #adminPanel.admin-mobile-detail #adminMobileMenu,#adminPanel.admin-mobile-detail #adminMobileTitle{display:none!important}
+  #adminPanel.admin-mobile-detail #adminMobileBack{display:block}
+  #adminPanel.admin-mobile-detail .admin-mobile-source{display:none!important}
+  #adminPanel.admin-mobile-detail .admin-mobile-source.admin-mobile-open{display:block!important}
+  #adminPanel.admin-mobile-detail > .admin-grid{display:block!important}
+  #adminPanel.admin-mobile-detail > .admin-grid .admin-mobile-source{display:none!important}
+  #adminPanel.admin-mobile-detail > .admin-grid .admin-mobile-source.admin-mobile-open{display:block!important}
+  #adminPanel.admin-mobile-detail > .page-head:not(#adminMobileTitle){display:none!important}
+  #adminPanel.admin-mobile-detail #adminGlobalPanel{display:block!important}
+  #adminPanel.admin-mobile-detail #adminGlobalPanel>.page-head,#adminPanel.admin-mobile-detail #adminStats{display:none!important}
+  #adminPanel.admin-mobile-detail #adminGlobalPanel:not(.admin-global-open){display:none!important}
+  #admin .table-wrap tr{padding:10px 12px}#admin .table-wrap td{padding:6px 0!important}
 }
-@media(min-width:761px){
-  #adminMobileMenu,#adminMobileBack,#adminMobileTitle{display:none!important}
-}
+@media(min-width:761px){#adminMobileMenu,#adminMobileBack,#adminMobileTitle{display:none!important}}
 
 </style>
 </head>
@@ -423,7 +416,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
         <div class="admin-box"><div class="sub">Bloqueados</div><div id="statBloqueados" style="font-size:32px;font-weight:800">—</div></div>
       </div>
 
-      <div class="admin-box">
+      <div id="adminGlobalUsersSection" class="admin-box admin-mobile-source" data-admin-mobile-section="usuarios-app">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <div><h2>Usuários do aplicativo</h2><div class="sub">Todas as contas cadastradas, independentemente da casa.</div></div>
           <button class="btn" onclick="renderAdminPrincipal()">Atualizar</button>
@@ -436,7 +429,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
         </div>
       </div>
 
-      <div class="admin-box">
+      <div id="adminGlobalHousesSection" class="admin-box admin-mobile-source" data-admin-mobile-section="casas">
         <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <div><h2>Casas cadastradas</h2><div class="sub">Todas as casas e seus proprietários.</div></div>
         </div>
@@ -451,11 +444,11 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 
     <div class="page-head"><div><h1>Administração da casa</h1><p>Controle do estoque, produtos, compras e pessoas desta casa.</p></div></div>
     <div class="admin-grid">
-      <div class="admin-box">
+      <div id="adminHouseProductsActions" class="admin-box admin-mobile-source" data-admin-mobile-section="produtos">
         <h2>Produtos</h2><div class="sub">Cadastre, edite e remova produtos da casa atual.</div>
         <button class="btn primary" onclick="adminNovoProduto()">Novo produto</button>
       </div>
-      <div class="admin-box">
+      <div id="adminHouseSection" class="admin-box admin-mobile-source" data-admin-mobile-section="minha-casa">
         <h2>Minha casa</h2>
         <div class="sub">Cada casa tem seu próprio estoque, lista e histórico. Você pode criar outra casa sem misturar os dados.</div>
         <div id="adminHouseName"><strong>—</strong></div>
@@ -466,18 +459,18 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
         <div id="inviteArea" class="invite-box"></div><div style="margin-top:14px"><button class="btn" onclick="excluirCasaAtual()" style="border-color:#8b3b3b;color:#ff9b9b">Excluir esta casa</button></div>
       </div>
     </div>
-    <div class="admin-box">
+    <div id="adminUsersSection" class="admin-box admin-mobile-source" data-admin-mobile-section="usuarios-casa">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <div><h2>Usuários</h2><div class="sub">Novos usuários criados aqui entram automaticamente nesta casa.</div></div>
         <button class="btn primary" onclick="adminNovoUsuario()">Novo usuário</button>
       </div>
       <div class="table-wrap" style="margin-top:12px"><table class="user-table"><thead><tr><th>Nome</th><th>E-mail</th><th>Casa</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminUsersBody"></tbody></table></div>
     </div>
-    <div class="admin-box">
+    <div id="adminProductsSection" class="admin-box admin-mobile-source" data-admin-mobile-section="produtos">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><input id="adminSearch" class="search" style="max-width:450px;padding-left:14px" placeholder="Buscar produto..." oninput="renderAdminProdutos()"><button class="btn" onclick="carregarProdutos()">Atualizar</button></div>
       <div class="table-wrap"><table class="admin-table"><thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Ideal</th><th>Atual</th><th>Status</th><th>Ações</th></tr></thead><tbody id="adminProductsBody"></tbody></table></div>
     </div>
-    <div class="admin-box">
+    <div id="adminHistorySection" class="admin-box admin-mobile-source" data-admin-mobile-section="historico-admin">
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><h2>Histórico da casa</h2><div class="sub">Os registros são compartilhados por todos os membros da casa.</div></div><button class="btn danger" onclick="adminLimparHistorico()">Apagar histórico</button></div>
       <div class="table-wrap" style="margin-top:12px"><table class="admin-table"><thead><tr><th>Data</th><th>Mercado</th><th>Total</th><th>Usuário</th><th>Ações</th></tr></thead><tbody id="adminHistoryBody"></tbody></table></div>
     </div>
@@ -1481,111 +1474,34 @@ async function adminLimparHistorico(){
 }
 
 
-/* ADMIN MOBILE — MENU POR SEÇÕES */
+/* ADMIN MOBILE — MENU DE ÁREAS (CORREÇÃO) */
 function setupAdminMobile(){
-  const admin=$('admin'), panel=$('adminPanel'), menu=$('adminMobileMenu'), title=$('adminMobileTitle');
-  if(!admin||!panel||!menu)return;
-
-  // limpa marcações antigas para evitar duplicação
-  panel.querySelectorAll('[data-admin-mobile-section]').forEach(el=>{
-    el.removeAttribute('data-admin-mobile-section');
-    el.classList.remove('admin-mobile-open','admin-mobile-grid-section');
-  });
-
+  const panel=$('adminPanel'),menu=$('adminMobileMenu'); if(!panel||!menu)return;
   const itens=[];
-  const global=$('adminGlobalPanel');
-
-  if(usuarioEhAdmin() && global && global.style.display!=='none'){
-    const boxes=[...global.querySelectorAll(':scope > .admin-box')];
-    if(boxes[0]){
-      boxes[0].setAttribute('data-admin-mobile-section','usuarios-app');
-      itens.push(['usuarios-app','👥','Usuários do aplicativo','Contas cadastradas no aplicativo']);
-    }
-    if(boxes[1]){
-      boxes[1].setAttribute('data-admin-mobile-section','casas');
-      itens.push(['casas','🏠','Casas cadastradas','Veja todas as casas e proprietários']);
-    }
+  if(usuarioEhAdmin()){
+    itens.push(['usuarios-app','👥','Usuários do aplicativo','Contas cadastradas no aplicativo']);
+    itens.push(['casas','🏠','Casas cadastradas','Veja casas e proprietários']);
   }
-
-  // Elementos da administração da casa
-  const children=[...panel.children];
-  const globalIndex=children.indexOf(global);
-  const houseHead=children.find((el,i)=>i>globalIndex && el.classList && el.classList.contains('page-head') && !el.id);
-  if(houseHead) houseHead.setAttribute('data-admin-mobile-section','cabecalho-casa');
-
-  const grid=children.find((el,i)=>i>globalIndex && el.classList && el.classList.contains('admin-grid'));
-  if(grid){
-    grid.classList.add('admin-mobile-grid-section');
-    const boxes=[...grid.querySelectorAll(':scope > .admin-box')];
-    if(boxes[0]){
-      grid.setAttribute('data-admin-mobile-section','produtos');
-      boxes[0].setAttribute('data-admin-mobile-section','produtos');
-      itens.push(['produtos','📦','Produtos','Cadastre, edite e remova produtos']);
-    }
-    if(boxes[1]){
-      // uma segunda marcação no mesmo grid é tratada pelo atributo dos filhos
-      boxes[1].setAttribute('data-admin-mobile-section','minha-casa');
-      itens.push(['minha-casa','🏡','Minha casa','Casas, convites e configurações']);
-    }
-  }
-
-  // Caixas após a grade: Usuários, Produtos e Histórico
-  const afterGrid=grid ? children.slice(children.indexOf(grid)+1) : [];
-  if(afterGrid[0]){
-    afterGrid[0].setAttribute('data-admin-mobile-section','usuarios-casa');
-    itens.push(['usuarios-casa','👤','Usuários da casa','Gerencie os membros desta casa']);
-  }
-  if(afterGrid[1]){
-    afterGrid[1].setAttribute('data-admin-mobile-section','lista-produtos');
-    // Não adiciona item duplicado: a área Produtos abre também esta lista.
-  }
-  if(afterGrid[2]){
-    afterGrid[2].setAttribute('data-admin-mobile-section','historico-admin');
-    itens.push(['historico-admin','🧾','Histórico da casa','Compras e registros da casa']);
-  }
-
-  // Produtos abre duas partes: botão de novo produto + lista
-  if(afterGrid[1]) afterGrid[1].setAttribute('data-admin-mobile-extra-for','produtos');
-
-  if(title) title.style.display='block';
-  menu.innerHTML=itens.map(([id,icon,nome,desc])=>
-    `<button class="admin-mobile-menu-card" onclick="adminMobileOpen('${id}')">
-      <div><strong>${icon} ${nome}</strong><span>${desc}</span></div><div class="admin-mobile-arrow">›</div>
-    </button>`).join('');
-
-  admin.classList.remove('admin-mobile-detail');
+  itens.push(['produtos','📦','Produtos','Cadastre, edite e acompanhe o estoque']);
+  itens.push(['minha-casa','🏡','Minha casa','Casas, convites e configurações']);
+  itens.push(['usuarios-casa','👤','Usuários da casa','Gerencie os membros']);
+  itens.push(['historico-admin','🧾','Histórico da casa','Compras e registros']);
+  menu.innerHTML=itens.map(x=>`<button class="admin-mobile-menu-card" onclick="adminMobileOpen('${x[0]}')"><div><strong>${x[1]} ${x[2]}</strong><span>${x[3]}</span></div><div class="admin-mobile-arrow">›</div></button>`).join('');
+  panel.classList.remove('admin-mobile-detail'); panel.classList.add('admin-mobile-menu-mode');
+  panel.querySelectorAll('.admin-mobile-open').forEach(el=>el.classList.remove('admin-mobile-open'));
+  $('adminGlobalPanel')?.classList.remove('admin-global-open');
 }
-
 function adminMobileOpen(id){
   if(window.innerWidth>760)return;
-  const admin=$('admin'), panel=$('adminPanel');
-  if(!admin||!panel)return;
-  admin.classList.add('admin-mobile-detail');
+  const panel=$('adminPanel'); if(!panel)return;
+  panel.classList.remove('admin-mobile-menu-mode'); panel.classList.add('admin-mobile-detail');
   panel.querySelectorAll('.admin-mobile-open').forEach(el=>el.classList.remove('admin-mobile-open'));
-  panel.querySelectorAll('.admin-mobile-grid-section').forEach(el=>el.classList.remove('admin-mobile-show-house'));
-
-  if(id==='produtos'){
-    const grid=panel.querySelector('.admin-mobile-grid-section');
-    if(grid){grid.classList.add('admin-mobile-open');}
-    panel.querySelectorAll('[data-admin-mobile-extra-for="produtos"]').forEach(el=>el.classList.add('admin-mobile-open'));
-  }else if(id==='minha-casa'){
-    const grid=panel.querySelector('.admin-mobile-grid-section');
-    if(grid){grid.classList.add('admin-mobile-open','admin-mobile-show-house');}
-  }else{
-    panel.querySelectorAll(`[data-admin-mobile-section="${id}"]`).forEach(el=>el.classList.add('admin-mobile-open'));
-  }
-
+  panel.querySelectorAll(`[data-admin-mobile-section="${id}"]`).forEach(el=>el.classList.add('admin-mobile-open'));
+  const global=$('adminGlobalPanel');
+  if(id==='usuarios-app'||id==='casas') global?.classList.add('admin-global-open'); else global?.classList.remove('admin-global-open');
   window.scrollTo(0,0);
 }
-
-function adminMobileBack(){
-  const admin=$('admin');
-  if(!admin)return;
-  admin.classList.remove('admin-mobile-detail');
-  admin.querySelectorAll('.admin-mobile-open').forEach(el=>el.classList.remove('admin-mobile-open'));
-  admin.querySelectorAll('.admin-mobile-grid-section').forEach(el=>el.classList.remove('admin-mobile-show-house'));
-  window.scrollTo(0,0);
-}
+function adminMobileBack(){setupAdminMobile();window.scrollTo(0,0)}
 
 /* ADMIN TELA */
 function atualizarAdminTela(){
