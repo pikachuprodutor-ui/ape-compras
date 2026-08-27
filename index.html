@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apê Compras</title>
+<title>Apê Compras — V26</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
@@ -616,6 +616,78 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
     border-radius:9px;
     padding:7px 9px;
     font-size:11px;
+  }
+}
+
+
+
+/* =========================================================
+   V26 — CORREÇÃO FINAL DE LARGURA NO MOBILE
+========================================================= */
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  #admin,#adminPanel,#adminGlobalPanel,#admin .admin-box,
+  #admin .table-wrap,#admin .house-list,#admin .house-item{
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  /* Nenhuma coluna pode empurrar a página para fora da tela */
+  #admin .table-wrap,
+  #admin .table-wrap table,
+  #admin .table-wrap tbody,
+  #admin .table-wrap tr,
+  #admin .table-wrap td{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  #admin .table-wrap td,
+  #admin .table-wrap td *{
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+
+  /* Os dados ficam em uma coluna limpa e não escapam pela direita */
+  #adminGlobalHousesBody tr,
+  #adminGlobalUsersBody tr,
+  #adminUsersBody tr{
+    overflow:hidden;
+  }
+
+  #adminGlobalHousesBody td:last-child,
+  #adminGlobalUsersBody td:last-child,
+  #adminUsersBody td:last-child,
+  #adminProductsBody td:last-child,
+  #adminHistoryBody td:last-child{
+    display:flex!important;
+    flex-direction:column;
+    align-items:stretch!important;
+    width:100%!important;
+  }
+
+  #adminGlobalHousesBody td:last-child .btn,
+  #adminGlobalUsersBody td:last-child .btn,
+  #adminUsersBody td:last-child .btn,
+  #adminProductsBody td:last-child .btn,
+  #adminHistoryBody td:last-child .btn{
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+  }
+
+  /* Lista de casas e e-mails longos */
+  #admin .house-item{
+    overflow:hidden;
+  }
+  #admin .house-item strong,
+  #admin .house-item span,
+  #admin .house-item div{
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:break-word;
   }
 }
 
@@ -1559,17 +1631,80 @@ async function aceitarConviteDigitado(){
     await carregarCasasDoUsuario(); mostrar('Você entrou na casa');
   }catch(e){$('onboardingStatus').textContent=e.message||'Convite inválido.'}
 }
+/* V26 — EXCLUSÃO COMPLETA DE CASA (ordem correta das chaves estrangeiras) */
+async function excluirDadosDaCasa(casaId){
+  // 1) Compras da casa
+  const {data:compras,error:comprasError}=await supabaseClient
+    .from('compras').select('id').eq('casa_id',casaId);
+  if(comprasError)throw comprasError;
+
+  const compraIds=(compras||[]).map(c=>c.id).filter(Boolean);
+
+  // 2) Itens das compras devem sair ANTES das compras/produtos
+  for(let i=0;i<compraIds.length;i+=100){
+    const lote=compraIds.slice(i,i+100);
+    const {error}=await supabaseClient.from('itens_compra').delete().in('compra_id',lote);
+    if(error)throw error;
+  }
+
+  // 3) Compras
+  const {error:deleteComprasError}=await supabaseClient
+    .from('compras').delete().eq('casa_id',casaId);
+  if(deleteComprasError)throw deleteComprasError;
+
+  // 4) Produtos agora não possuem mais itens de compra apontando para eles
+  const {error:deleteProdutosError}=await supabaseClient
+    .from('produtos').delete().eq('casa_id',casaId);
+  if(deleteProdutosError)throw deleteProdutosError;
+
+  // 5) Convites desta casa
+  const {error:deleteConvitesError}=await supabaseClient
+    .from('convites_casa').delete().eq('casa_id',casaId);
+  if(deleteConvitesError)throw deleteConvitesError;
+
+  // 6) Vínculos dos membros
+  const {error:deleteMembrosError}=await supabaseClient
+    .from('membros_casa').delete().eq('casa_id',casaId);
+  if(deleteMembrosError)throw deleteMembrosError;
+
+  // 7) Por último, a casa
+  const {error:deleteCasaError}=await supabaseClient
+    .from('casas').delete().eq('id',casaId);
+  if(deleteCasaError)throw deleteCasaError;
+}
+
 async function excluirCasaAtual(){
   if(!casaAtual)return;
-  if(casaAtual.papel!=='proprietario'){mostrar('Somente o proprietário pode excluir esta casa.');return}
-  if(!confirm(`Excluir "${casaAtual.nome}"? O estoque, produtos e histórico desta casa serão apagados.`))return;
+  if(casaAtual.papel!=='proprietario'&&!usuarioEhAdmin()){
+    mostrar('Somente o proprietário pode excluir esta casa.');
+    return;
+  }
+  const casaId=casaAtual.id, nomeCasa=casaAtual.nome;
+  if(!confirm(`Excluir "${nomeCasa}"? Produtos, compras e histórico desta casa serão apagados definitivamente.`))return;
+
   try{
-    const {error}=await supabaseClient.rpc('excluir_casa',{p_casa_id:casaAtual.id});
-    if(error)throw error;
-    casasUsuario=casasUsuario.filter(c=>c.id!==casaAtual.id); localStorage.removeItem('ape_casa_selecionada_'+usuarioAtual.id); casaAtual=null;
-    if(casasUsuario.length) await selecionarCasa(casasUsuario[0].id); else { $('onboarding').classList.add('show'); voltarEscolhaCasa(); }
+    // Primeiro tenta a função do banco. Se ela ainda estiver na versão antiga,
+    // usa a exclusão completa em cascata feita aqui.
+    const {error}=await supabaseClient.rpc('excluir_casa',{p_casa_id:casaId});
+    if(error){
+      await excluirDadosDaCasa(casaId);
+    }
+
+    casasUsuario=casasUsuario.filter(c=>c.id!==casaId);
+    localStorage.removeItem('ape_casa_selecionada_'+usuarioAtual.id);
+    casaAtual=null;
+
+    if(casasUsuario.length){
+      await selecionarCasa(casasUsuario[0].id);
+    }else{
+      $('onboarding').classList.add('show');
+      voltarEscolhaCasa();
+    }
     mostrar('Casa excluída');
-  }catch(e){mostrar('Não foi possível excluir a casa: '+(e.message||''))}
+  }catch(e){
+    console.error('ERRO AO EXCLUIR CASA:',e);
+    mostrar('Não foi possível excluir a casa: '+(e.message||'Erro no banco de dados.'));
+  }
 }
 
 /* CASAS */
@@ -1780,11 +1915,16 @@ async function renderAdminPrincipal(){
 
 async function adminExcluirCasaGlobal(id){
   if(!usuarioEhAdmin())return;
-  if(!confirm('Excluir esta casa e seus vínculos? Esta ação não pode ser desfeita.'))return;
-  const {error}=await supabaseClient.rpc('excluir_casa_admin',{p_casa_id:id});
-  if(error){mostrar(error.message);return}
-  await renderAdminPrincipal();
-  mostrar('Casa excluída');
+  if(!confirm('Excluir esta casa, produtos, compras e vínculos? Esta ação não pode ser desfeita.'))return;
+  try{
+    const {error}=await supabaseClient.rpc('excluir_casa_admin',{p_casa_id:id});
+    if(error)await excluirDadosDaCasa(id);
+    await renderAdminPrincipal();
+    mostrar('Casa excluída');
+  }catch(e){
+    console.error('ERRO AO EXCLUIR CASA GLOBAL:',e);
+    mostrar('Não foi possível excluir a casa: '+(e.message||'Erro no banco de dados.'));
+  }
 }
 
 async function renderAdminUsuarios(){
@@ -1881,14 +2021,19 @@ async function adminAlternarUsuario(id,ativoAtual){
 async function adminExcluirUsuario(id){
   if(id===usuarioAtual.id){mostrar('Você não pode excluir seu próprio acesso.');return}
   if(!usuarioEhAdmin()){mostrar('Somente o administrador principal pode excluir usuários.');return}
-  if(!confirm('Excluir este usuário definitivamente? Ele será removido de todas as casas.'))return;
+  if(!confirm('Excluir este usuário definitivamente? A conta e os vínculos serão removidos.'))return;
+
   try{
-    const {error:unlinkError}=await supabaseClient.from('membros_casa').delete().eq('usuario_id',id);
-    if(unlinkError)throw unlinkError;
+    // A exclusão completa é feita pela Edge Function com permissão de administrador.
+    // Não apagamos vínculos aqui antes, para evitar deixar dados pela metade se o Auth falhar.
     await chamarAdminUsuarios({action:'delete',id});
+    await renderAdminPrincipal();
     await renderAdminUsuarios();
     mostrar('Usuário excluído');
-  }catch(e){mostrar(e.message||'Não foi possível excluir o usuário')}
+  }catch(e){
+    console.error('ERRO AO EXCLUIR USUÁRIO:',e);
+    mostrar(e?.message||'Não foi possível excluir o usuário.');
+  }
 }
 
 /* ADMIN HISTÓRICO */
