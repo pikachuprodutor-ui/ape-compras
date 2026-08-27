@@ -691,6 +691,68 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
   }
 }
 
+
+
+/* =========================================================
+   V27 — CORREÇÃO DEFINITIVA DO MENU INFERIOR NO CELULAR
+   6 abas sempre cabem na largura da tela, sem rolagem lateral
+========================================================= */
+@media (max-width:760px){
+  html,body{
+    width:100%;
+    max-width:100vw!important;
+    overflow-x:hidden!important;
+  }
+
+  nav{
+    position:fixed!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    width:100vw!important;
+    max-width:100vw!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    gap:0!important;
+    overflow:hidden!important;
+    padding:6px 3px calc(6px + env(safe-area-inset-bottom))!important;
+  }
+
+  /* Cada aba divide exatamente o espaço disponível.
+     A versão anterior tinha min-width de 62px e base de 68px,
+     o que fazia 6 abas ultrapassarem a largura do iPhone. */
+  nav button{
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    min-height:58px!important;
+    margin:0!important;
+    padding:5px 1px!important;
+    border-radius:9px!important;
+    overflow:hidden!important;
+    white-space:normal!important;
+    font-size:9px!important;
+    line-height:1.05!important;
+  }
+
+  nav button svg{
+    width:20px!important;
+    height:20px!important;
+    flex:0 0 auto!important;
+  }
+
+  nav button.admin-nav[style*="display: flex"],
+  nav button.admin-nav[style*="display:flex"]{
+    display:flex!important;
+  }
+
+  main{
+    padding-bottom:92px!important;
+  }
+}
 </style>
 </head>
 <body class="auth-locked">
