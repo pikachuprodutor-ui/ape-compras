@@ -658,17 +658,19 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 
 
 /* Gastos: interface mais limpa e compacta */
-.gastos-head{margin-bottom:18px!important}
-.gastos-estimativa-head{margin-top:24px!important;margin-bottom:12px!important;align-items:center}
+.gastos-head{margin-bottom:12px!important}
+.gastos-estimativa-head{margin-top:18px!important;margin-bottom:10px!important;align-items:center}
 .gastos-estimativa-head h2{margin:0;font-size:21px}
 .gastos-reference-label{font-size:13px}
-.gastos-aviso{margin:0 0 12px;padding:8px 11px;border-radius:9px;background:var(--panel);color:var(--muted)}
+.gastos-aviso{display:none!important}
 #historico .comparison-summary{margin-top:12px}
 #historico .comparison-total-card{padding:15px 17px}
 #historico .comparison-total-card span{font-size:12px}
 #historico .comparison-total-card strong{font-size:23px}
 #historico #comparacaoItens{gap:8px}
-#historico .comparison-item{padding:13px 15px}
+#historico .comparison-item{padding:10px 13px}
+#historico .admin-box{padding:12px!important}
+#historico .history-compare-details summary small{display:none}
 #historico .comparison-item .product-meta{margin-top:4px}
 @media(max-width:760px){
  .gastos-head{margin-bottom:14px!important}
@@ -677,6 +679,99 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
  #historico .comparison-summary{gap:8px}
  #historico .comparison-total-card{padding:12px}
 }
+
+/* Início: painel compacto e visual */
+.dashboard-welcome{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:190px;padding:30px 34px;margin-bottom:30px;border:1px solid #3a3424;border-radius:22px;background:radial-gradient(ellipse at 85% 15%,rgba(217,162,27,.18),transparent 42%),linear-gradient(120deg,#1c2021,#151718 72%)}
+.dashboard-kicker{display:inline-block;color:var(--accent2);font-size:11px;font-weight:800;letter-spacing:1.8px}
+.dashboard-welcome h1{margin:10px 0 17px;font-size:clamp(27px,4vw,39px);letter-spacing:-1px;line-height:1.1}
+.dashboard-house{display:flex;align-items:center;gap:8px;color:#b8c0c4;font-size:13px}.dashboard-house svg{width:17px;height:17px;color:var(--accent)}
+.welcome-art{width:120px;height:120px;flex:0 0 120px;display:grid;place-items:center;border-radius:28px;background:rgba(217,162,27,.09);color:var(--accent2);transform:rotate(3deg)}.welcome-art svg{width:90px;height:90px;stroke-width:1.5}
+.dashboard-section-title{display:flex;align-items:center;justify-content:space-between;margin:0 0 13px}.dashboard-section-title h2{font-size:18px;margin:0}.dashboard-section-title>span{font-size:12px;color:var(--muted)}
+.dashboard-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.dashboard-stat{min-width:0;min-height:185px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:17px;color:var(--text);transition:border-color .18s,transform .18s}.dashboard-stat:hover,.dashboard-shortcut:hover{border-color:#6b5a2c;transform:translateY(-2px)}.dashboard-stat-primary{background:linear-gradient(145deg,#292417,#1a1b1b 78%);border-color:#5b4920}
+.dashboard-stat-icon,.shortcut-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#292d2e;color:var(--accent2);margin-bottom:15px}.dashboard-stat-primary .dashboard-stat-icon{background:var(--accent);color:#17130a}.dashboard-stat-label{font-size:13px;color:#aeb6ba}.dashboard-stat strong{font-size:34px;line-height:1.15;margin:6px 0 13px;letter-spacing:-.5px}.dashboard-stat-link{font-size:12px;color:var(--accent2);margin-top:auto}.dashboard-stat-link b{font-size:15px;margin-left:4px}
+.dashboard-actions-title{margin-top:29px}.dashboard-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.dashboard-shortcut{display:flex;align-items:center;gap:13px;min-width:0;text-align:left;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:15px;color:var(--text);transition:border-color .18s,transform .18s}.dashboard-shortcut .shortcut-icon{flex:0 0 40px;width:40px;height:40px;margin:0}.dashboard-shortcut>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}.dashboard-shortcut strong{font-size:13px}.dashboard-shortcut small{font-size:12px;color:var(--muted)}.dashboard-shortcut>b{margin-left:auto;color:var(--accent);font-size:24px;font-weight:400}
+@media(max-width:650px){.dashboard-welcome{min-height:150px;padding:23px 20px;border-radius:18px;margin-bottom:24px}.dashboard-welcome h1{font-size:28px;max-width:230px}.welcome-art{width:74px;height:74px;flex-basis:74px;border-radius:20px}.welcome-art svg{width:57px;height:57px}.dashboard-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.dashboard-stat{min-height:155px;padding:12px;border-radius:13px}.dashboard-stat-icon{width:32px;height:32px;margin-bottom:12px}.dashboard-stat-icon svg{width:18px;height:18px}.dashboard-stat-label{font-size:11px;line-height:1.25}.dashboard-stat strong{font-size:27px;margin:8px 0 12px}.dashboard-stat-link{font-size:10px}.dashboard-shortcuts{grid-template-columns:1fr}.dashboard-actions-title{margin-top:24px}}
+@media(max-width:390px){.dashboard-welcome{padding:20px 16px}.dashboard-welcome h1{font-size:25px}.welcome-art{width:58px;height:58px;flex-basis:58px}.welcome-art svg{width:45px;height:45px}.dashboard-stat{padding:10px}.dashboard-stat strong{font-size:24px}.dashboard-stat-label{font-size:10px}}
+
+
+
+/* V26 — identidade visual consistente em todas as abas */
+:root{--tone-home:#e9b44c;--tone-stock:#62b8ff;--tone-list:#79d6a0;--tone-cart:#ff9a57;--tone-money:#bd91ff;--tone-admin:#80a9ff}
+html{scroll-behavior:smooth}
+body{letter-spacing:-.01em}
+main{max-width:1240px;padding-top:30px}
+.page-head{align-items:center;margin-bottom:22px;padding-bottom:15px;border-bottom:1px solid rgba(143,157,165,.13)}
+.page-head h1{font-size:clamp(25px,3vw,32px);letter-spacing:-.8px}
+.page-head p{display:none}
+.page-head .btn{border-radius:11px}
+/* Busca, filtros e controles no mesmo padrão dos cartões da tela inicial */
+.search-wrap,.shopping-search-wrap{border-radius:15px;background:linear-gradient(145deg,#171c1f,#121618);border-color:#293237;min-height:49px}
+.search,.shopping-search-wrap input{font-size:14px}
+.filters{padding:2px 0 7px;scrollbar-width:none}
+.filters button{border-radius:999px;background:#171c1f;color:#aeb8bf;border-color:#2d373d;padding:8px 13px}
+.filters button.active{background:rgba(98,184,255,.15);border-color:rgba(98,184,255,.5);color:var(--tone-stock)}
+.product-list,.shopping-list,.cart-list,.history-list{gap:10px}
+.product-card,.shopping-row,.cart-row,.history-card,.comparison-item,.admin-box,.detail,.market-compare{border-radius:17px;border-color:#293237;background:linear-gradient(145deg,#191e21,#141719);box-shadow:0 5px 18px rgba(0,0,0,.08)}
+.product-card,.shopping-row,.cart-row,.history-card{transition:border-color .18s,transform .18s}
+.product-card:hover,.shopping-row:hover,.cart-row:hover,.history-card:hover{border-color:#43515a}
+.product-photo,.shopping-row .photo,.detail-photo{background:#20282d;border-radius:13px}
+.product-name,.shopping-product-open,.history-market{letter-spacing:-.2px}
+.need{color:#ffbd66}
+.btn{border-radius:11px;background:#20272b;border-color:#303b41;transition:transform .16s,border-color .16s}
+.btn:hover{border-color:#64747d;transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,#edb64f,#d89a2b);border-color:transparent;color:#17120a}
+.qty button{border-radius:11px;background:#20282d;border-color:#344148}
+.cart-summary{border-radius:18px;background:linear-gradient(130deg,#1b2226,#141719);border-color:#303b41}
+.cart-total,.history-total,.comparison-total-card strong{color:var(--tone-money)}
+.history-card{padding:17px}
+.history-items{border-color:#303a40}
+.comparison-total-card{border-radius:16px;background:linear-gradient(145deg,#1d252a,#15191c);border-color:#303a40}
+.comparison-item{padding:15px}
+.admin-box{padding:18px}
+.admin-box h2{letter-spacing:-.3px}
+input:focus,select:focus{outline:none!important;border-color:#6caee5!important;box-shadow:0 0 0 3px rgba(98,184,255,.09)}
+/* Cores independentes por aba; amarelo fica reservado ao início/identidade */
+nav button[data-page="inicio"]{--nav-tone:var(--tone-home)}
+nav button[data-page="estoque"]{--nav-tone:var(--tone-stock)}
+nav button[data-page="lista"]{--nav-tone:var(--tone-list)}
+nav button[data-page="carrinho"]{--nav-tone:var(--tone-cart)}
+nav button[data-page="historico"]{--nav-tone:var(--tone-money)}
+nav button[data-page="admin"]{--nav-tone:var(--tone-admin)}
+nav button{position:relative;transition:background .18s,color .18s}
+nav button svg{flex:0 0 auto;transition:transform .18s}
+nav button:hover svg{transform:translateY(-1px)}
+nav button.active{background:color-mix(in srgb,var(--nav-tone) 15%,transparent);color:var(--nav-tone);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--nav-tone) 26%,transparent)}
+nav button.active svg{stroke-width:2.1}
+@media(min-width:761px){nav button.active{background:color-mix(in srgb,var(--nav-tone) 15%,transparent);color:var(--nav-tone)}}
+@media(max-width:760px){
+  main{padding:23px 14px calc(105px + env(safe-area-inset-bottom))}
+  .page-head{margin-bottom:18px;padding-bottom:13px;gap:10px}
+  .page-head .btn{margin-top:0;padding:10px 12px;font-size:12px}
+  .page-head .head-actions{margin-top:0}
+  nav{height:calc(67px + env(safe-area-inset-bottom));padding:7px 7px calc(7px + env(safe-area-inset-bottom));background:rgba(14,18,20,.96);border-top:1px solid #2b3439;box-shadow:0 -12px 35px rgba(0,0,0,.35);backdrop-filter:blur(18px)}
+  nav button{flex:1 1 0;min-width:0;max-width:none;min-height:50px;padding:5px 2px;border-radius:12px;gap:4px;font-size:10px;font-weight:600;color:#8e9aa2}
+  nav button svg{width:22px;height:22px}
+  nav button.active{background:transparent;box-shadow:none;color:var(--nav-tone)}
+  nav button.active:after{content:"";position:absolute;bottom:0;width:4px;height:4px;border-radius:50%;background:var(--nav-tone)}
+  nav button:hover{background:transparent;color:var(--nav-tone)}
+  .shopping-category{border-radius:15px;border-color:#293237;background:#151a1d}
+  .shopping-category-head{background:#1b2226;border-color:#2b3439}
+  .shopping-category .shopping-row{background:transparent}
+  .comparison-summary{gap:9px}
+  .comparison-total-card{padding:14px}
+  .comparison-total-card strong{font-size:20px}
+  .history-card{padding:14px}
+  .cart-summary{padding:15px}
+  .admin-table th,.admin-table td,.user-table th,.user-table td{padding:8px;font-size:12px}
+}
+@media(max-width:390px){
+  main{padding-left:11px;padding-right:11px}
+  nav button{font-size:9px}
+  nav button svg{width:20px;height:20px}
+  .page-head h1{font-size:24px}
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -707,11 +802,11 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <span>Apê Compras</span>
     </div>
     <nav>
-      <button class="active" data-page="inicio"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg>Início</button>
-      <button data-page="estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>Estoque</button>
-      <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
-      <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>Carrinho</button>
-      <button data-page="historico"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5M8 16h3"/><path d="m15 15 2 2 4-4"/></svg>Gastos</button>
+      <button class="active" data-page="inicio" aria-label="Início"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/><path d="M9 21v-6h6v6"/></svg><span>Início</span></button>
+      <button data-page="estoque" aria-label="Estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg><span>Estoque</span></button>
+      <button data-page="lista" aria-label="Lista"><svg viewBox="0 0 24 24"><path d="m4 6 2 2 3-3M11 7h9M4 12l2 2 3-3M11 13h9M4 18l2 2 3-3M11 19h9"/></svg><span>Lista</span></button>
+      <button data-page="carrinho" aria-label="Carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg><span>Carrinho</span></button>
+      <button data-page="historico" aria-label="Gastos"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3M16 15l2 2 4-5"/></svg><span>Gastos</span></button>
       <button id="navAdmin" class="admin-nav" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5 1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg>Admin</button>
     </nav>
   </div>
@@ -744,24 +839,35 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 <main>
 
 <section id="inicio" class="page active">
-  <div class="home-head">
-    <div class="eyebrow">APÊ COMPRAS</div>
-    <h1>Compras</h1>
-    <p>Controle rápido das compras da casa.</p>
-    <div class="house-chip"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-6h6v6"/></svg><span id="houseName">Carregando casa...</span></div>
+  <div class="dashboard-welcome">
+    <div class="dashboard-welcome-copy">
+      <span class="dashboard-kicker">PAINEL DA CASA</span>
+      <h1>Sua casa, em ordem.</h1>
+      <div class="dashboard-house"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3V10Z"/><path d="M9 20v-6h6v6"/></svg><span id="houseName">Carregando casa...</span></div>
+    </div>
+    <div class="welcome-art" aria-hidden="true"><svg viewBox="0 0 100 100"><path d="M15 43 50 15l35 28v42H15Z"/><path d="M39 85V58h22v27"/><path d="M27 49h11M62 49h11"/><path d="m39 31 8 7 15-15"/></svg></div>
   </div>
-  <div class="home-grid">
-    <div class="home-card main">
-      <h2>Lista de compras</h2>
-      <p>Produtos abaixo da quantidade ideal.</p>
-      <div class="home-number" id="homeComprar">0</div>
-      <div class="product-meta">produtos para comprar</div>
-      <div class="home-actions"><button class="btn primary" onclick="abrirPagina('lista')">Ver lista</button></div>
-    </div>
-    <div class="home-small">
-      <div class="home-card home-stat"><span>Estoque</span><strong id="homeEstoque">0</strong><span>produtos cadastrados</span></div>
-      <div class="home-card home-stat"><span>Compras</span><strong id="homeCompras">0</strong><span>compras registradas</span></div>
-    </div>
+
+  <div class="dashboard-section-title"><h2>Resumo</h2><span>Visão geral</span></div>
+  <div class="dashboard-stats">
+    <button class="dashboard-stat dashboard-stat-primary" onclick="abrirPagina('lista')">
+      <span class="dashboard-stat-icon"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="m3 6 1 1 2-2M3 12l1 1 2-2M3 18l1 1 2-2"/></svg></span>
+      <span class="dashboard-stat-label">Para comprar</span><strong id="homeComprar">0</strong><span class="dashboard-stat-link">Abrir lista <b>↗</b></span>
+    </button>
+    <button class="dashboard-stat" onclick="abrirPagina('estoque')">
+      <span class="dashboard-stat-icon"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span>
+      <span class="dashboard-stat-label">No estoque</span><strong id="homeEstoque">0</strong><span class="dashboard-stat-link">Ver estoque <b>↗</b></span>
+    </button>
+    <button class="dashboard-stat" onclick="abrirPagina('historico')">
+      <span class="dashboard-stat-icon"><svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v16H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 7h13a3 3 0 0 1 3 3v3h-5a2 2 0 0 1 0-4h5"/></svg></span>
+      <span class="dashboard-stat-label">Compras feitas</span><strong id="homeCompras">0</strong><span class="dashboard-stat-link">Ver gastos <b>↗</b></span>
+    </button>
+  </div>
+
+  <div class="dashboard-section-title dashboard-actions-title"><h2>Acesso rápido</h2></div>
+  <div class="dashboard-shortcuts">
+    <button class="dashboard-shortcut" onclick="abrirPagina('lista')"><span class="shortcut-icon"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></span><span><strong>Lista de compras</strong><small>Organize o que falta</small></span><b>›</b></button>
+    <button class="dashboard-shortcut" onclick="abrirPagina('carrinho')"><span class="shortcut-icon"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg></span><span><strong>Carrinho</strong><small>Confira sua compra</small></span><b>›</b></button>
   </div>
 </section>
 
@@ -800,11 +906,11 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 </section>
 
 <section id="historico" class="page">
-  <div class="page-head gastos-head"><div><h1>Gastos</h1></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
+  <div class="page-head gastos-head"><div><h1>Gastos</h1></div><button class="btn" onclick="carregarHistorico()" aria-label="Atualizar gastos">Atualizar</button></div>
   <div id="historyList"></div>
   <div class="page-head gastos-estimativa-head"><div><h2>Estimativa da lista</h2></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
-    <label class="auth-field gastos-reference-label" style="margin-top:0">Compra de referência
+    <label class="auth-field gastos-reference-label" style="margin-top:0">Preços de qual compra?
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
         <option value="">Selecione uma compra do histórico</option>
       </select>
@@ -1335,11 +1441,11 @@ async function renderComparacoes(){
   const valorAtual=select.value;
   if(!historico.length){
     select.innerHTML='<option value="">Nenhuma compra no histórico</option>';
-    $('comparacaoResumo').innerHTML='<div class="empty">Finalize uma compra para registrar preços de referência. A estimativa usa os itens atuais da Lista.</div>';
+    $('comparacaoResumo').innerHTML='<div class="empty">Nenhuma compra registrada.</div>';
     $('comparacaoItens').innerHTML='';
     return;
   }
-  select.innerHTML='<option value="">Selecione uma compra para usar os preços</option>'+historico.map(h=>{
+  select.innerHTML='<option value="">Escolher compra</option>'+historico.map(h=>{
     const d=new Date(h.data);
     const dataTxt=Number.isNaN(d.getTime())?'Data não informada':d.toLocaleDateString('pt-BR');
     return `<option value="${esc(h.id)}">${esc(dataTxt)} • ${esc(h.mercado||'Mercado')} • ${dinheiro(h.total)}</option>`;
@@ -1375,7 +1481,7 @@ function desenharComparacao(){
   const compra=historico.find(h=>String(h.id)===String($('comparacaoCompra')?.value));
   if(!compra){$('comparacaoResumo').innerHTML='';$('comparacaoItens').innerHTML='';return}
   if(!lista.length){
-    $('comparacaoResumo').innerHTML='<div class="empty">Sua Lista está vazia. Adicione produtos na aba Lista para calcular uma estimativa.</div>';
+    $('comparacaoResumo').innerHTML='<div class="empty">Sua lista está vazia.</div>';
     $('comparacaoItens').innerHTML='';
     return;
   }
@@ -1400,8 +1506,8 @@ function desenharComparacao(){
   $('comparacaoItens').innerHTML=itensAtuais.map(x=>{
     const preco=x.precoRef;
     const detalhePreco=preco==null
-      ? '<strong>Sem preço na compra selecionada</strong>'
-      : dinheiro(preco)+' por unidade • Subtotal estimado: <strong>'+dinheiro(Number(x.qtd||0)*preco)+'</strong>';
+      ? '<strong>Sem preço</strong>'
+      : dinheiro(preco)+' / un. • Total: <strong>'+dinheiro(Number(x.qtd||0)*preco)+'</strong>';
     return '<div class="comparison-item">'+
       '<div><div class="comparison-item-name">'+esc(x.nome)+'</div><div class="product-meta">'+x.qtd+' '+(x.qtd===1?'unidade':'unidades')+' na Lista • '+detalhePreco+'</div></div>'+
       '<div class="comparison-item-controls"><span class="product-meta">'+esc(x.produto?.categoria||x.categoria||'Outros')+'</span></div>'+
@@ -1570,8 +1676,8 @@ async function renderHistorico(){
       <details class="history-compare-details">
         <summary>
           <span>
-            <strong>Comparativo de mercados</strong>
-            <small>Veja onde os produtos estão mais baratos</small>
+            <strong>Comparar mercados</strong>
+            
           </span>
           <svg class="history-compare-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
         </summary>
@@ -1702,7 +1808,7 @@ async function gerarComparativoMercados(compras){
 
   return `<div class="market-compare">
     <h2>Comparativo de mercados</h2>
-    <div class="compare-sub">Compara a média do preço unitário do mesmo produto entre os mercados registrados.</div>
+    
 
     <div class="market-best">
       <div>
@@ -1728,9 +1834,7 @@ async function gerarComparativoMercados(compras){
       </table>
     </div>
 
-    <div class="compare-note">
-      O sistema compara o preço unitário médio registrado de cada produto. Ele só considera produtos que já foram comprados em pelo menos dois mercados.
-    </div>
+    
   </div>`;
 }
 
