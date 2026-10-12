@@ -627,6 +627,19 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
   }
 }
 
+
+/* Lista de compras agrupada por categoria */
+.head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.shopping-category{margin:0 0 18px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel)}
+.shopping-category-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--panel2);border-bottom:1px solid var(--line)}
+.shopping-category-head strong{font-size:14px;letter-spacing:.2px}
+.shopping-category-head span{font-size:12px;color:var(--muted)}
+.shopping-category .shopping-row{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0;padding:12px}
+.shopping-category .shopping-row:last-child{border-bottom:0}
+.shopping-product-open{text-align:left;min-width:0;overflow-wrap:anywhere}
+.cart-item-subtotal{margin-top:8px;color:var(--muted);font-size:12px}.cart-item-subtotal strong{color:var(--text);font-size:14px}
+@media(max-width:600px){.head-actions{width:100%;justify-content:stretch}.head-actions .btn{flex:1;padding:10px 8px;font-size:12px}.shopping-category .shopping-row{gap:8px;padding:10px}.shopping-category .qty{gap:5px}.shopping-category .qty button{width:28px;height:28px}}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -729,7 +742,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 </section>
 
 <section id="lista" class="page">
-  <div class="page-head"><div><h1>Lista de compras</h1><p>Calculada a partir do estoque desta casa.</p></div><button class="btn" onclick="adicionarManual()">Adicionar item</button></div>
+  <div class="page-head"><div><h1>Lista de compras</h1><p>Organizada por categoria, com produtos em ordem alfabética.</p></div><div class="head-actions"><button class="btn" onclick="adicionarManual()">Item avulso</button><button class="btn primary" onclick="abrirCadastroRapidoProduto()">Cadastrar produto</button></div></div>
   <div id="listaList" class="shopping-list"></div>
 </section>
 
@@ -850,7 +863,7 @@ const SUPABASE_KEY='sb_publishable_EfmOAQC3hK5oZEDZAfZBOA_v5kKjb7c';
 const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let usuarioAtual=null, perfilAtual=null, casaAtual=null, casasUsuario=[], produtos=[];
-let filtro='Todos', listaManual=[], carrinho=[], historico=[];
+let filtro='Todos', listaManual=[], carrinho=[], historico=[], listaOcultos=[];
 let modalMode=null, modalIndex=null, detalheEstoqueId=null, detalheCompraKey=null;
 let authMudancaEmAndamento=false, appIniciado=false;
 
@@ -871,12 +884,14 @@ function chaveLocal(nome){return 'ape_'+nome+'_'+(casaAtual?.id||'sem-casa')+'_'
 function salvarLocal(){
   localStorage.setItem(chaveLocal('lista'),JSON.stringify(listaManual));
   localStorage.setItem(chaveLocal('carrinho'),JSON.stringify(carrinho));
+  localStorage.setItem(chaveLocal('listaOcultos'),JSON.stringify(listaOcultos));
 }
 function carregarLocal(){
   try{
     listaManual=JSON.parse(localStorage.getItem(chaveLocal('lista'))||'[]');
     carrinho=JSON.parse(localStorage.getItem(chaveLocal('carrinho'))||'[]');
-  }catch(e){listaManual=[];carrinho=[]}
+    listaOcultos=JSON.parse(localStorage.getItem(chaveLocal('listaOcultos'))||'[]');
+  }catch(e){listaManual=[];carrinho=[];listaOcultos=[]}
 }
 
 /* NAVEGAÇÃO */
@@ -1145,12 +1160,18 @@ async function alterarEstoque(id,delta){
 /* LISTA */
 function itensLista(){
   const auto=produtos.filter(p=>ativo(p)&&falta(p)>0).map(p=>({key:'auto-'+p.id,id:p.id,nome:p.produto,qtd:falta(p),auto:true,produto:p}));
-  return [...auto,...listaManual];
+  return [...auto,...listaManual].filter(x=>!listaOcultos.includes(String(x.key)));
 }
 function renderLista(){
-  const arr=itensLista();
+  const arr=itensLista().sort((a,b)=>{
+    const ca=String(a.produto?.categoria||'Outros').trim()||'Outros';
+    const cb=String(b.produto?.categoria||'Outros').trim()||'Outros';
+    return ca.localeCompare(cb,'pt-BR',{sensitivity:'base'})||String(a.nome).localeCompare(String(b.nome),'pt-BR',{sensitivity:'base'});
+  });
   if(!arr.length){$('listaList').innerHTML='<div class="empty">Nenhum item para comprar.</div>';return}
-  $('listaList').innerHTML=arr.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Calculado pelo estoque':'Item manual'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div></div>`).join('');
+  const grupos=new Map();
+  arr.forEach(x=>{const cat=String(x.produto?.categoria||'Outros').trim()||'Outros';if(!grupos.has(cat))grupos.set(cat,[]);grupos.get(cat).push(x)});
+  $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div></div>`).join('')}</section>`).join('');
 }
 function mudarQtdLista(key,delta){
   const x=itensLista().find(y=>String(y.key)===String(key));if(!x)return;
@@ -1178,19 +1199,50 @@ function adicionarDetalheAoCarrinho(){
   const qtd=Math.max(1,Number($('detailQtd').value||1)),preco=Math.max(0,Number(String($('detailPreco').value||0).replace(',','.')));
   const e=x.id?carrinho.find(c=>Number(c.id)===Number(x.id)):carrinho.find(c=>String(c.key)===String(x.key));
   if(e){e.qtd=qtd;e.preco=preco}else carrinho.push({key:x.key,id:x.id||null,nome:x.nome,qtd,preco});
-  salvarLocal();renderCarrinho();atualizarTudo();mostrar('Adicionado ao carrinho');abrirPagina('carrinho');
+  if(x.auto)listaOcultos.push(String(x.key));
+  else listaManual=listaManual.filter(m=>String(m.key)!==String(x.key));
+  listaOcultos=[...new Set(listaOcultos)];
+  salvarLocal();renderLista();renderCarrinho();atualizarTudo();mostrar('Adicionado ao carrinho e removido da lista');abrirPagina('carrinho');
+}
+
+
+function abrirCadastroRapidoProduto(){
+  if(!usuarioPodeEditarCasa()){mostrar('Você não tem permissão para cadastrar produtos nesta casa.');return}
+  modalMode='produto-rapido';modalIndex=null;
+  $('modalTitle').textContent='Cadastrar produto';
+  $('modalText').textContent='Cadastre sem sair da compra. O produto ficará salvo no estoque desta casa.';
+  const cats=[...new Set(produtos.map(p=>String(p.categoria||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  $('modalBody').innerHTML=`<div class="admin-form"><label class="full">Nome do produto<input id="rapidoNome" placeholder="Ex.: Bolacha recheada" required></label><label>Categoria<select id="rapidoCategoria"><option value="">Escolha uma categoria</option>${cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}<option value="__nova__">+ Nova categoria</option></select></label><label id="rapidoNovaCategoriaWrap" style="display:none">Nova categoria<input id="rapidoNovaCategoria" placeholder="Ex.: Mercearia"></label><label>Quantidade a comprar<input id="rapidoQtd" type="number" min="1" value="1"></label><label>Preço unitário (R$)<input id="rapidoPreco" type="number" min="0" step="0.01" placeholder="0,00"></label><label>Quantidade ideal no estoque<input id="rapidoIdeal" type="number" min="0" value="1"></label></div>`;
+  $('rapidoCategoria').onchange=()=>{$('rapidoNovaCategoriaWrap').style.display=$('rapidoCategoria').value==='__nova__'?'block':'none'};
+  $('modal').classList.add('show');
+}
+async function salvarProdutoRapido(){
+  const nome=$('rapidoNome').value.trim();let categoria=$('rapidoCategoria').value;
+  if(categoria==='__nova__')categoria=$('rapidoNovaCategoria').value.trim();
+  const qtd=Math.max(1,Number($('rapidoQtd').value||1));
+  const preco=Math.max(0,Number(String($('rapidoPreco').value||0).replace(',','.')));
+  const idealV=Math.max(0,Number($('rapidoIdeal').value||1));
+  if(!nome){mostrar('Informe o nome do produto.');return}
+  if(!categoria){mostrar('Escolha ou informe uma categoria.');return}
+  const nums=produtos.map(p=>Number(String(p.codigo||'').replace(/\D/g,''))||0);const codigo='P'+String((nums.length?Math.max(...nums):0)+1).padStart(3,'0');
+  const {data,error}=await supabaseClient.from('produtos').insert({codigo,produto:nome,categoria,ideal:idealV,atual:0,status:'Ativo',imagem:null,casa_id:casaAtual.id}).select().single();
+  if(error){mostrar('Erro ao cadastrar produto: '+error.message);return}
+  carrinho.push({key:'auto-'+data.id,id:data.id,nome:data.produto||nome,qtd,preco});
+  listaOcultos.push('auto-'+data.id);listaOcultos=[...new Set(listaOcultos)];
+  listaManual=listaManual.filter(m=>normalizar(m.nome)!==normalizar(nome));
+  closeModal();salvarLocal();await carregarProdutos();renderLista();renderCarrinho();atualizarTudo();mostrar('Produto cadastrado e adicionado ao carrinho');abrirPagina('carrinho');
 }
 
 /* CARRINHO */
 function renderCarrinho(){
   if(!carrinho.length){$('cartList').innerHTML='<div class="empty">Carrinho vazio.</div>';$('cartSummary').innerHTML='';return}
-  $('cartList').innerHTML=carrinho.map((x,i)=>`<div class="cart-row"><div><strong>${esc(x.nome)}</strong><div class="product-meta">Quantidade: ${x.qtd}</div><div class="qty" style="margin-top:10px"><button onclick="mudarQtdCarrinho(${i},-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdCarrinho(${i},1)">+</button></div></div><div><label class="product-meta">Preço unitário</label><input class="price-input" type="number" min="0" step="0.01" value="${Number(x.preco||0)}" onchange="mudarPreco(${i},this.value)"><button class="btn danger small" style="margin-top:8px;width:100%" onclick="removerCarrinho(${i})">Remover</button></div></div>`).join('');
+  $('cartList').innerHTML=carrinho.map((x,i)=>`<div class="cart-row"><div><strong>${esc(x.nome)}</strong><div class="product-meta">Quantidade: ${x.qtd}</div><div class="qty" style="margin-top:10px"><button onclick="mudarQtdCarrinho(${i},-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdCarrinho(${i},1)">+</button></div><div class="cart-item-subtotal">Subtotal: <strong>${dinheiro(Number(x.qtd||0)*Number(x.preco||0))}</strong></div></div><div><label class="product-meta">Preço unitário (R$)</label><input class="price-input" type="number" min="0" step="0.01" value="${Number(x.preco||0)}" onchange="mudarPreco(${i},this.value)"><button class="btn danger small" style="margin-top:8px;width:100%" onclick="removerCarrinho(${i})">Remover</button></div></div>`).join('');
   const total=carrinho.reduce((s,x)=>s+Number(x.qtd)*Number(x.preco),0);
   $('cartSummary').innerHTML=`<div class="cart-summary"><div><div class="product-meta">Total da compra</div><div class="cart-total">${dinheiro(total)}</div></div><div><button class="btn" onclick="limparCarrinho()">Limpar</button> <button class="btn primary" onclick="finalizarCompra()">Finalizar compra</button></div></div>`;
 }
 function mudarQtdCarrinho(i,d){carrinho[i].qtd=Math.max(1,Number(carrinho[i].qtd)+d);salvarLocal();renderCarrinho();atualizarTudo()}
 function mudarPreco(i,v){carrinho[i].preco=Math.max(0,Number(String(v||0).replace(',','.')));salvarLocal();renderCarrinho();atualizarTudo()}
-function removerCarrinho(i){carrinho.splice(i,1);salvarLocal();renderCarrinho();atualizarTudo()}
+function removerCarrinho(i){const x=carrinho[i];if(x?.key)listaOcultos=listaOcultos.filter(k=>String(k)!==String(x.key));carrinho.splice(i,1);salvarLocal();renderCarrinho();renderLista();atualizarTudo()}
 function limparCarrinho(){carrinho=[];salvarLocal();renderCarrinho();atualizarTudo()}
 function finalizarCompra(){
   if(!carrinho.length){mostrar('Carrinho vazio');return}
@@ -1224,7 +1276,7 @@ async function concluirCompra(){
       if(e3)throw e3;
       p.atual=novo;
     }
-    carrinho=[];salvarLocal();closeModal();
+    carrinho=[];listaOcultos=[];salvarLocal();closeModal();
     await carregarHistorico();renderCarrinho();renderLista();renderEstoque();atualizarTudo();
     mostrar('Compra finalizada');abrirPagina('historico');
   }catch(err){console.error('ERRO AO FINALIZAR:',err);mostrar('Não foi possível finalizar: '+err.message)}
@@ -2047,6 +2099,7 @@ async function modalSave(){
   if(modalMode==='cadastro-conta'){await criarContaIndependente();return;}
   if(modalMode==='nova-casa'){await criarCasaPeloModal();return;}
   if(modalMode==='editar-casa'){await salvarNomeCasa();return;}
+  if(modalMode==='produto-rapido'){await salvarProdutoRapido();return;}
   if(modalMode==='manual'){
     const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1));if(!nome){mostrar('Informe o produto');return}
     listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item adicionado');return;
