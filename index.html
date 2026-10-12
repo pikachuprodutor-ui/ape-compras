@@ -1174,12 +1174,19 @@ function renderLista(){
   if(!arr.length){$('listaList').innerHTML='<div class="empty">Nenhum item para comprar.</div>';return}
   const grupos=new Map();
   arr.forEach(x=>{const cat=String(x.produto?.categoria||x.categoria||'Outros').trim()||'Outros';if(!grupos.has(cat))grupos.set(cat,[]);grupos.get(cat).push(x)});
-  $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div>${x.auto?'<span></span>':`<button class="shopping-delete" title="Excluir item avulso" aria-label="Excluir item avulso" onclick="excluirItemAvulso('${String(x.key).replace(/'/g,"\\'")}')">×</button>`}</div>`).join('')}</section>`).join('');
+  $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div><button class="shopping-delete" title="Remover da lista de compras" aria-label="Remover da lista de compras" onclick="excluirItemLista('${String(x.key).replace(/'/g,"\\'")}')">×</button></div>`).join('')}</section>`).join('');
 }
-function excluirItemAvulso(key){
-  const item=listaManual.find(m=>String(m.key)===String(key));if(!item)return;
-  listaManual=listaManual.filter(m=>String(m.key)!==String(key));
-  salvarLocal();renderLista();mostrar('Item avulso excluído da lista');
+function excluirItemLista(key){
+  const item=listaManual.find(m=>String(m.key)===String(key));
+  if(item){
+    listaManual=listaManual.filter(m=>String(m.key)!==String(key));
+    salvarLocal();renderLista();mostrar('Item avulso excluído da lista');return;
+  }
+  const existeAuto=produtos.some(p=>'auto-'+p.id===String(key));
+  if(existeAuto){
+    listaOcultos=[...new Set([...listaOcultos,String(key)])];
+    salvarLocal();renderLista();mostrar('Produto removido da lista de compras');
+  }
 }
 function mudarQtdLista(key,delta){
   const x=itensLista().find(y=>String(y.key)===String(key));if(!x)return;
