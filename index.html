@@ -904,6 +904,30 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
   .home-hero{min-height:340px!important}
 }
 
+
+/* GASTOS — comparação compacta para mobile */
+.comparison-note{margin:8px 0 12px!important;font-size:12px!important;line-height:1.3!important;color:#8998a2!important}
+#comparacaoResumo .comparison-total-card{padding:14px!important;min-height:88px}
+#comparacaoResumo .comparison-total-card span{font-size:12px!important;line-height:1.25!important}
+#comparacaoResumo .comparison-total-card strong{font-size:23px!important}
+#comparacaoItens{gap:8px!important}
+#comparacaoItens .comparison-item{display:block!important;padding:13px 14px!important;border-radius:14px!important;background:#10171b!important;border:1px solid #26343b!important;min-height:0!important}
+#comparacaoItens .comparison-item-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+#comparacaoItens .comparison-item-name{font-size:15px!important;font-weight:700!important;line-height:1.25!important;margin:0!important}
+#comparacaoItens .comparison-item-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12px!important;line-height:1.35!important;color:#a8b5bd!important}
+#comparacaoItens .comparison-item-meta .comparison-subtotal{font-size:13px!important;color:#f0bd4f!important}
+#comparacaoItens .comparison-item-meta small{font-size:11px;color:#8d9ba4}
+#comparacaoItens .comparison-dot{color:#53636d}
+#comparacaoItens .comparison-category{align-self:flex-start;padding:3px 7px;border-radius:6px;background:#18242a;color:#91a2ac;font-size:10px!important;line-height:1.2}
+#comparacaoItens .comparison-no-price{color:#e7ad69;font-size:12px;font-weight:600}
+@media(max-width:760px){
+ #comparacaoResumo{gap:8px!important}
+ #comparacaoResumo .comparison-total-card{padding:12px 11px!important;min-height:78px}
+ #comparacaoResumo .comparison-total-card strong{font-size:21px!important}
+ #comparacaoItens .comparison-item{padding:12px!important}
+ #comparacaoItens .comparison-item-name{font-size:14px!important}
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -1048,7 +1072,7 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
 </section>
 
 <section id="carrinho" class="page">
-  <div class="page-head"><div><h1>Carrinho</h1><p>Confira os produtos antes de finalizar.</p></div></div>
+  <div class="page-head"><div><h1>Carrinho</h1><p>Confira os produtos antes de finalizar.</p></div><button class="btn primary" type="button" onclick="adicionarManual()">+ Item avulso</button></div>
   <div id="cartList" class="cart-list"></div>
   <div id="cartSummary"></div>
 </section>
@@ -1518,7 +1542,7 @@ function mudarQtdLista(key,delta){
 function adicionarManual(){
   modalMode='manual';modalIndex=null;$('modalTitle').textContent='Adicionar item avulso';$('modalText').textContent='Informe o produto, a quantidade e selecione uma categoria.';
   const cats=[...new Set(produtos.map(p=>String(p.categoria||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));
-  $('modalBody').innerHTML=`<div class="admin-form"><label class="full">Produto<input id="modalNome" placeholder="Ex.: Pão francês" required></label><label>Categoria<select id="modalCategoria"><option value="Outros">Outros</option>${cats.filter(c=>normalizar(c)!=='outros').map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select></label><label>Quantidade<input id="modalQtd" type="number" min="1" value="1"></label></div>`;$('modal').classList.add('show');
+  $('modalBody').innerHTML=`<div class="admin-form"><label class="full">Produto<input id="modalNome" placeholder="Ex.: Pão francês" required></label><label>Categoria<select id="modalCategoria"><option value="Outros">Outros</option>${cats.filter(c=>normalizar(c)!=='outros').map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select></label><label>Quantidade<input id="modalQtd" type="number" min="1" value="1"></label><label>Preço unitário (R$)<input id="modalPreco" type="number" min="0" step="0.01" placeholder="0,00"></label></div>`;$('modal').classList.add('show');
 }
 function abrirDetalheCompra(key){detalheCompraKey=key;renderDetalheCompra();abrirPagina('compraProduto')}
 function renderDetalheCompra(){
@@ -1658,19 +1682,18 @@ function desenharComparacao(){
   const totalEstimado=itensAtuais.reduce((s,x)=>s+(x.precoRef==null?0:Number(x.qtd||0)*x.precoRef),0);
   const comPreco=itensAtuais.filter(x=>x.precoRef!=null).length;
   const semPreco=itensAtuais.length-comPreco;
-  const avisoSemPreco=semPreco ? ' <strong>'+semPreco+' '+(semPreco===1?'item está':'itens estão')+' sem preço nessa compra</strong> e não entrou no total.' : '';
+  const avisoSemPreco=semPreco ? ' <strong>'+semPreco+' sem preço</strong> — fora do total.' : '';
   $('comparacaoResumo').innerHTML='<div class="comparison-summary">'+
     '<div class="comparison-total-card"><span>Estimativa da sua Lista</span><strong>'+dinheiro(totalEstimado)+'</strong></div>'+
     '<div class="comparison-total-card"><span>Produtos na Lista</span><strong>'+itensAtuais.length+'</strong></div>'+
-    '</div><div class="product-meta" style="margin:0 0 14px">Quantidades sincronizadas automaticamente com a aba Lista. Estimativa calculada com os preços unitários da compra selecionada.'+avisoSemPreco+'</div>';
+    '</div><div class="product-meta comparison-note">Preços da compra selecionada · quantidades da Lista.'+(semPreco ? '<strong> '+semPreco+' sem preço</strong> — fora do total.' : '')+'</div>';
   $('comparacaoItens').innerHTML=itensAtuais.map(x=>{
     const preco=x.precoRef;
     const detalhePreco=preco==null
-      ? '<strong>Sem preço na compra selecionada</strong>'
-      : dinheiro(preco)+' por unidade • Subtotal estimado: <strong>'+dinheiro(Number(x.qtd||0)*preco)+'</strong>';
+      ? '<span class="comparison-no-price">Sem preço</span>'
+      : '<span>'+dinheiro(preco)+'/un.</span><strong class="comparison-subtotal">'+dinheiro(Number(x.qtd||0)*preco)+'</strong> <small>subtotal</small> ';
     return '<div class="comparison-item">'+
-      '<div><div class="comparison-item-name">'+esc(x.nome)+'</div><div class="product-meta">'+x.qtd+' '+(x.qtd===1?'unidade':'unidades')+' na Lista • '+detalhePreco+'</div></div>'+
-      '<div class="comparison-item-controls"><span class="product-meta">'+esc(x.produto?.categoria||x.categoria||'Outros')+'</span></div>'+
+      '<div class="comparison-item-main"><div class="comparison-item-name">'+esc(x.nome)+'</div><div class="comparison-item-meta"><span>'+x.qtd+' '+(x.qtd===1?'un.':'un.')+'</span><span class="comparison-dot">·</span>'+detalhePreco+'</div><span class="comparison-category">'+esc(x.produto?.categoria||x.categoria||'Outros')+'</span></div>'+
     '</div>';
   }).join('');
 }
@@ -2526,8 +2549,8 @@ async function modalSave(){
   if(modalMode==='editar-casa'){await salvarNomeCasa();return;}
   if(modalMode==='produto-rapido'){await salvarProdutoRapido();return;}
   if(modalMode==='manual'){
-    const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1)),categoria=$('modalCategoria')?.value||'Outros';if(!nome){mostrar('Informe o produto');return}
-    listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,categoria,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item avulso adicionado');return;
+    const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1)),categoria=$('modalCategoria')?.value||'Outros',preco=Math.max(0,Number(String($('modalPreco')?.value||0).replace(',','.')));if(!nome){mostrar('Informe o produto');return}
+    const key='avulso-'+Date.now();carrinho.push({key,id:null,nome,qtd:q,preco,categoria,avulso:true});salvarLocal();closeModal();renderLista();renderCarrinho();atualizarTudo();mostrar('Item avulso adicionado ao carrinho');return;
   }
   if(modalMode==='finalizar'){await concluirCompra();return}
   if(modalMode==='admin-editar-compra'){await adminSalvarCompraEditada();return}
