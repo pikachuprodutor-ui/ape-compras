@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apê Compras</title>
-<meta name="theme-color" content="#f5f1e8">
+<meta name="theme-color" content="#070b0d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Apê Compras">
@@ -713,6 +713,26 @@ input,select,.search,.price-input,.admin-form input,.admin-form select{backgroun
 }
 @media(max-width:390px){.home-stats{gap:6px}.home-stat-card{padding:10px 8px}.home-stat-card strong{font-size:24px}.home-stat-card .stat-label{font-size:11px}.quick-link{font-size:11px}.home-hero{min-height:340px}}
 
+
+/* APÊ COMPRAS — identidade visual escura baseada na referência aprovada */
+:root{--bg:#070b0d;--panel:#10171b;--panel2:#141e23;--line:#263239;--text:#f5f7f8;--muted:#a0adb7;--accent:#24b8f2;--accent2:#80d7ff;--green:#29c58a;--red:#f05a62;--blue:#4d9df6;}
+body{background:radial-gradient(ellipse at 80% 0%,#172126 0%,#090e11 43%,#06090b 100%);color:var(--text);min-height:100vh}
+header{background:rgba(8,12,15,.94);border-bottom:1px solid #1e2a30;backdrop-filter:blur(18px)}
+.logo-icon{background:#172228;color:#e9a94f;border:1px solid #26343a}
+nav button{color:#aab6bf;border-radius:12px;padding:11px 13px}nav button:hover,nav button.active{background:#123247;color:#39bdf5}
+main{max-width:1240px;padding-top:28px}
+.home-hero{background-color:#080d0f;border:1px solid #1c282e;box-shadow:0 18px 45px #0005;background-image:linear-gradient(90deg,rgba(5,10,12,.96) 0%,rgba(5,10,12,.83) 43%,rgba(5,10,12,.18) 100%),url('data:image/png;base64,) !important}
+/* Preserve the existing embedded kitchen image already encoded in the original hero background. */
+.home-hero{background-image:linear-gradient(90deg,rgba(5,10,12,.96) 0%,rgba(5,10,12,.83) 43%,rgba(5,10,12,.18) 100%),url(
+.home-copy h1{color:#f7f8f9}.home-copy h1 span{color:#e9c99b}.home-greeting{color:#aebbc4}.house-chip{background:#10191e;border-color:#244352;color:#d5e0e6}
+.home-stat-card{background:#0e171b;border-color:#26353c;box-shadow:0 12px 26px #0003;color:#f5f7f8}.home-stat-card .stat-label{color:#e2e8ec}.home-stat-card.need-card{background:linear-gradient(145deg,#06291f,#0d1717);border-color:#16875f}.home-stat-card.need-card .home-stat-icon{background:#104b39;color:#7ae7b7}.home-stat-card.need-card strong{color:#7ae7b7}.home-stat-card.stock-card{background:linear-gradient(145deg,#10263c,#10191e);border-color:#326c9d}.home-stat-card.stock-card .home-stat-icon{background:#203e60;color:#8bb9ff}.home-stat-card.stock-card strong{color:#8bb9ff}.home-stat-card.purchase-card{background:linear-gradient(145deg,#25183c,#15131f);border-color:#6945a0}.home-stat-card.purchase-card .home-stat-icon{background:#422765;color:#d0a1ff}.home-stat-card.purchase-card strong{color:#d0a1ff}
+.quick-link{background:#11191d;border-color:#2a363c;color:#f5f7f8;box-shadow:none}.quick-link.list-link{background:linear-gradient(140deg,#15251c,#10191b);border-color:#314c3b}.quick-link.cart-link{background:linear-gradient(140deg,#2b1e14,#171719);border-color:#674326}.quick-link.money-link{background:linear-gradient(140deg,#211a32,#15151f);border-color:#514078}.quick-link.list-link .quick-icon{background:#21392a;color:#c4e3a5}.quick-link.cart-link .quick-icon{background:#39281c;color:#ff9d50}.quick-link.money-link .quick-icon{background:#35264e;color:#b997ff}
+.home-last{border-color:#263239}.home-last-card,.home-card,.detail,.history-card,.history-stat,.admin-box,.shopping-row,.cart-row,.cart-summary{background:#10171b;border-color:#263239;box-shadow:0 8px 22px #0002}.home-last-icon{background:#1b252b;color:#b8c8d2}.home-last-total{color:#f4f6f8}
+.page-head h1{color:#f5f7f8}.page-head p,.product-meta,.history-meta{color:#9eabb4}.btn{background:#182329;border-color:#334149;color:#f3f7f9}.btn.primary{background:#24b8f2;border-color:#24b8f2;color:#061116}.btn.danger{background:#3a1d22;border-color:#6b343d;color:#ffb4ba}
+.product-card,.shopping-row,.history-card,.history-stat,.admin-box,.detail,.cart-row{background:#10171b;border-color:#27343b;color:#f4f7f8}.product-photo,.shopping-row .photo{background:#1a252b}.product-stats span,.tag{background:#202c32;color:#b9c7ce}.search,.price-input,.admin-form input,.admin-form select{background:#0a1013;border-color:#344149;color:#f4f7f8}.filters button{background:#11191d;border-color:#2c3940;color:#aebbc3}.filters button.active{background:#24b8f2;color:#061116;border-color:#24b8f2}.cart-summary{background:#101b20}.cart-total,.home-number{color:#53c7f5}.history-total{color:#c5a0ff}.auth-card{background:#11191d;border-color:#29373e;color:#f4f7f8}.auth-card p,.auth-field{color:#aebbc4}.auth-field input{background:#080d10;border-color:#344149;color:#fff}.auth-submit{background:#24b8f2;color:#061116}
+.gastos-tabs{display:flex;gap:8px;padding:5px;background:#0d1418;border:1px solid #26343b;border-radius:14px;margin:16px 0 18px;width:max-content;max-width:100%}.gastos-tab{border:0;border-radius:10px;background:transparent;color:#aab7bf;padding:10px 16px;font-weight:750}.gastos-tab.active{background:#17364a;color:#58c8f7}.gastos-subsection{display:block!important;margin-top:28px;padding-top:24px;border-top:1px solid #263239}.gastos-subsection .page-head{margin-bottom:14px}.gastos-subsection h2{font-size:23px;margin:0}.gastos-subsection .admin-box{margin-bottom:15px}
+@media(max-width:760px){body{background:#070b0d}header{background:#080d10;border-bottom-color:#1c282e}.home-hero{min-height:390px;border-radius:25px;padding:20px 19px;background-position:58% center}.home-stats{gap:8px}.home-stat-card{padding:14px 11px;min-height:155px;border-radius:18px}.home-stat-card strong{font-size:30px}.home-stat-card .stat-label{font-size:12px}.home-stat-card small{font-size:11px}.home-stat-icon{width:39px;height:39px}.home-quick{gap:9px}.quick-link{padding:12px 10px;min-height:78px;gap:8px;flex-direction:column;align-items:flex-start;font-size:13px}.quick-link .quick-icon{width:35px;height:35px}.home-last-card{padding:12px}.mobile-nav{background:rgba(9,15,18,.96);border:1px solid #26343b;box-shadow:0 12px 35px #0008;backdrop-filter:blur(20px)}.mobile-nav button{color:#9eacb6}.mobile-nav button.active{color:#24b8f2}.mobile-nav button.active:after{background:#24b8f2}.history-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.gastos-tabs{width:100%}.gastos-tab{flex:1;padding:10px 8px}.gastos-subsection{scroll-margin-top:16px}.page-head h1{font-size:28px}}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -747,8 +767,7 @@ input,select,.search,.price-input,.admin-form input,.admin-form select{backgroun
       <button data-page="estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>Estoque</button>
       <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
       <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>Carrinho</button>
-      <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Histórico</button>
-      <button data-page="comparacoes"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 15l3-4 3 2 5-7"/></svg>Comparar</button>
+      <button data-page="historico" class="gastos-nav"><svg viewBox="0 0 24 24"><path d="M4 5h16v15H4z"/><path d="M8 3v4M16 3v4M4 10h16M8 14h3M8 17h6"/><path d="M15 14l2 2 4-5"/></svg>Gastos</button>
       <button id="navAdmin" class="admin-nav" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5 1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg>Admin</button>
     </nav>
   </div>
@@ -863,12 +882,9 @@ input,select,.search,.price-input,.admin-form input,.admin-form select{backgroun
 </section>
 
 <section id="historico" class="page">
-  <div class="page-head"><div><h1>Histórico</h1><p>Compras compartilhadas entre os usuários desta casa.</p></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
-  <div id="historyList"></div>
-</section>
-
-<section id="comparacoes" class="page">
-  <div class="page-head"><div><h1>Comparação de valores</h1><p>Calculada automaticamente com os produtos e quantidades da sua Lista, usando preços de uma compra anterior.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
+  <div class="page-head"><div><h1>Gastos</h1><p>Histórico de compras e comparação de preços em um só lugar.</p></div><button class="btn" onclick="carregarHistorico();renderComparacoes()">Atualizar</button></div>
+  <div class="gastos-tabs"><button class="gastos-tab active" type="button" onclick="document.getElementById('historyList').scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.gastos-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active')">Histórico</button><button class="gastos-tab" type="button" onclick="document.getElementById('comparacoes').scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.gastos-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');renderComparacoes()">Comparar preços</button></div><div id="historyList"></div><section id="comparacoes" class="gastos-subsection">
+  <div class="page-head"><div><h2>Comparar preços</h2><p>Use uma compra anterior como referência para estimar o valor dos itens da sua Lista.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
     <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
@@ -879,6 +895,7 @@ input,select,.search,.price-input,.admin-form input,.admin-form select{backgroun
   </div>
   <div id="comparacaoResumo"></div>
   <div id="comparacaoItens" class="cart-list"></div>
+</section>
 </section>
 
 <section id="admin" class="page">
@@ -1016,6 +1033,7 @@ function carregarLocal(){
 
 /* NAVEGAÇÃO */
 function abrirPagina(id){
+  if(id==='comparacoes')id='historico';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const p=$(id);if(p)p.classList.add('active');
   const nav=id==='produtoEstoque'?'estoque':id==='compraProduto'?'lista':id;
@@ -1025,8 +1043,7 @@ function abrirPagina(id){
   if(id==='lista')renderLista();
   if(id==='compraProduto')renderDetalheCompra();
   if(id==='carrinho')renderCarrinho();
-  if(id==='historico')renderHistorico();
-  if(id==='comparacoes')renderComparacoes();
+  if(id==='historico'){renderHistorico();renderComparacoes();}
   if(id==='admin')atualizarAdminTela();
   window.scrollTo(0,0);
 }
