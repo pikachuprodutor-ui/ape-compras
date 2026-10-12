@@ -634,7 +634,10 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 .shopping-category-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--panel2);border-bottom:1px solid var(--line)}
 .shopping-category-head strong{font-size:14px;letter-spacing:.2px}
 .shopping-category-head span{font-size:12px;color:var(--muted)}
-.shopping-category .shopping-row{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0;padding:12px}
+.shopping-category .shopping-row{border:0;border-radius:0;border-bottom:1px solid var(--line);margin:0;padding:12px;grid-template-columns:48px minmax(0,1fr) auto auto}
+.shopping-delete{width:30px;height:30px;border-radius:8px!important;display:grid;place-items:center;color:var(--muted)!important;background:var(--panel2)!important;font-size:18px!important;text-align:center!important}
+.shopping-delete:hover{color:#ef4444!important}
+.shopping-category .shopping-row .shopping-product-open{padding:0}
 .shopping-category .shopping-row:last-child{border-bottom:0}
 .shopping-product-open{text-align:left;min-width:0;overflow-wrap:anywhere}
 .cart-item-subtotal{margin-top:8px;color:var(--muted);font-size:12px}.cart-item-subtotal strong{color:var(--text);font-size:14px}
@@ -1164,20 +1167,25 @@ function itensLista(){
 }
 function renderLista(){
   const arr=itensLista().sort((a,b)=>{
-    const ca=String(a.produto?.categoria||'Outros').trim()||'Outros';
-    const cb=String(b.produto?.categoria||'Outros').trim()||'Outros';
+    const ca=String(a.produto?.categoria||a.categoria||'Outros').trim()||'Outros';
+    const cb=String(b.produto?.categoria||b.categoria||'Outros').trim()||'Outros';
     return ca.localeCompare(cb,'pt-BR',{sensitivity:'base'})||String(a.nome).localeCompare(String(b.nome),'pt-BR',{sensitivity:'base'});
   });
   if(!arr.length){$('listaList').innerHTML='<div class="empty">Nenhum item para comprar.</div>';return}
   const grupos=new Map();
-  arr.forEach(x=>{const cat=String(x.produto?.categoria||'Outros').trim()||'Outros';if(!grupos.has(cat))grupos.set(cat,[]);grupos.get(cat).push(x)});
-  $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div></div>`).join('')}</section>`).join('');
+  arr.forEach(x=>{const cat=String(x.produto?.categoria||x.categoria||'Outros').trim()||'Outros';if(!grupos.has(cat))grupos.set(cat,[]);grupos.get(cat).push(x)});
+  $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div>${x.auto?'<span></span>':`<button class="shopping-delete" title="Excluir item avulso" aria-label="Excluir item avulso" onclick="excluirItemAvulso('${String(x.key).replace(/'/g,"\\'")}')">×</button>`}</div>`).join('')}</section>`).join('');
+}
+function excluirItemAvulso(key){
+  const item=listaManual.find(m=>String(m.key)===String(key));if(!item)return;
+  listaManual=listaManual.filter(m=>String(m.key)!==String(key));
+  salvarLocal();renderLista();mostrar('Item avulso excluído da lista');
 }
 function mudarQtdLista(key,delta){
   const x=itensLista().find(y=>String(y.key)===String(key));if(!x)return;
   if(x.auto){
     let m=listaManual.find(y=>y.id===x.id);
-    if(!m){m={key:'manual-'+x.id,id:x.id,nome:x.nome,qtd:x.qtd,auto:false};listaManual.push(m)}
+    if(!m){m={key:'manual-'+x.id,id:x.id,nome:x.nome,qtd:x.qtd,categoria:x.produto?.categoria||'Outros',auto:false};listaManual.push(m)}
     m.qtd=Math.max(1,m.qtd+delta);
   }else{
     x.qtd=Math.max(1,x.qtd+delta);const m=listaManual.find(y=>String(y.key)===String(key));if(m)m.qtd=x.qtd;
@@ -1185,14 +1193,16 @@ function mudarQtdLista(key,delta){
   salvarLocal();renderLista();
 }
 function adicionarManual(){
-  modalMode='manual';modalIndex=null;$('modalTitle').textContent='Adicionar item';$('modalText').textContent='Item manual da lista desta casa.';$('modalBody').innerHTML='<div class="admin-form"><label>Produto<input id="modalNome"></label><label>Quantidade<input id="modalQtd" type="number" min="1" value="1"></label></div>';$('modal').classList.add('show');
+  modalMode='manual';modalIndex=null;$('modalTitle').textContent='Adicionar item avulso';$('modalText').textContent='Informe o produto, a quantidade e selecione uma categoria.';
+  const cats=[...new Set(produtos.map(p=>String(p.categoria||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR',{sensitivity:'base'}));
+  $('modalBody').innerHTML=`<div class="admin-form"><label class="full">Produto<input id="modalNome" placeholder="Ex.: Pão francês" required></label><label>Categoria<select id="modalCategoria"><option value="Outros">Outros</option>${cats.filter(c=>normalizar(c)!=='outros').map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select></label><label>Quantidade<input id="modalQtd" type="number" min="1" value="1"></label></div>`;$('modal').classList.add('show');
 }
 function abrirDetalheCompra(key){detalheCompraKey=key;renderDetalheCompra();abrirPagina('compraProduto')}
 function renderDetalheCompra(){
   const x=itensLista().find(y=>String(y.key)===String(detalheCompraKey));
   if(!x){$('compraDetail').innerHTML='<div class="empty">Item não encontrado.</div>';return}
   const p=x.produto;
-  $('compraDetail').innerHTML=`<div class="detail">${p?`<div class="detail-top">${fotoHtml(p,'detail-photo')}<div><h2>${esc(x.nome)}</h2><div class="product-meta">${esc(p.categoria||'')}</div></div></div>`:`<h2>${esc(x.nome)}</h2>`}<div class="admin-form" style="margin-top:18px"><label>Quantidade<input id="detailQtd" type="number" min="1" value="${x.qtd}"></label><label>Preço unitário<input id="detailPreco" type="number" min="0" step="0.01" placeholder="0,00"></label></div><div class="detail-actions"><button class="btn primary" onclick="adicionarDetalheAoCarrinho()">Adicionar ao carrinho</button></div></div>`;
+  $('compraDetail').innerHTML=`<div class="detail">${p?`<div class="detail-top">${fotoHtml(p,'detail-photo')}<div><h2>${esc(x.nome)}</h2><div class="product-meta">${esc(p.categoria||'')}</div></div></div>`:`<h2>${esc(x.nome)}</h2><div class="product-meta">${esc(x.categoria||'Outros')}</div>`}<div class="admin-form" style="margin-top:18px"><label>Quantidade<input id="detailQtd" type="number" min="1" value="${x.qtd}"></label><label>Preço unitário<input id="detailPreco" type="number" min="0" step="0.01" placeholder="0,00"></label></div><div class="detail-actions"><button class="btn primary" onclick="adicionarDetalheAoCarrinho()">Adicionar ao carrinho</button></div></div>`;
 }
 function adicionarDetalheAoCarrinho(){
   const x=itensLista().find(y=>String(y.key)===String(detalheCompraKey));if(!x)return;
@@ -2101,8 +2111,8 @@ async function modalSave(){
   if(modalMode==='editar-casa'){await salvarNomeCasa();return;}
   if(modalMode==='produto-rapido'){await salvarProdutoRapido();return;}
   if(modalMode==='manual'){
-    const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1));if(!nome){mostrar('Informe o produto');return}
-    listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item adicionado');return;
+    const nome=$('modalNome').value.trim(),q=Math.max(1,Number($('modalQtd').value||1)),categoria=$('modalCategoria')?.value||'Outros';if(!nome){mostrar('Informe o produto');return}
+    listaManual.push({key:'manual-'+Date.now(),id:null,nome,qtd:q,categoria,auto:false});salvarLocal();closeModal();renderLista();mostrar('Item avulso adicionado');return;
   }
   if(modalMode==='finalizar'){await concluirCompra();return}
   if(modalMode==='admin-editar-compra'){await adminSalvarCompraEditada();return}
