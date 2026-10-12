@@ -1077,7 +1077,7 @@ function abrirPagina(id){
   if(id==='lista')renderLista();
   if(id==='compraProduto')renderDetalheCompra();
   if(id==='carrinho')renderCarrinho();
-  if(id==='historico'){renderHistorico();renderComparacoes();}
+  if(id==='historico'){mostrarSecaoGastos('historico');renderHistorico();renderComparacoes();}
   if(id==='admin')atualizarAdminTela();
   window.scrollTo(0,0);
 }
@@ -1449,10 +1449,11 @@ function finalizarCompra(){
 function mostrarSecaoGastos(secao){
   const historico=document.getElementById('historicoConteudo');
   const comparacoes=document.getElementById('comparacoes');
-  if(historico)historico.style.display=secao==='historico'?'block':'none';
-  if(comparacoes){comparacoes.style.display='';comparacoes.classList.toggle('gastos-visible',secao==='comparacoes');}
-  document.querySelectorAll('.gastos-tab').forEach((b,i)=>{const active=(secao==='historico'?i===0:i===1);b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');});
-  if(secao==='comparacoes')renderComparacoes();
+  const verHistorico=secao!=='comparacoes';
+  if(historico){historico.classList.toggle('gastos-hidden',!verHistorico);historico.style.display=verHistorico?'block':'none';}
+  if(comparacoes){comparacoes.classList.toggle('gastos-visible',!verHistorico);comparacoes.style.display=!verHistorico?'block':'none';}
+  document.querySelectorAll('.gastos-tab').forEach((b,i)=>{const active=(verHistorico?i===0:i===1);b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');});
+  if(!verHistorico)renderComparacoes();
 }
 
 /* COMPARAÇÃO DE VALORES — quantidades sincronizadas com a Lista */
@@ -2439,3 +2440,88 @@ inicializarAutenticacao();
 </script>
 </body>
 </html>
+
+
+/* AJUSTES FINAIS — navegação compacta, estoque escuro e Gastos em painéis alternados */
+@media (max-width: 760px) {
+  /* O nome do aplicativo já fica no cabeçalho: não repetir na capa */
+  #inicio .home-brand { display: none !important; }
+  #inicio .home-hero { padding-top: 24px !important; }
+
+  /* Seis acessos na mesma linha, incluindo Admin */
+  nav.mobile-nav,
+  nav.mobile-nav.admin-visible {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-auto-flow: column !important;
+    align-items: stretch !important;
+    gap: 2px !important;
+    padding: 8px 6px !important;
+    min-height: 76px !important;
+    overflow: visible !important;
+  }
+  nav.mobile-nav > button,
+  nav.mobile-nav.admin-visible > button {
+    display: flex !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 7px 0 5px !important;
+    gap: 4px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    font-size: clamp(8px, 2.25vw, 11px) !important;
+    line-height: 1.15 !important;
+  }
+  nav.mobile-nav > button svg { width: 20px !important; height: 20px !important; flex: 0 0 auto; }
+  nav.mobile-nav .admin-mobile { display: flex !important; }
+  nav.mobile-nav:not(.admin-visible) .admin-mobile { display: none !important; }
+
+  /* Quantidades e status sem fundo bege/branco */
+  .product-stats span,
+  .product-stats span.need,
+  .product-stats span.ok {
+    background: #1b2930 !important;
+    color: #d4e0e5 !important;
+    border: 1px solid #34454e !important;
+    border-radius: 10px !important;
+  }
+  .product-stats span.need { background: #35291a !important; color: #f0c46f !important; border-color: #6b512b !important; }
+  .product-stats span.ok { background: #172e28 !important; color: #83d9b1 !important; border-color: #285844 !important; }
+
+  /* Gastos: abas com cores escuras e somente um painel por vez */
+  .gastos-tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1.25fr !important;
+    gap: 6px !important;
+    padding: 5px !important;
+    margin: 14px 0 16px !important;
+    border-radius: 14px !important;
+    background: #0d1418 !important;
+    border: 1px solid #26343b !important;
+  }
+  .gastos-tab {
+    min-height: 44px !important;
+    border: 1px solid #2b3b43 !important;
+    border-radius: 10px !important;
+    background: #141e23 !important;
+    color: #aebbc3 !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    padding: 9px 8px !important;
+  }
+  .gastos-tab.active {
+    background: #17364a !important;
+    color: #75d2f7 !important;
+    border-color: #2b7694 !important;
+    box-shadow: inset 0 0 0 1px #24556a !important;
+  }
+  #historicoConteudo.gastos-hidden { display: none !important; }
+  #comparacoes.gastos-subsection { display: none !important; }
+  #comparacoes.gastos-subsection.gastos-visible { display: block !important; }
+  #comparacoes.gastos-subsection { margin: 0 !important; padding: 0 !important; border: 0 !important; }
+  #comparacoes .admin-box { background: #10171b !important; border-color: #27343b !important; }
+  #comparacoes .auth-field { color: #aebbc3 !important; }
+  #comparacoes select#comparacaoCompra { background: #111a1f !important; color: #f4f7f8 !important; border-color: #344149 !important; }
+}
