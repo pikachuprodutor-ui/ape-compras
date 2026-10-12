@@ -645,6 +645,15 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 .shopping-category .shopping-row:last-child{border-bottom:0}
 .shopping-product-open{text-align:left;min-width:0;overflow-wrap:anywhere}
 .cart-item-subtotal{margin-top:8px;color:var(--muted);font-size:12px}.cart-item-subtotal strong{color:var(--text);font-size:14px}
+.comparison-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.comparison-total-card{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.comparison-total-card span{display:block;color:var(--muted);font-size:12px}
+.comparison-total-card strong{display:block;margin-top:7px;font-size:23px;color:var(--accent)}
+.comparison-item{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.comparison-item-name{font-weight:800;overflow-wrap:anywhere}
+.comparison-item-controls{display:flex;align-items:center;gap:8px}
+.comparison-item-controls input{width:76px;background:#0e1011;color:#fff;border:1px solid #4b5256;border-radius:8px;padding:9px;text-align:center}
+@media(max-width:600px){.comparison-summary{grid-template-columns:1fr 1fr}.comparison-total-card{padding:12px}.comparison-total-card strong{font-size:19px}.comparison-item{grid-template-columns:1fr}.comparison-item-controls{justify-content:space-between}}
 @media(max-width:600px){.head-actions{width:100%;justify-content:stretch}.head-actions .btn{flex:1;padding:10px 8px;font-size:12px}.shopping-category .shopping-row{gap:8px;padding:10px}.shopping-category .qty{gap:5px}.shopping-category .qty button{width:28px;height:28px}}
 
 </style>
@@ -682,6 +691,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
       <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>Carrinho</button>
       <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Histórico</button>
+      <button data-page="comparacoes"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 15l3-4 3 2 5-7"/></svg>Comparar</button>
       <button id="navAdmin" class="admin-nav" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5 1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg>Admin</button>
     </nav>
   </div>
@@ -772,6 +782,20 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 <section id="historico" class="page">
   <div class="page-head"><div><h1>Histórico</h1><p>Compras compartilhadas entre os usuários desta casa.</p></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
   <div id="historyList"></div>
+</section>
+
+<section id="comparacoes" class="page">
+  <div class="page-head"><div><h1>Comparação de valores</h1><p>Use uma compra anterior como referência para estimar quanto gastará na próxima.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
+  <div class="admin-box">
+    <label class="auth-field" style="margin-top:0">Compra de referência
+      <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
+        <option value="">Selecione uma compra do histórico</option>
+      </select>
+    </label>
+    <div class="product-meta" style="margin-top:8px">A estimativa usa os preços unitários registrados nessa compra. Você pode ajustar as quantidades para planejar a próxima compra.</div>
+  </div>
+  <div id="comparacaoResumo"></div>
+  <div id="comparacaoItens" class="cart-list"></div>
 </section>
 
 <section id="admin" class="page">
@@ -877,6 +901,7 @@ const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let usuarioAtual=null, perfilAtual=null, casaAtual=null, casasUsuario=[], produtos=[];
 let filtro='Todos', listaManual=[], carrinho=[], historico=[], listaOcultos=[];
 let modalMode=null, modalIndex=null, detalheEstoqueId=null, detalheCompraKey=null;
+let comparacaoItensBase=[], comparacaoQuantidades={};
 let authMudancaEmAndamento=false, appIniciado=false;
 
 const $=id=>document.getElementById(id);
@@ -918,6 +943,7 @@ function abrirPagina(id){
   if(id==='compraProduto')renderDetalheCompra();
   if(id==='carrinho')renderCarrinho();
   if(id==='historico')renderHistorico();
+  if(id==='comparacoes')renderComparacoes();
   if(id==='admin')atualizarAdminTela();
   window.scrollTo(0,0);
 }
@@ -1284,6 +1310,77 @@ function finalizarCompra(){
   if(carrinho.some(x=>Number(x.preco)<=0)){mostrar('Informe o preço de todos os itens');return}
   const total=carrinho.reduce((s,x)=>s+Number(x.qtd)*Number(x.preco),0);
   modalMode='finalizar';$('modalTitle').textContent='Finalizar compra';$('modalText').textContent='Total: '+dinheiro(total);$('modalBody').innerHTML='<label class="auth-field">Mercado<input id="modalMercado" placeholder="Nome do mercado"></label>';$('modal').classList.add('show');
+}
+
+/* COMPARAÇÃO DE VALORES — estimativa com base em uma compra anterior */
+async function renderComparacoes(){
+  const select=$('comparacaoCompra');
+  if(!select)return;
+  const valorAtual=select.value;
+  if(!historico.length){
+    select.innerHTML='<option value="">Nenhuma compra no histórico</option>';
+    $('comparacaoResumo').innerHTML='<div class="empty">Finalize uma compra para começar a usar a comparação de valores.</div>';
+    $('comparacaoItens').innerHTML='';
+    return;
+  }
+  select.innerHTML='<option value="">Selecione uma compra do histórico</option>'+historico.map(h=>{
+    const d=new Date(h.data);
+    const dataTxt=Number.isNaN(d.getTime())?'Data não informada':d.toLocaleDateString('pt-BR');
+    return `<option value="${esc(h.id)}">${esc(dataTxt)} • ${esc(h.mercado||'Mercado')} • ${dinheiro(h.total)}</option>`;
+  }).join('');
+  if(valorAtual && historico.some(h=>String(h.id)===String(valorAtual)))select.value=valorAtual;
+  else select.value=String(historico[0].id);
+  await carregarComparacaoSelecionada();
+}
+async function carregarComparacaoSelecionada(){
+  const select=$('comparacaoCompra');
+  const id=select?.value;
+  if(!id){$('comparacaoResumo').innerHTML='';$('comparacaoItens').innerHTML='';return}
+  $('comparacaoItens').innerHTML='<div class="empty">Carregando itens da compra...</div>';
+  try{
+    const itens=await carregarItensCompra(id);
+    comparacaoItensBase=itens.map((item,i)=>({
+      key:String(item.produto_id||('sem-produto-'+i)),
+      nome:item.produtos?.produto||('Produto #'+item.produto_id),
+      qtd:Math.max(1,Number(item.quantidade||1)),
+      preco:Math.max(0,Number(item.preco_unitario||0)),
+      produtoId:item.produto_id||null
+    }));
+    comparacaoQuantidades={};
+    comparacaoItensBase.forEach(x=>comparacaoQuantidades[x.key]=x.qtd);
+    desenharComparacao();
+  }catch(e){
+    console.error('ERRO NA COMPARAÇÃO:',e);
+    $('comparacaoResumo').innerHTML='<div class="empty">Não foi possível carregar os itens dessa compra.</div>';
+    $('comparacaoItens').innerHTML='';
+  }
+}
+function alterarQtdComparacao(key,valor){
+  comparacaoQuantidades[key]=Math.max(0,Number(valor||0));
+  desenharComparacao();
+}
+function desenharComparacao(){
+  const compra=historico.find(h=>String(h.id)===String($('comparacaoCompra')?.value));
+  if(!compra){$('comparacaoResumo').innerHTML='';$('comparacaoItens').innerHTML='';return}
+  const totalBase=comparacaoItensBase.reduce((s,x)=>s+x.qtd*x.preco,0);
+  const totalEstimado=comparacaoItensBase.reduce((s,x)=>s+Math.max(0,Number(comparacaoQuantidades[x.key]||0))*x.preco,0);
+  const diferenca=totalEstimado-totalBase;
+  $('comparacaoResumo').innerHTML=`<div class="comparison-summary">
+    <div class="comparison-total-card"><span>Total da compra de referência</span><strong>${dinheiro(totalBase)}</strong></div>
+    <div class="comparison-total-card"><span>Estimativa para próxima compra</span><strong>${dinheiro(totalEstimado)}</strong></div>
+  </div>
+  <div class="product-meta" style="margin:0 0 14px">${diferenca>0?'A estimativa está '+dinheiro(diferenca)+' acima da compra de referência.':diferenca<0?'A estimativa está '+dinheiro(Math.abs(diferenca))+' abaixo da compra de referência.':'A estimativa está igual ao total da compra de referência.'} Os valores consideram os preços unitários da compra selecionada, sem prever alterações futuras de preço.</div>`;
+  if(!comparacaoItensBase.length){
+    $('comparacaoItens').innerHTML='<div class="empty">Essa compra não tem itens detalhados salvos no histórico.</div>';
+    return;
+  }
+  $('comparacaoItens').innerHTML=comparacaoItensBase.map(x=>{
+    const qtd=Math.max(0,Number(comparacaoQuantidades[x.key]||0));
+    return `<div class="comparison-item">
+      <div><div class="comparison-item-name">${esc(x.nome)}</div><div class="product-meta">${dinheiro(x.preco)} por unidade • Subtotal estimado: <strong>${dinheiro(qtd*x.preco)}</strong></div></div>
+      <div class="comparison-item-controls"><label class="product-meta" for="compQtd-${esc(x.key)}">Quantidade</label><input id="compQtd-${esc(x.key)}" type="number" min="0" step="1" value="${qtd}" onchange="alterarQtdComparacao('${String(x.key).replace(/'/g,"\\'")}',this.value)"></div>
+    </div>`;
+  }).join('');
 }
 
 /* HISTÓRICO COMPARTILHADO */
