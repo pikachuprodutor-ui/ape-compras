@@ -873,6 +873,37 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
   .mobile-nav button svg { width:19px !important; height:19px !important; }
   .mobile-nav.admin-visible { grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
 }
+
+/* AJUSTES DE USABILIDADE — tela inicial, navegação e comparação */
+@media(max-width:760px){
+  main{padding-bottom:120px}
+  .home-hero{min-height:300px!important;height:300px;padding:18px!important;margin-bottom:14px!important;border-radius:23px!important;background-position:58% center!important}
+  .home-copy{margin-top:24px!important}
+  .home-copy h1{font-size:clamp(34px,9vw,43px)!important;line-height:1.02!important}
+  .house-chip{margin-top:14px!important}
+  .home-stats{margin-bottom:18px!important}
+  .home-stat-card{min-height:122px!important}
+  .home-quick{margin-bottom:16px!important}
+  .mobile-nav{left:12px!important;right:auto!important;width:calc(100% - 24px)!important;max-width:calc(100vw - 24px)!important;box-sizing:border-box!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:1px!important;padding:7px 5px calc(7px + env(safe-area-inset-bottom))!important;border-color:#26343b!important;background:rgba(10,16,19,.96)!important;box-shadow:0 8px 28px rgba(0,0,0,.38)!important}
+  .mobile-nav button{min-width:0!important;width:100%!important;padding:7px 0 5px!important;gap:4px!important;font-size:10px!important;white-space:nowrap!important}
+  .mobile-nav button svg{width:21px!important;height:21px!important;flex:0 0 auto!important}
+  .mobile-nav button.active{background:#15303d!important;color:#58c8f7!important}
+  .mobile-nav button.active svg{color:#58c8f7!important}
+  .gastos-tabs{display:grid!important;grid-template-columns:1fr 1.25fr!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;padding:4px!important;gap:5px!important;margin:14px 0 16px!important}
+  .gastos-tab{min-width:0!important;padding:12px 6px!important;font-size:13px!important;line-height:1.2!important}
+  #comparacoes .page-head{display:none!important}
+  #comparacoes .admin-box{padding:15px!important;border-radius:16px!important;margin-bottom:14px!important}
+  #comparacoes .auth-field{font-size:13px!important;font-weight:700!important;color:#d9e2e7!important}
+  #comparacaoCompra{min-height:48px!important;font-size:14px!important;margin-top:9px!important}
+  #comparacaoResumo{margin-top:12px!important}
+  #comparacaoItens{gap:10px!important}
+  #comparacaoItens .product-meta{font-size:13px!important;line-height:1.35!important}
+  #comparacoes .page-head p,.gastos-panel>.product-meta{display:none!important}
+}
+@media(min-width:761px){
+  .home-hero{min-height:340px!important}
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -1023,16 +1054,16 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
 </section>
 
 <section id="historico" class="page">
-  <div class="page-head"><div><h1>Gastos</h1><p>Histórico de compras e comparação de preços em um só lugar.</p></div><button class="btn" onclick="carregarHistorico();renderComparacoes()">Atualizar</button></div>
+  <div class="page-head"><div><h1>Gastos</h1></div><button class="btn" onclick="carregarHistorico();renderComparacoes()">Atualizar</button></div>
   <div class="gastos-tabs" role="tablist"><button class="gastos-tab active" type="button" role="tab" aria-selected="true" onclick="mostrarSecaoGastos('historico')">Histórico</button><button class="gastos-tab" type="button" role="tab" aria-selected="false" onclick="mostrarSecaoGastos('comparacoes')">Comparar preços</button></div><section id="historicoConteudo" class="gastos-panel"><div id="historyList"></div></section><section id="comparacoes" class="gastos-subsection gastos-panel" style="display:none">
-  <div class="page-head"><div><h2>Comparar preços</h2><p>Use uma compra anterior como referência para estimar o valor dos itens da sua Lista.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
+  <div class="page-head"><div><h2>Comparação</h2></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
-    <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
+    <label class="auth-field" style="margin-top:0">Compra de referência
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
         <option value="">Selecione uma compra do histórico</option>
       </select>
     </label>
-    <div class="product-meta" style="margin-top:8px">As quantidades vêm diretamente da aba Lista. Aqui você só escolhe de qual compra recuperar os preços.</div>
+    
   </div>
   <div id="comparacaoResumo"></div>
   <div id="comparacaoItens" class="cart-list"></div>
