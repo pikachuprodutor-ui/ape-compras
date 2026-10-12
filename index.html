@@ -656,6 +656,27 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 @media(max-width:600px){.comparison-summary{grid-template-columns:1fr 1fr}.comparison-total-card{padding:12px}.comparison-total-card strong{font-size:19px}.comparison-item{grid-template-columns:1fr}.comparison-item-controls{justify-content:space-between}}
 @media(max-width:600px){.head-actions{width:100%;justify-content:stretch}.head-actions .btn{flex:1;padding:10px 8px;font-size:12px}.shopping-category .shopping-row{gap:8px;padding:10px}.shopping-category .qty{gap:5px}.shopping-category .qty button{width:28px;height:28px}}
 
+
+/* Gastos: interface mais limpa e compacta */
+.gastos-head{margin-bottom:18px!important}
+.gastos-estimativa-head{margin-top:24px!important;margin-bottom:12px!important;align-items:center}
+.gastos-estimativa-head h2{margin:0;font-size:21px}
+.gastos-reference-label{font-size:13px}
+.gastos-aviso{margin:0 0 12px;padding:8px 11px;border-radius:9px;background:var(--panel);color:var(--muted)}
+#historico .comparison-summary{margin-top:12px}
+#historico .comparison-total-card{padding:15px 17px}
+#historico .comparison-total-card span{font-size:12px}
+#historico .comparison-total-card strong{font-size:23px}
+#historico #comparacaoItens{gap:8px}
+#historico .comparison-item{padding:13px 15px}
+#historico .comparison-item .product-meta{margin-top:4px}
+@media(max-width:760px){
+ .gastos-head{margin-bottom:14px!important}
+ .gastos-estimativa-head{margin-top:20px!important}
+ .gastos-estimativa-head .btn{width:auto}
+ #historico .comparison-summary{gap:8px}
+ #historico .comparison-total-card{padding:12px}
+}
 </style>
 </head>
 <body class="auth-locked">
@@ -690,7 +711,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <button data-page="estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>Estoque</button>
       <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
       <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>Carrinho</button>
-      <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Gastos</button>
+      <button data-page="historico"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h5M8 16h3"/><path d="m15 15 2 2 4-4"/></svg>Gastos</button>
       <button id="navAdmin" class="admin-nav" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5 1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg>Admin</button>
     </nav>
   </div>
@@ -779,17 +800,16 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 </section>
 
 <section id="historico" class="page">
-  <div class="page-head"><div><h1>Gastos</h1><p>Consulte suas compras e estime o valor da Lista usando preços anteriores.</p></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
+  <div class="page-head gastos-head"><div><h1>Gastos</h1></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
   <div id="historyList"></div>
-  <div class="page-head" style="margin-top:28px"><div><h2>Comparar valores</h2><p>Use os produtos e quantidades atuais da Lista com os preços de uma compra anterior.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar comparação</button></div>
+  <div class="page-head gastos-estimativa-head"><div><h2>Estimativa da lista</h2></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
-    <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
+    <label class="auth-field gastos-reference-label" style="margin-top:0">Compra de referência
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
         <option value="">Selecione uma compra do histórico</option>
       </select>
     </label>
-    <div class="product-meta" style="margin-top:8px">As quantidades vêm diretamente da aba Lista. Aqui você só escolhe de qual compra recuperar os preços.</div>
-  </div>
+    </div>
   <div id="comparacaoResumo"></div>
   <div id="comparacaoItens" class="cart-list"></div>
 </section>
@@ -1374,9 +1394,9 @@ function desenharComparacao(){
   const semPreco=itensAtuais.length-comPreco;
   const avisoSemPreco=semPreco ? ' <strong>'+semPreco+' '+(semPreco===1?'item está':'itens estão')+' sem preço nessa compra</strong> e não entrou no total.' : '';
   $('comparacaoResumo').innerHTML='<div class="comparison-summary">'+
-    '<div class="comparison-total-card"><span>Estimativa da sua Lista</span><strong>'+dinheiro(totalEstimado)+'</strong></div>'+
-    '<div class="comparison-total-card"><span>Produtos na Lista</span><strong>'+itensAtuais.length+'</strong></div>'+
-    '</div><div class="product-meta" style="margin:0 0 14px">Quantidades sincronizadas automaticamente com a aba Lista. Estimativa calculada com os preços unitários da compra selecionada.'+avisoSemPreco+'</div>';
+    '<div class="comparison-total-card"><span>Total estimado</span><strong>'+dinheiro(totalEstimado)+'</strong></div>'+
+    '<div class="comparison-total-card"><span>Produtos</span><strong>'+itensAtuais.length+'</strong></div>'+
+    '</div>'+(semPreco?'<div class="product-meta gastos-aviso">'+semPreco+' '+(semPreco===1?'item sem preço':'itens sem preço')+'</div>':'');
   $('comparacaoItens').innerHTML=itensAtuais.map(x=>{
     const preco=x.precoRef;
     const detalhePreco=preco==null
