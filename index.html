@@ -766,6 +766,79 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
 #historyList:empty:after{content:'Nenhuma compra registrada ainda.';display:block;padding:20px;border:1px solid #27343b;border-radius:14px;background:#10171b;color:#a4b0b8}
 @media(max-width:760px){.mobile-nav.admin-visible{grid-template-columns:repeat(6,minmax(0,1fr))!important}.mobile-nav.admin-visible button{font-size:9px}.mobile-nav.admin-visible button svg{width:20px;height:20px}.page-head{margin-bottom:16px}.gastos-panel{margin-top:12px}.gastos-subsection .page-head{display:none!important}}
 
+
+/* Correções globais: não duplicar a marca e alternar de verdade os painéis de Gastos. */
+#inicio .home-brand { display: none !important; }
+#historicoConteudo.gastos-hidden { display: none !important; }
+#comparacoes.gastos-subsection { display: none !important; }
+#comparacoes.gastos-subsection.gastos-visible { display: block !important; }
+
+/* CORREÇÃO REAL: regras dentro do CSS da página (não texto solto após </html>) */
+@media (max-width: 760px) {
+  /* O cabeçalho já identifica o app; evita duplicar marca dentro da capa. */
+  #inicio .home-brand { display: none !important; }
+  #inicio .home-hero { padding-top: 24px !important; }
+
+  /* Mantém todos os acessos, inclusive Admin, em uma única linha. */
+  nav.mobile-nav,
+  nav.mobile-nav.admin-visible {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    align-items: stretch !important;
+    gap: 1px !important;
+    padding: 7px 4px calc(7px + env(safe-area-inset-bottom)) !important;
+    overflow: hidden !important;
+  }
+  nav.mobile-nav > button,
+  nav.mobile-nav.admin-visible > button {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 7px 0 5px !important;
+    gap: 4px !important;
+    font-size: clamp(8px, 2.35vw, 10px) !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  nav.mobile-nav > button svg { width: 20px !important; height: 20px !important; flex: 0 0 20px !important; }
+  nav.mobile-nav .admin-mobile { display: flex !important; }
+  nav.mobile-nav:not(.admin-visible) .admin-mobile { display: none !important; }
+
+  /* Chips Ideal/Atual/OK/Comprar no estoque sem fundo creme. */
+  .product-stats span, .product-stats span.need, .product-stats span.ok {
+    background: #1b2930 !important; color: #d4e0e5 !important;
+    border: 1px solid #34454e !important; border-radius: 9px !important;
+  }
+  .product-stats span.need { background: #35291a !important; color: #f0c46f !important; border-color: #6b512b !important; }
+  .product-stats span.ok { background: #172e28 !important; color: #83d9b1 !important; border-color: #285844 !important; }
+
+  /* Gastos: seletor escuro; só a seção escolhida fica visível. */
+  .gastos-tabs {
+    display: grid !important; grid-template-columns: 1fr 1.25fr !important;
+    width: 100% !important; max-width: 100% !important; gap: 6px !important;
+    padding: 5px !important; margin: 14px 0 16px !important;
+    border-radius: 14px !important; background: #0d1418 !important;
+    border: 1px solid #26343b !important; box-sizing: border-box !important;
+  }
+  .gastos-tab {
+    min-width: 0 !important; min-height: 44px !important;
+    border: 1px solid #2b3b43 !important; border-radius: 10px !important;
+    background: #141e23 !important; color: #aebbc3 !important;
+    font-size: 13px !important; line-height: 1.2 !important; padding: 9px 7px !important;
+  }
+  .gastos-tab.active { background: #17364a !important; color: #75d2f7 !important; border-color: #2b7694 !important; }
+  #historicoConteudo.gastos-hidden { display: none !important; }
+  #comparacoes.gastos-subsection { display: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }
+  #comparacoes.gastos-subsection.gastos-visible { display: block !important; }
+  #comparacoes .admin-box { background: #10171b !important; border-color: #27343b !important; }
+  #comparacoes .auth-field { color: #aebbc3 !important; }
+  #comparacoes select#comparacaoCompra { background: #111a1f !important; color: #f4f7f8 !important; border-color: #344149 !important; }
+}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -2440,88 +2513,3 @@ inicializarAutenticacao();
 </script>
 </body>
 </html>
-
-
-/* AJUSTES FINAIS — navegação compacta, estoque escuro e Gastos em painéis alternados */
-@media (max-width: 760px) {
-  /* O nome do aplicativo já fica no cabeçalho: não repetir na capa */
-  #inicio .home-brand { display: none !important; }
-  #inicio .home-hero { padding-top: 24px !important; }
-
-  /* Seis acessos na mesma linha, incluindo Admin */
-  nav.mobile-nav,
-  nav.mobile-nav.admin-visible {
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    grid-auto-flow: column !important;
-    align-items: stretch !important;
-    gap: 2px !important;
-    padding: 8px 6px !important;
-    min-height: 76px !important;
-    overflow: visible !important;
-  }
-  nav.mobile-nav > button,
-  nav.mobile-nav.admin-visible > button {
-    display: flex !important;
-    min-width: 0 !important;
-    width: 100% !important;
-    padding: 7px 0 5px !important;
-    gap: 4px !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    white-space: nowrap !important;
-    font-size: clamp(8px, 2.25vw, 11px) !important;
-    line-height: 1.15 !important;
-  }
-  nav.mobile-nav > button svg { width: 20px !important; height: 20px !important; flex: 0 0 auto; }
-  nav.mobile-nav .admin-mobile { display: flex !important; }
-  nav.mobile-nav:not(.admin-visible) .admin-mobile { display: none !important; }
-
-  /* Quantidades e status sem fundo bege/branco */
-  .product-stats span,
-  .product-stats span.need,
-  .product-stats span.ok {
-    background: #1b2930 !important;
-    color: #d4e0e5 !important;
-    border: 1px solid #34454e !important;
-    border-radius: 10px !important;
-  }
-  .product-stats span.need { background: #35291a !important; color: #f0c46f !important; border-color: #6b512b !important; }
-  .product-stats span.ok { background: #172e28 !important; color: #83d9b1 !important; border-color: #285844 !important; }
-
-  /* Gastos: abas com cores escuras e somente um painel por vez */
-  .gastos-tabs {
-    display: grid !important;
-    grid-template-columns: 1fr 1.25fr !important;
-    gap: 6px !important;
-    padding: 5px !important;
-    margin: 14px 0 16px !important;
-    border-radius: 14px !important;
-    background: #0d1418 !important;
-    border: 1px solid #26343b !important;
-  }
-  .gastos-tab {
-    min-height: 44px !important;
-    border: 1px solid #2b3b43 !important;
-    border-radius: 10px !important;
-    background: #141e23 !important;
-    color: #aebbc3 !important;
-    font-size: 13px !important;
-    line-height: 1.2 !important;
-    padding: 9px 8px !important;
-  }
-  .gastos-tab.active {
-    background: #17364a !important;
-    color: #75d2f7 !important;
-    border-color: #2b7694 !important;
-    box-shadow: inset 0 0 0 1px #24556a !important;
-  }
-  #historicoConteudo.gastos-hidden { display: none !important; }
-  #comparacoes.gastos-subsection { display: none !important; }
-  #comparacoes.gastos-subsection.gastos-visible { display: block !important; }
-  #comparacoes.gastos-subsection { margin: 0 !important; padding: 0 !important; border: 0 !important; }
-  #comparacoes .admin-box { background: #10171b !important; border-color: #27343b !important; }
-  #comparacoes .auth-field { color: #aebbc3 !important; }
-  #comparacoes select#comparacaoCompra { background: #111a1f !important; color: #f4f7f8 !important; border-color: #344149 !important; }
-}
