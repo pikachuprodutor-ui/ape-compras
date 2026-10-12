@@ -785,14 +785,14 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 </section>
 
 <section id="comparacoes" class="page">
-  <div class="page-head"><div><h1>Comparação de valores</h1><p>Use uma compra anterior como referência para estimar quanto gastará na próxima.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
+  <div class="page-head"><div><h1>Comparação de valores</h1><p>Calculada automaticamente com os produtos e quantidades da sua Lista, usando preços de uma compra anterior.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
-    <label class="auth-field" style="margin-top:0">Compra de referência
+    <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
         <option value="">Selecione uma compra do histórico</option>
       </select>
     </label>
-    <div class="product-meta" style="margin-top:8px">A estimativa usa os preços unitários registrados nessa compra. Você pode ajustar as quantidades para planejar a próxima compra.</div>
+    <div class="product-meta" style="margin-top:8px">As quantidades vêm diretamente da aba Lista. Aqui você só escolhe de qual compra recuperar os preços.</div>
   </div>
   <div id="comparacaoResumo"></div>
   <div id="comparacaoItens" class="cart-list"></div>
@@ -1241,7 +1241,7 @@ function mudarQtdLista(key,delta){
   }else{
     x.qtd=Math.max(1,x.qtd+delta);const m=listaManual.find(y=>String(y.key)===String(key));if(m)m.qtd=x.qtd;
   }
-  salvarLocal();renderLista();
+  salvarLocal();renderLista();if($('comparacoes')?.classList.contains('active'))desenharComparacao();
 }
 function adicionarManual(){
   modalMode='manual';modalIndex=null;$('modalTitle').textContent='Adicionar item avulso';$('modalText').textContent='Informe o produto, a quantidade e selecione uma categoria.';
@@ -1312,18 +1312,18 @@ function finalizarCompra(){
   modalMode='finalizar';$('modalTitle').textContent='Finalizar compra';$('modalText').textContent='Total: '+dinheiro(total);$('modalBody').innerHTML='<label class="auth-field">Mercado<input id="modalMercado" placeholder="Nome do mercado"></label>';$('modal').classList.add('show');
 }
 
-/* COMPARAÇÃO DE VALORES — estimativa com base em uma compra anterior */
+/* COMPARAÇÃO DE VALORES — quantidades sincronizadas com a Lista */
 async function renderComparacoes(){
   const select=$('comparacaoCompra');
   if(!select)return;
   const valorAtual=select.value;
   if(!historico.length){
     select.innerHTML='<option value="">Nenhuma compra no histórico</option>';
-    $('comparacaoResumo').innerHTML='<div class="empty">Finalize uma compra para começar a usar a comparação de valores.</div>';
+    $('comparacaoResumo').innerHTML='<div class="empty">Finalize uma compra para registrar preços de referência. A estimativa usa os itens atuais da Lista.</div>';
     $('comparacaoItens').innerHTML='';
     return;
   }
-  select.innerHTML='<option value="">Selecione uma compra do histórico</option>'+historico.map(h=>{
+  select.innerHTML='<option value="">Selecione uma compra para usar os preços</option>'+historico.map(h=>{
     const d=new Date(h.data);
     const dataTxt=Number.isNaN(d.getTime())?'Data não informada':d.toLocaleDateString('pt-BR');
     return `<option value="${esc(h.id)}">${esc(dataTxt)} • ${esc(h.mercado||'Mercado')} • ${dinheiro(h.total)}</option>`;
@@ -1336,7 +1336,7 @@ async function carregarComparacaoSelecionada(){
   const select=$('comparacaoCompra');
   const id=select?.value;
   if(!id){$('comparacaoResumo').innerHTML='';$('comparacaoItens').innerHTML='';return}
-  $('comparacaoItens').innerHTML='<div class="empty">Carregando itens da compra...</div>';
+  $('comparacaoItens').innerHTML='<div class="empty">Buscando os preços da compra selecionada...</div>';
   try{
     const itens=await carregarItensCompra(id);
     comparacaoItensBase=itens.map((item,i)=>({
@@ -1346,43 +1346,52 @@ async function carregarComparacaoSelecionada(){
       preco:Math.max(0,Number(item.preco_unitario||0)),
       produtoId:item.produto_id||null
     }));
-    comparacaoQuantidades={};
-    comparacaoItensBase.forEach(x=>comparacaoQuantidades[x.key]=x.qtd);
     desenharComparacao();
   }catch(e){
     console.error('ERRO NA COMPARAÇÃO:',e);
-    $('comparacaoResumo').innerHTML='<div class="empty">Não foi possível carregar os itens dessa compra.</div>';
+    $('comparacaoResumo').innerHTML='<div class="empty">Não foi possível carregar os preços dessa compra.</div>';
     $('comparacaoItens').innerHTML='';
   }
 }
-function alterarQtdComparacao(key,valor){
-  comparacaoQuantidades[key]=Math.max(0,Number(valor||0));
-  desenharComparacao();
-}
+function alterarQtdComparacao(){ /* Quantidades controladas pela aba Lista. */ }
 function desenharComparacao(){
+  const lista=itensLista();
   const compra=historico.find(h=>String(h.id)===String($('comparacaoCompra')?.value));
   if(!compra){$('comparacaoResumo').innerHTML='';$('comparacaoItens').innerHTML='';return}
-  const totalBase=comparacaoItensBase.reduce((s,x)=>s+x.qtd*x.preco,0);
-  const totalEstimado=comparacaoItensBase.reduce((s,x)=>s+Math.max(0,Number(comparacaoQuantidades[x.key]||0))*x.preco,0);
-  const diferenca=totalEstimado-totalBase;
-  $('comparacaoResumo').innerHTML=`<div class="comparison-summary">
-    <div class="comparison-total-card"><span>Total da compra de referência</span><strong>${dinheiro(totalBase)}</strong></div>
-    <div class="comparison-total-card"><span>Estimativa para próxima compra</span><strong>${dinheiro(totalEstimado)}</strong></div>
-  </div>
-  <div class="product-meta" style="margin:0 0 14px">${diferenca>0?'A estimativa está '+dinheiro(diferenca)+' acima da compra de referência.':diferenca<0?'A estimativa está '+dinheiro(Math.abs(diferenca))+' abaixo da compra de referência.':'A estimativa está igual ao total da compra de referência.'} Os valores consideram os preços unitários da compra selecionada, sem prever alterações futuras de preço.</div>`;
-  if(!comparacaoItensBase.length){
-    $('comparacaoItens').innerHTML='<div class="empty">Essa compra não tem itens detalhados salvos no histórico.</div>';
+  if(!lista.length){
+    $('comparacaoResumo').innerHTML='<div class="empty">Sua Lista está vazia. Adicione produtos na aba Lista para calcular uma estimativa.</div>';
+    $('comparacaoItens').innerHTML='';
     return;
   }
-  $('comparacaoItens').innerHTML=comparacaoItensBase.map(x=>{
-    const qtd=Math.max(0,Number(comparacaoQuantidades[x.key]||0));
-    return `<div class="comparison-item">
-      <div><div class="comparison-item-name">${esc(x.nome)}</div><div class="product-meta">${dinheiro(x.preco)} por unidade • Subtotal estimado: <strong>${dinheiro(qtd*x.preco)}</strong></div></div>
-      <div class="comparison-item-controls"><label class="product-meta" for="compQtd-${esc(x.key)}">Quantidade</label><input id="compQtd-${esc(x.key)}" type="number" min="0" step="1" value="${qtd}" onchange="alterarQtdComparacao('${String(x.key).replace(/'/g,"\\'")}',this.value)"></div>
-    </div>`;
+  const porId=new Map();
+  const porNome=new Map();
+  comparacaoItensBase.forEach(x=>{
+    if(x.produtoId)porId.set(String(x.produtoId),x);
+    porNome.set(normalizar(x.nome),x);
+  });
+  const itensAtuais=lista.map(x=>{
+    const ref=(x.id!=null?porId.get(String(x.id)):null)||porNome.get(normalizar(x.nome));
+    return {...x,precoRef:ref?ref.preco:null,precoNome:ref?.nome||null};
+  });
+  const totalEstimado=itensAtuais.reduce((s,x)=>s+(x.precoRef==null?0:Number(x.qtd||0)*x.precoRef),0);
+  const comPreco=itensAtuais.filter(x=>x.precoRef!=null).length;
+  const semPreco=itensAtuais.length-comPreco;
+  const avisoSemPreco=semPreco ? ' <strong>'+semPreco+' '+(semPreco===1?'item está':'itens estão')+' sem preço nessa compra</strong> e não entrou no total.' : '';
+  $('comparacaoResumo').innerHTML='<div class="comparison-summary">'+
+    '<div class="comparison-total-card"><span>Estimativa da sua Lista</span><strong>'+dinheiro(totalEstimado)+'</strong></div>'+
+    '<div class="comparison-total-card"><span>Produtos na Lista</span><strong>'+itensAtuais.length+'</strong></div>'+
+    '</div><div class="product-meta" style="margin:0 0 14px">Quantidades sincronizadas automaticamente com a aba Lista. Estimativa calculada com os preços unitários da compra selecionada.'+avisoSemPreco+'</div>';
+  $('comparacaoItens').innerHTML=itensAtuais.map(x=>{
+    const preco=x.precoRef;
+    const detalhePreco=preco==null
+      ? '<strong>Sem preço na compra selecionada</strong>'
+      : dinheiro(preco)+' por unidade • Subtotal estimado: <strong>'+dinheiro(Number(x.qtd||0)*preco)+'</strong>';
+    return '<div class="comparison-item">'+
+      '<div><div class="comparison-item-name">'+esc(x.nome)+'</div><div class="product-meta">'+x.qtd+' '+(x.qtd===1?'unidade':'unidades')+' na Lista • '+detalhePreco+'</div></div>'+
+      '<div class="comparison-item-controls"><span class="product-meta">'+esc(x.produto?.categoria||x.categoria||'Outros')+'</span></div>'+
+    '</div>';
   }).join('');
 }
-
 /* HISTÓRICO COMPARTILHADO */
 async function concluirCompra(){
   const mercado=($('modalMercado').value||'').trim()||'Compra';
