@@ -733,6 +733,39 @@ main{max-width:1240px;padding-top:28px}
 .gastos-tabs{display:flex;gap:8px;padding:5px;background:#0d1418;border:1px solid #26343b;border-radius:14px;margin:16px 0 18px;width:max-content;max-width:100%}.gastos-tab{border:0;border-radius:10px;background:transparent;color:#aab7bf;padding:10px 16px;font-weight:750}.gastos-tab.active{background:#17364a;color:#58c8f7}.gastos-subsection{display:block!important;margin-top:28px;padding-top:24px;border-top:1px solid #263239}.gastos-subsection .page-head{margin-bottom:14px}.gastos-subsection h2{font-size:23px;margin:0}.gastos-subsection .admin-box{margin-bottom:15px}
 @media(max-width:760px){body{background:#070b0d}header{background:#080d10;border-bottom-color:#1c282e}.home-hero{min-height:390px;border-radius:25px;padding:20px 19px;background-position:58% center}.home-stats{gap:8px}.home-stat-card{padding:14px 11px;min-height:155px;border-radius:18px}.home-stat-card strong{font-size:30px}.home-stat-card .stat-label{font-size:12px}.home-stat-card small{font-size:11px}.home-stat-icon{width:39px;height:39px}.home-quick{gap:9px}.quick-link{padding:12px 10px;min-height:78px;gap:8px;flex-direction:column;align-items:flex-start;font-size:13px}.quick-link .quick-icon{width:35px;height:35px}.home-last-card{padding:12px}.mobile-nav{background:rgba(9,15,18,.96);border:1px solid #26343b;box-shadow:0 12px 35px #0008;backdrop-filter:blur(20px)}.mobile-nav button{color:#9eacb6}.mobile-nav button.active{color:#24b8f2}.mobile-nav button.active:after{background:#24b8f2}.history-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.gastos-tabs{width:100%}.gastos-tab{flex:1;padding:10px 8px}.gastos-subsection{scroll-margin-top:16px}.page-head h1{font-size:28px}}
 
+
+/* AJUSTES VISUAIS — tema escuro consistente e leitura simplificada */
+:root{--bg:#070b0d;--panel:#10171b;--panel2:#131d22;--line:#26343b;--text:#f4f7f8;--muted:#a4b0b8;--accent:#e7b451;--accent2:#f0d6a0;--green:#43c58a;--red:#f06b70;--blue:#55b9f2}
+body{background:#070b0d!important;color:#f4f7f8!important}
+header{background:#080d10!important;border-bottom-color:#1c282e!important}
+.page-head p,.page-head .sub,.gastos-subsection .page-head p{display:none!important}
+.home-brand-title{display:none!important}
+.product-card,.shopping-row,.shopping-row button,.detail,.cart-row,.history-card,.history-stat,.admin-box,.empty{background:#10171b!important;border-color:#27343b!important;color:#f4f7f8!important}
+.product-stats span{background:#202c32!important;color:#c0cbd1!important;border:1px solid #2b3b43!important}
+.product-stats strong{color:#f4f7f8!important}
+.product-photo,.shopping-row .photo,.detail-photo{background:#1a252b!important;color:#a9b7bf!important}
+.filters button,.gastos-tab{background:#11191d!important;color:#aebbc3!important;border-color:#2c3940!important}
+.filters button.active,.gastos-tab.active{background:#17364a!important;color:#58c8f7!important;border-color:#24617b!important}
+.search,.price-input,.admin-form input,.admin-form select,#comparacaoCompra{background:#0a1013!important;border-color:#344149!important;color:#f4f7f8!important}
+.btn{background:#172126!important;color:#f4f7f8!important;border-color:#344149!important}
+.btn.primary,.auth-submit{background:#e7b451!important;color:#17130a!important;border-color:#e7b451!important}
+.cart-summary{background:#101b20!important;border-color:#26343b!important}
+.history-total,.home-last-total,.cart-total,.comparison-total-card strong{color:#e7b451!important}
+.mobile-nav{background:rgba(12,18,22,.96)!important;border-color:#26343b!important;box-shadow:0 12px 35px rgba(0,0,0,.35)!important}
+.mobile-nav button{color:#9eacb6!important}.mobile-nav button.active{color:#58c8f7!important;background:#142b36!important}.mobile-nav button.active svg{color:#58c8f7!important}
+.mobile-nav.admin-visible{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+.mobile-nav .admin-mobile{display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:7px 1px 5px;border:0;border-radius:14px;background:transparent;color:#9eacb6;font-size:10px;font-weight:650}
+.mobile-nav .admin-mobile svg{width:22px;height:22px}
+.gastos-tabs{width:100%;max-width:100%;background:#0d1418!important;border-color:#26343b!important;border-radius:14px;padding:4px;gap:5px}
+.gastos-tab{flex:1;border:0!important;border-radius:10px!important;padding:11px 10px!important;font-weight:750}
+.gastos-panel{margin-top:14px}
+.gastos-subsection{display:none!important}.gastos-subsection.gastos-visible{display:block!important}
+.gastos-subsection{padding:0!important;border:0!important;margin-top:0!important;scroll-margin-top:20px}
+.gastos-subsection>.page-head h2{font-size:0!important}
+.gastos-subsection>.page-head h2:after{content:'Comparação';font-size:23px}
+#historyList:empty:after{content:'Nenhuma compra registrada ainda.';display:block;padding:20px;border:1px solid #27343b;border-radius:14px;background:#10171b;color:#a4b0b8}
+@media(max-width:760px){.mobile-nav.admin-visible{grid-template-columns:repeat(6,minmax(0,1fr))!important}.mobile-nav.admin-visible button{font-size:9px}.mobile-nav.admin-visible button svg{width:20px;height:20px}.page-head{margin-bottom:16px}.gastos-panel{margin-top:12px}.gastos-subsection .page-head{display:none!important}}
+
 </style>
 </head>
 <body class="auth-locked">
@@ -780,6 +813,7 @@ main{max-width:1240px;padding-top:28px}
 <button data-page="lista"><svg viewBox="0 0 24 24"><path d="m4 6 2 2 3-3M11 7h9M4 13l2 2 3-3M11 14h9M4 20l2 1 3-3M11 20h9"/></svg><span>Lista</span></button>
 <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg><span>Carrinho</span></button>
 <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M8 15l3-4 3 2 5-7"/></svg><span>Gastos</span></button>
+<button class="admin-mobile" data-page="admin" style="display:none"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6-.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5-1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg><span>Admin</span></button>
 </nav>
 
 
@@ -883,7 +917,7 @@ main{max-width:1240px;padding-top:28px}
 
 <section id="historico" class="page">
   <div class="page-head"><div><h1>Gastos</h1><p>Histórico de compras e comparação de preços em um só lugar.</p></div><button class="btn" onclick="carregarHistorico();renderComparacoes()">Atualizar</button></div>
-  <div class="gastos-tabs"><button class="gastos-tab active" type="button" onclick="document.getElementById('historyList').scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.gastos-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active')">Histórico</button><button class="gastos-tab" type="button" onclick="document.getElementById('comparacoes').scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.gastos-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');renderComparacoes()">Comparar preços</button></div><div id="historyList"></div><section id="comparacoes" class="gastos-subsection">
+  <div class="gastos-tabs" role="tablist"><button class="gastos-tab active" type="button" role="tab" aria-selected="true" onclick="mostrarSecaoGastos('historico')">Histórico</button><button class="gastos-tab" type="button" role="tab" aria-selected="false" onclick="mostrarSecaoGastos('comparacoes')">Comparar preços</button></div><section id="historicoConteudo" class="gastos-panel"><div id="historyList"></div></section><section id="comparacoes" class="gastos-subsection gastos-panel" style="display:none">
   <div class="page-head"><div><h2>Comparar preços</h2><p>Use uma compra anterior como referência para estimar o valor dos itens da sua Lista.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
   <div class="admin-box">
     <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
@@ -1216,7 +1250,7 @@ async function liberarSessao(user){
   await aceitarConvitePendente();
   if(!casaAtual){ mostrarAplicativo(); return; }
   mostrarAplicativo();
-  $('navAdmin').style.display=usuarioPodeGerenciarCasa()?'flex':'none';
+  const podeAdmin=usuarioPodeGerenciarCasa();$('navAdmin').style.display=podeAdmin?'flex':'none';const navAdminMobile=document.querySelector('.admin-mobile');if(navAdminMobile)navAdminMobile.style.display=podeAdmin?'flex':'none';const mobileNav=document.querySelector('.mobile-nav');if(mobileNav)mobileNav.classList.toggle('admin-visible',podeAdmin);
   carregarLocal();
   atualizarAdminTela();
   await carregarProdutos();
@@ -1410,6 +1444,15 @@ function finalizarCompra(){
   if(carrinho.some(x=>Number(x.preco)<=0)){mostrar('Informe o preço de todos os itens');return}
   const total=carrinho.reduce((s,x)=>s+Number(x.qtd)*Number(x.preco),0);
   modalMode='finalizar';$('modalTitle').textContent='Finalizar compra';$('modalText').textContent='Total: '+dinheiro(total);$('modalBody').innerHTML='<label class="auth-field">Mercado<input id="modalMercado" placeholder="Nome do mercado"></label>';$('modal').classList.add('show');
+}
+
+function mostrarSecaoGastos(secao){
+  const historico=document.getElementById('historicoConteudo');
+  const comparacoes=document.getElementById('comparacoes');
+  if(historico)historico.style.display=secao==='historico'?'block':'none';
+  if(comparacoes){comparacoes.style.display='';comparacoes.classList.toggle('gastos-visible',secao==='comparacoes');}
+  document.querySelectorAll('.gastos-tab').forEach((b,i)=>{const active=(secao==='historico'?i===0:i===1);b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');});
+  if(secao==='comparacoes')renderComparacoes();
 }
 
 /* COMPARAÇÃO DE VALORES — quantidades sincronizadas com a Lista */
@@ -2332,7 +2375,7 @@ function atualizarAdminTela(){
 function atualizarTudo(){
   const comprar=produtos.filter(p=>ativo(p)&&falta(p)>0).length;
   $('homeComprar').textContent=comprar;$('homeEstoque').textContent=produtos.length;$('homeCompras').textContent=historico.length;
-  const greeting=$('homeGreeting');if(greeting){const h=new Date().getHours();greeting.textContent=(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+'!';}
+  const greeting=$('homeGreeting');if(greeting){const h=new Date().getHours();const nome=(perfilAtual?.nome||usuarioAtual?.user_metadata?.nome||usuarioAtual?.email?.split('@')[0]||'').trim().split(/\s+/)[0];greeting.textContent=(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+(nome?', '+nome:'')+'!';}
   const last=historico&&historico.length?historico[0]:null;const ld=$('homeLastDate'),lm=$('homeLastMarket'),lt=$('homeLastTotal');if(last){const dt=new Date(last.data);ld.textContent=Number.isNaN(dt.getTime())?'Data não informada':dt.toLocaleDateString('pt-BR');lm.textContent=last.mercado||'Mercado';lt.textContent=dinheiro(last.total||0);}else{ld.textContent='Nenhuma compra registrada';lm.textContent='Comece sua primeira compra';lt.textContent='—';}
 }
 
