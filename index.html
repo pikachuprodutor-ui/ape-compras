@@ -630,6 +630,10 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 
 /* Lista de compras agrupada por categoria */
 .head-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.shopping-search-wrap{display:flex;align-items:center;gap:9px;margin:0 0 16px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);min-height:46px}
+.shopping-search-icon{font-size:24px;line-height:1;color:var(--muted)}
+.shopping-search-wrap input{flex:1;min-width:0;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;padding:12px 0!important;color:var(--text)!important}
+.shopping-search-clear{width:30px;height:30px;border-radius:8px!important;display:grid;place-items:center;color:var(--muted)!important;background:var(--panel2)!important;font-size:20px!important}
 .shopping-category{margin:0 0 18px;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel)}
 .shopping-category-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--panel2);border-bottom:1px solid var(--line)}
 .shopping-category-head strong{font-size:14px;letter-spacing:.2px}
@@ -746,6 +750,11 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 
 <section id="lista" class="page">
   <div class="page-head"><div><h1>Lista de compras</h1><p>Organizada por categoria, com produtos em ordem alfabética.</p></div><div class="head-actions"><button class="btn" onclick="adicionarManual()">Item avulso</button><button class="btn primary" onclick="abrirCadastroRapidoProduto()">Cadastrar produto</button></div></div>
+  <div class="shopping-search-wrap">
+    <span class="shopping-search-icon" aria-hidden="true">⌕</span>
+    <input id="listaBusca" type="search" placeholder="Pesquisar produto pelo nome..." autocomplete="off" oninput="renderLista()">
+    <button type="button" class="shopping-search-clear" aria-label="Limpar pesquisa" title="Limpar pesquisa" onclick="limparBuscaLista()">×</button>
+  </div>
   <div id="listaList" class="shopping-list"></div>
 </section>
 
@@ -1166,15 +1175,24 @@ function itensLista(){
   return [...auto,...listaManual].filter(x=>!listaOcultos.includes(String(x.key)));
 }
 function renderLista(){
-  const arr=itensLista().sort((a,b)=>{
+  const termo=String($('listaBusca')?.value||'').trim().toLocaleLowerCase('pt-BR');
+  const arr=itensLista().filter(x=>!termo||String(x.nome||'').toLocaleLowerCase('pt-BR').includes(termo)).sort((a,b)=>{
     const ca=String(a.produto?.categoria||a.categoria||'Outros').trim()||'Outros';
     const cb=String(b.produto?.categoria||b.categoria||'Outros').trim()||'Outros';
     return ca.localeCompare(cb,'pt-BR',{sensitivity:'base'})||String(a.nome).localeCompare(String(b.nome),'pt-BR',{sensitivity:'base'});
   });
-  if(!arr.length){$('listaList').innerHTML='<div class="empty">Nenhum item para comprar.</div>';return}
+  if(!arr.length){
+    $('listaList').innerHTML=termo?'<div class="empty">Nenhum produto encontrado com esse nome.</div>':'<div class="empty">Nenhum item para comprar.</div>';
+    return;
+  }
   const grupos=new Map();
   arr.forEach(x=>{const cat=String(x.produto?.categoria||x.categoria||'Outros').trim()||'Outros';if(!grupos.has(cat))grupos.set(cat,[]);grupos.get(cat).push(x)});
   $('listaList').innerHTML=[...grupos.entries()].map(([cat,items])=>`<section class="shopping-category"><div class="shopping-category-head"><strong>${esc(cat)}</strong><span>${items.length} ${items.length===1?'item':'itens'}</span></div>${items.map(x=>`<div class="shopping-row">${fotoHtml(x.produto,'photo')}<button class="shopping-product-open" onclick="abrirDetalheCompra('${String(x.key).replace(/'/g,"\\'")}')"><strong>${esc(x.nome)}</strong><div class="product-meta">${x.auto?'Estoque abaixo do ideal':'Item avulso'} • Comprar: ${x.qtd}</div></button><div class="qty"><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',-1)">−</button><strong>${x.qtd}</strong><button onclick="mudarQtdLista('${String(x.key).replace(/'/g,"\\'")}',1)">+</button></div><button class="shopping-delete" title="Remover da lista de compras" aria-label="Remover da lista de compras" onclick="excluirItemLista('${String(x.key).replace(/'/g,"\\'")}')">×</button></div>`).join('')}</section>`).join('');
+}
+function limparBuscaLista(){
+  const campo=$('listaBusca');
+  if(campo)campo.value='';
+  renderLista();
 }
 function excluirItemLista(key){
   const item=listaManual.find(m=>String(m.key)===String(key));
