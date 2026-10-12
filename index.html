@@ -721,7 +721,7 @@ header{background:rgba(8,12,15,.94);border-bottom:1px solid #1e2a30;backdrop-fil
 .logo-icon{background:#172228;color:#e9a94f;border:1px solid #26343a}
 nav button{color:#aab6bf;border-radius:12px;padding:11px 13px}nav button:hover,nav button.active{background:#123247;color:#39bdf5}
 main{max-width:1240px;padding-top:28px}
-.home-hero{background-color:#080d0f;border:1px solid #1c282e;box-shadow:0 18px 45px #0005;background-image:linear-gradient(90deg,rgba(5,10,12,.96) 0%,rgba(5,10,12,.83) 43%,rgba(5,10,12,.18) 100%),url('data:image/png;base64,) !important}
+.home-hero{background-color:#080d0f;border:1px solid #1c282e;box-shadow:0 18px 45px #0005}
 /* Preserve the existing embedded kitchen image already encoded in the original hero background. */
 .home-hero{background-image:linear-gradient(90deg,rgba(5,10,12,.96) 0%,rgba(5,10,12,.83) 43%,rgba(5,10,12,.18) 100%),url(
 .home-copy h1{color:#f7f8f9}.home-copy h1 span{color:#e9c99b}.home-greeting{color:#aebbc4}.house-chip{background:#10191e;border-color:#244352;color:#d5e0e6}
@@ -839,6 +839,40 @@ header{background:#080d10!important;border-bottom-color:#1c282e!important}
   #comparacoes select#comparacaoCompra { background: #111a1f !important; color: #f4f7f8 !important; border-color: #344149 !important; }
 }
 
+
+
+/* CORREÇÕES CONSOLIDADAS — Apê Compras */
+/* O título do aplicativo já aparece no cabeçalho: evita duplicação na capa. */
+.home-brand > span { display: none !important; }
+/* Mantém a capa e a imagem original embutida no arquivo, sem substituir por data URL vazia. */
+.home-hero { background-color:#080d0f; border:1px solid #1c282e; box-shadow:0 18px 45px rgba(0,0,0,.32); }
+/* Remoção dos subtítulos das páginas, mantendo títulos, botões e conteúdo. */
+.page-head > div > p { display:none !important; }
+#comparacoes .page-head p { display:none !important; }
+/* Cores aprovadas dos cards da tela inicial. */
+.home-stat-card.need-card { background:linear-gradient(145deg,#351c20,#1b1417) !important; border-color:#74343b !important; }
+.home-stat-card.need-card .home-stat-icon { background:#4a2429 !important; color:#ff9298 !important; }
+.home-stat-card.need-card strong { color:#ff9298 !important; }
+.home-stat-card.stock-card { background:linear-gradient(145deg,#10263c,#10191e) !important; border-color:#326c9d !important; }
+.home-stat-card.stock-card .home-stat-icon { background:#203e60 !important; color:#8bb9ff !important; }
+.home-stat-card.stock-card strong { color:#8bb9ff !important; }
+.home-stat-card.purchase-card { background:linear-gradient(145deg,#25183c,#15131f) !important; border-color:#6945a0 !important; }
+.home-stat-card.purchase-card .home-stat-icon { background:#422765 !important; color:#d0a1ff !important; }
+.home-stat-card.purchase-card strong { color:#d0a1ff !important; }
+/* Fundos escuros nas opções e nos campos de Gastos. */
+.gastos-tabs { background:#0d1418 !important; border-color:#26343b !important; }
+.gastos-tab { background:#141e23 !important; color:#aebbc3 !important; }
+.gastos-tab.active { background:#17364a !important; color:#75d2f7 !important; border-color:#2b7694 !important; }
+#comparacoes .admin-box { background:#10171b !important; border-color:#27343b !important; }
+#comparacoes select#comparacaoCompra { background:#111a1f !important; color:#f4f7f8 !important; border-color:#344149 !important; }
+/* Navegação inferior: seis itens cabem em uma única linha quando Admin é autorizado. */
+@media (max-width:760px) {
+  .mobile-nav { grid-template-columns:repeat(6,minmax(0,1fr)) !important; gap:2px !important; }
+  .mobile-nav button { min-width:0 !important; padding:8px 2px !important; font-size:10px !important; }
+  .mobile-nav button span { white-space:nowrap !important; }
+  .mobile-nav button svg { width:19px !important; height:19px !important; }
+  .mobile-nav.admin-visible { grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
+}
 </style>
 </head>
 <body class="auth-locked">
