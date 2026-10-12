@@ -690,8 +690,7 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
       <button data-page="estoque"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>Estoque</button>
       <button data-page="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Lista</button>
       <button data-page="carrinho"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/><circle cx="10" cy="19" r="1.5"/><circle cx="18" cy="19" r="1.5"/></svg>Carrinho</button>
-      <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Histórico</button>
-      <button data-page="comparacoes"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17"/><path d="M8 15l3-4 3 2 5-7"/></svg>Comparar</button>
+      <button data-page="historico"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>Gastos</button>
       <button id="navAdmin" class="admin-nav" data-page="admin"><svg viewBox="0 0 24 24"><path d="M12 3l1.5 2.2 2.6.3.9 2.5 2.2 1.5-1 2.4 1 2.4-2.2 1.5-.9 2.5-2.6.3L12 21l-1.5-2.2-2.6-.3-.9-2.5-2.2-1.5 1-2.4-1-2.4 2.2-1.5.9-2.5 2.6-.3L12 3Z"/><circle cx="12" cy="12" r="3"/></svg>Admin</button>
     </nav>
   </div>
@@ -780,12 +779,9 @@ main{max-width:1180px;margin:auto;padding:38px 20px 70px}
 </section>
 
 <section id="historico" class="page">
-  <div class="page-head"><div><h1>Histórico</h1><p>Compras compartilhadas entre os usuários desta casa.</p></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
+  <div class="page-head"><div><h1>Gastos</h1><p>Consulte suas compras e estime o valor da Lista usando preços anteriores.</p></div><button class="btn" onclick="carregarHistorico()">Atualizar</button></div>
   <div id="historyList"></div>
-</section>
-
-<section id="comparacoes" class="page">
-  <div class="page-head"><div><h1>Comparação de valores</h1><p>Calculada automaticamente com os produtos e quantidades da sua Lista, usando preços de uma compra anterior.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar</button></div>
+  <div class="page-head" style="margin-top:28px"><div><h2>Comparar valores</h2><p>Use os produtos e quantidades atuais da Lista com os preços de uma compra anterior.</p></div><button class="btn" onclick="renderComparacoes()">Atualizar comparação</button></div>
   <div class="admin-box">
     <label class="auth-field" style="margin-top:0">Usar preços desta compra como referência
       <select id="comparacaoCompra" style="width:100%;margin-top:7px;background:#0e1011;color:#fff;border:1px solid #4a5155;border-radius:9px;padding:12px" onchange="carregarComparacaoSelecionada()">
@@ -942,7 +938,7 @@ function abrirPagina(id){
   if(id==='lista')renderLista();
   if(id==='compraProduto')renderDetalheCompra();
   if(id==='carrinho')renderCarrinho();
-  if(id==='historico')renderHistorico();
+  if(id==='historico'){renderHistorico();renderComparacoes();}
   if(id==='comparacoes')renderComparacoes();
   if(id==='admin')atualizarAdminTela();
   window.scrollTo(0,0);
@@ -1241,7 +1237,7 @@ function mudarQtdLista(key,delta){
   }else{
     x.qtd=Math.max(1,x.qtd+delta);const m=listaManual.find(y=>String(y.key)===String(key));if(m)m.qtd=x.qtd;
   }
-  salvarLocal();renderLista();if($('comparacoes')?.classList.contains('active'))desenharComparacao();
+  salvarLocal();renderLista();if($('historico')?.classList.contains('active'))desenharComparacao();
 }
 function adicionarManual(){
   modalMode='manual';modalIndex=null;$('modalTitle').textContent='Adicionar item avulso';$('modalText').textContent='Informe o produto, a quantidade e selecione uma categoria.';
@@ -1465,6 +1461,7 @@ async function carregarHistorico(){
     });
 
     renderHistorico();
+    renderComparacoes();
     renderAdminHistorico();
     atualizarTudo();
 
